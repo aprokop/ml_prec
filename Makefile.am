@@ -1,0 +1,3 @@
+SUBDIRS = modules \
+	  project \
+	  tools

@@ -1,0 +1,3 @@
+syn keyword cType uint
+syn keyword cType MatrixInterface SparseMatrix FVSparseMatrix CSRMatrix Vector 
+syn keyword cDefine ASSERT THROW_EXCEPTION THROW
