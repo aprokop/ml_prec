@@ -102,11 +102,18 @@ void Mesh::graph_2D_plane(char type, uint pos) const {
     ASSERT(ofs.good(), "Cannot open file");
     ofs << std::fixed << std::setprecision(2);
     ofs << "%!PS-Adobe-2.0\n";
+    ofs << "%%Title: Graph\n";
+    ofs << "%%Creator: prok\n";
+    time_t t = time(NULL);
+    ofs << "%%Creation date: " << ctime(&t);
+    ofs << "%%Pages: " << nz << std::endl;
+    ofs << "%%EndComments\n\n";
+
     ofs << "%%BeginProlog\n";
-    ofs << "/Helvetica findfont 14 scalefont setfont\n\n";
+    ofs << "/Helvetica findfont 14 scalefont setfont\n";
     ofs << "/v {moveto lineto stroke} def\n";
     ofs << "/ms {moveto show} bind def\n";
-    ofs << "%%EndProlog\n";
+    ofs << "%%EndProlog\n\n";
 
     ofs << "userdict/start-hook known{start-hook}if\n"; 
 

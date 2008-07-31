@@ -1,12 +1,12 @@
 AM_CPPFLAGS = -I$(top_srcdir) 
 
-bin_PROGRAMS = main
-main_SOURCES = main.cc 
+bin_PROGRAMS = _main
+_main_SOURCES = main.cc 
 
-main_LDADD = \
+_main_LDADD = \
 	$(top_builddir)/modules/libmodules.a 
 
-all: prereq main 
+all: prereq _main 
 	
 prereq:
 	$(MAKE) -C $(top_srcdir)/modules
