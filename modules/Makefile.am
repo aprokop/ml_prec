@@ -7,4 +7,6 @@ libmodules_a_SOURCES = \
 		       matrix/csrmatrix.cc \
 		       matrix/matrix.h \
 		       vector/vector.cc \
-		       vector/vector.h 
+		       vector/vector.h \
+		       mesh/spe.cc \
+		       mesh/mesh.h
