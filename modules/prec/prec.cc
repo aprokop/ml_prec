@@ -26,37 +26,40 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     uint N = li.N = A.size();
 
+    // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
+
     if (level < nlevels-1) {
 	SkylineMatrix& nA = levels[level+1].A;
 	std::vector<int>& tr = li.tr;
 	std::vector<int>& dtr = li.dtr;
 
 	// reverse translation
-	std::vector<int> revtr(N, -1);
+	std::vector<uint> revtr(N, -1);
 
 	nA.ia.push_back(0);
 	for (uint i = 0; i < N; i++) {
+	    // dind corresponds to the position of diagonal
+	    uint dind = nA.a.size(); 
+
 	    nA.ja.push_back(i);
 	    nA.a.push_back(c);
 
-	    // ind corresponds to the position of diagonal
-	    uint dind = nA.a.size()-1; 
-
-	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
+	    double v;
+	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) 
 		if (1 + 12*(-A.a[j]) / c > li.beta) {
 		    // if the link stays, scale it
 		    nA.ja.push_back(A.ja[j]);
-		    nA.a.push_back(A.a[j] / li.beta);
-		    nA.a[dind] += (-A.a[j]) / li.beta;
+		    v = A.a[j] / li.beta;
+		    nA.a.push_back(v);
+		    nA.a[dind] += -v;
 		}
-	    }
+	    
 	    uint dia = nA.a.size() - dind;
-	    if (dia != 1) {
-		uint ni = nA.ia.size() - 1;
-		nA.ia.push_back(nA.ia[ni] + dia);
-		tr.push_back(i);
+	    if (dia > 1) {
+		nA.ia.push_back(nA.a.size());
 
-		revtr[i] = ni;
+		tr.push_back(i);
+		revtr[i] = nA.ia.size()-2;
 	    } else {
 		// all links for this point are gone
 		nA.ja.pop_back();
@@ -66,8 +69,10 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		dtr.push_back(i);
 	    }
 	}
+
 	// change nA.ja to use local indices
 	for (uint j = 0; j < nA.ja.size(); j++) {
+	    ASSERT(revtr[nA.ja[j]] != uint(-1), "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	    nA.ja[j] = revtr[nA.ja[j]];
 	}
 	uint n = tr.size();
@@ -82,7 +87,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	    construct_level(level+1, nA);
 	} else {
-	    nlevels--;
+	    LOG_INFO("Decreasing number of levels: " << nlevels << " -> " << level+1);
+	    nlevels = level+1;
+	    levels.resize(nlevels);
 	}
     }
 
@@ -95,10 +102,12 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	// these DO matter
 	lc.lmin = lc.lmax = 1;
 
+	levels[nlevels-2].ncheb = 0;
+
 	// chebyshev info
-	for (int level = nlevels-2; level >= 0; level--) {
-	    Level& li = levels[level];
-	    Level& ln = levels[level+1];
+	for (int l = nlevels-2; l >= 0; l--) {
+	    Level& li = levels[l];
+	    Level& ln = levels[l+1];
 
 	    if (li.ncheb) {
 		double cs = cheb((ln.lmax + ln.lmin)/(ln.lmax - ln.lmin), li.ncheb);
@@ -126,7 +135,6 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	const std::vector<int>& tr = li.tr;
 
 	uint n = levels[level+1].N;
-	ASSERT(n == tr.size(), "n = " << n << ", tr.size() = " << tr.size());
 
 	Vector& f1 = li.f1; 
 	for (uint i = 0; i < n; i++) 
@@ -138,9 +146,8 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    Vector& u0 = li.u0; 
 	    Vector& u1 = li.u1;
 	    const CSRMatrix& A = levels[level+1].A;
-	    int N = A.size();
 
-	    memset(&u0[0], 0, N*sizeof(double));
+	    memset(&u0[0], 0, n*sizeof(double));
 
 	    double lmin = levels[level+1].lmin;
 	    double lmax = levels[level+1].lmax;
@@ -150,7 +157,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    alpha = 2/(lmax + lmin);
 
 	    solve(f1, x1, level+1);
-	    for (int i = 0; i < N; i++) 
+	    for (uint i = 0; i < n; i++) 
 		x1[i] *= alpha;
 	    u1.copy(x1);
 
@@ -160,9 +167,8 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 
 		// x1 = u1 - alpha*solve(A*u1 - f1, level+1) + beta*(u1 - u0);
 		solve(A*u1 - f1, x1, level+1);
-		for (int k = 0; k < N; k++) {
+		for (uint k = 0; k < n; k++) 
 		    x1[k] = u1[k] - alpha*x1[k] + beta*(u1[k] - u0[k]);
-		}
 
 		// trick not to use any new/delete
 		Vector tmp = u0;
@@ -172,7 +178,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    }
 	    x1 = u1;
 	} else {
-	    solve(x1, f1, level+1);
+	    solve(f1, x1, level+1);
 	}
 
 	for (uint i = 0; i < n; i++)
@@ -184,7 +190,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
     }
 
     // solve diagonal part
-    for (uint i = 0; i < dtr.size(); i++)
+    for (uint i = 0; i < dtr.size(); i++) 
 	x[dtr[i]] = f[dtr[i]] / c;
 }
 
@@ -198,7 +204,7 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
 	if (level != p.nlevels-1) {
 	    os << "Ncheb = " << li.ncheb << ", ";
 	}
-	os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "]" << std::endl;
+	os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "], cond = " << li.lmax/li.lmin << std::endl;
 	os << "alpha = " << li.alpha << ", beta = " << li.beta << std::endl;
 #if 0
 	if (level < p.nlevels-1) {

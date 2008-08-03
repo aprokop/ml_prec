@@ -99,6 +99,15 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 	}
 }
 
+bool CSRMatrix::is_symmetric() const {
+    ASSERT(nrow == ncol, "Can not call is_symmetric() for non square matrices");
+    for (uint i = 0; i < nrow; i++)
+	for (uint j = ia[i]; j < ia[i+1]; j++)
+	    if (a[j] != get(ja[j], i))
+		return false;
+    return true;
+}
+
 std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
     os << "Size: " << sm.nrow << "x" << sm.ncol << std::endl;
     for (uint i = 0; i < sm.nrow; i++) {

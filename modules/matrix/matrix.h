@@ -86,6 +86,8 @@ public:
     }
     double get(uint i, uint j) const THROW;
 
+    bool is_symmetric() const;
+
     // Friend classes
     friend class SparseMatrix;
     friend class Mesh;

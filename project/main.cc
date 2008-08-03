@@ -1,5 +1,6 @@
-#include "config/config.h"
 #include "main.h"
+#include "config/config.h"
+#include "include/time.h"
 #include "modules/mesh/mesh.h"
 #include "modules/prec/prec.h"
 #include "modules/solvers/solvers.h"
@@ -37,8 +38,10 @@ int main (int argc, char * argv[]) {
     // mesh.graph_xy_planes();
     // mesh.graph_z_lines();
 
-    ncheb = 0;
+    TIME_INIT();
+    TIME_START();
     Prec B(nlevels, eps, ncheb, c, A);
+    std::cout << std::endl << TIME_INFO("Construction time: ") << std::endl;
     LOG_INFO(B);
 
     PCG(A, Vector(A.size()), B, 1e-6);

@@ -137,7 +137,7 @@ const Vector& Vector::operator=(const Vector& v) {
 
 void Vector::copy(const Vector& v) {
     ASSERT(n == v.n, "Trying to copy vector with different dimensions");
-    memcpy(&(*data)[0], &(*v.data)[0], n*sizeof(data_type));
+    memcpy(&(*data)[0], &(*v.data)[0], n*sizeof(double));
 }
 
 const Vector& Vector::operator+=(const Vector& v) THROW {
