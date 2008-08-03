@@ -42,4 +42,46 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };
 
+class AMGPrec: public PrecBase {
+private:
+    struct AMGConfig {
+	int matrix; 
+	int iswtch;  
+	int iout; 
+	int iprint; 
+	int levelx; 
+	int ifirst; 
+	int ncyc; 
+	double eps; 
+	int madapt; 
+	int nrd; 
+	int nsolco; 
+	int nru; 
+	double ecg1; 
+	double ecg2; 
+	double ewt2; 
+	int nwt; 
+	int ntr; 
+
+	AMGConfig();
+    } amg_config;
+
+    std::vector<int> ia, ja;
+    std::vector<int> ig;
+    std::vector<double> a;
+
+    int n, nnz;
+
+    int nda; 
+    int ndia;
+    int ndja;
+    int ndu;
+    int ndf;
+    int ndig;
+
+public:
+    AMGPrec(const SparseMatrix& A);
+    void solve(Vector& f, Vector& x) THROW;
+};
+
 #endif

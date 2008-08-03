@@ -56,6 +56,7 @@ public:
 
     // Friend classes
     friend class CSRMatrix;
+    friend class AMGPrec;
 
     // Friend functions
     friend void multiply(const SparseMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;

@@ -11,6 +11,8 @@ libmodules_a_SOURCES = \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
 		       prec/prec.cc \
+		       prec/amg.cc \
 		       prec/prec.h \
 		       solvers/pcg.cc \
+		       solvers/amg1r6.f \
 		       solvers/solvers.h

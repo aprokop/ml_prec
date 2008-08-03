@@ -1,11 +1,8 @@
 #include "include/logger.h"
 #include "include/tools.h"
-#include "preconditioner.h"
+#include "prec.h"
 
-#include <boost/lambda/lambda.hpp>
-#include <algorithm>
-
-DEFINE_LOGGER("AMGPreconditioner");
+DEFINE_LOGGER("AMGPrec");
 
 extern "C" {
   void FORTRAN(amg1r6)(double *a, int *ia, int *ja,  double *u, double *f, int *ig,
@@ -15,8 +12,8 @@ extern "C" {
 			 int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr); 
 }
 
-void AMGPreconditioner::solve(Vector f, Vector& x) THROW {
-    ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
+void AMGPrec::solve(Vector& f, Vector& x) THROW {
+    ASSERT((int)f.size() == n && (int)x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
 #if 0
     srandom(time(NULL)); 
@@ -56,9 +53,9 @@ void AMGPreconditioner::solve(Vector f, Vector& x) THROW {
     x.resize(n);
 }
 
-AMGPreconditioner::AMGPreconditioner(const SparseMatrix& A) {
+AMGPrec::AMGPrec(const SparseMatrix& A) {
     n = A.rows();
-    ASSERT(A.cols() == n, "Matrix must be square");
+    ASSERT(A.cols() == A.rows(), "Matrix must be square");
     int ind = 0;
 
     ia.resize(n + 1);
@@ -69,8 +66,8 @@ AMGPreconditioner::AMGPreconditioner(const SparseMatrix& A) {
     // Matrix is stored in skyline format (CSR with diagonal first)
     // ***************************************************************
     ia[0] = 1;
-    for (int i = 0; i < n; i++) {
-	const SparseMatrix::Row& row = A._rows[i];
+    for (uint i = 0; i < (uint)n; i++) {
+	const SparseMatrix::Row& row = A.vrows[i];
 	ia[i+1] = ia[i] + row.size();
 
 	// first goes diagonal element
@@ -95,12 +92,12 @@ AMGPreconditioner::AMGPreconditioner(const SparseMatrix& A) {
     ndu  = int(2.2*nnz);
     ndf  = int(2.2*nnz);
 
-    ndia = 15000000;
-    ndja = 15000000;
-    nda  = 15000000;
-    ndig =  5000000;
-    ndu  =  5000000;
-    ndf  =  5000000;
+    // ndia = 15000000;
+    // ndja = 15000000;
+    // nda  = 15000000;
+    // ndig =  5000000;
+    // ndu  =  5000000;
+    // ndf  =  5000000;
 
 
     LOG_VARIABLE(ndia);
@@ -116,7 +113,7 @@ AMGPreconditioner::AMGPreconditioner(const SparseMatrix& A) {
     ig.resize(ndig);
 }
 
-AMGPreconditioner::AMGConfig::AMGConfig() {
+AMGPrec::AMGConfig::AMGConfig() {
     /******************************************************************
      *                            GROUP 1
      ******************************************************************/
