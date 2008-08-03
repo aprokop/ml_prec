@@ -36,7 +36,7 @@ Mesh::Mesh() {
 	    for (int i = 0; i < nx-1; i++) {
 		i0 = index(i  , j, k);
 		i1 = index(i+1, j, k);
-		v = hy*hz * 2/hx * 1/(1/kx[i0] + 1/kx[i1]);
+		v = 2/(1/kx[i0] + 1/kx[i1]) / (hx*hx);
 		A.new_link(i0, i1, v);
 	    }
     // y links
@@ -45,7 +45,7 @@ Mesh::Mesh() {
 	    for (int i = 0; i < nx; i++) {
 		i0 = index(i, j  , k);
 		i1 = index(i, j+1, k);
-		v = hx*hz * 2/hy * 1/(1/ky[i0] + 1/ky[i1]);
+		v = 2/(1/ky[i0] + 1/ky[i1]) / (hy*hy);
 		A.new_link(i0, i1, v);
 	    }
     // z links
@@ -54,7 +54,7 @@ Mesh::Mesh() {
 	    for (int i = 0; i < nx; i++) {
 		i0 = index(i, j, k);
 		i1 = index(i, j, k+1);
-		v = hx*hy * 2/hz * 1/(1/kz[i0] + 1/kz[i1]);
+		v = 2/(1/kz[i0] + 1/kz[i1]) / (hz*hz);
 		A.new_link(i0, i1, v);
 	    }
     LEAVE_MESSAGE("Matrix constructed");
@@ -97,7 +97,19 @@ void Mesh::graph3D() const {
     ofs << std::endl << "endgmv" << std::endl;
 }
 
-void Mesh::graph_2D_plane(char type, uint pos) const {
+bool Mesh::is_removed(uint i0, uint i1) const {
+    ASSERT(i0 != i1, "");
+
+    static double c = 81;
+    static double eps = 2;
+
+    if (1 + 12*(-A.get(i0,i1))/c > eps)
+	return false;
+
+    return true;
+}
+
+void Mesh::graph_xy_planes() const {
     std::ofstream ofs("graph.ps");
     ASSERT(ofs.good(), "Cannot open file");
     ofs << std::fixed << std::setprecision(2);
@@ -106,7 +118,119 @@ void Mesh::graph_2D_plane(char type, uint pos) const {
     ofs << "%%Creator: prok\n";
     time_t t = time(NULL);
     ofs << "%%Creation date: " << ctime(&t);
-    ofs << "%%Pages: " << nz << std::endl;
+    ofs << "%%Pages: (atend)\n";
+    ofs << "%%EndComments\n\n";
+
+    ofs << "%%BeginProlog\n";
+    ofs << "/Helvetica findfont 14 scalefont setfont\n";
+    ofs << "/v {moveto lineto stroke} def\n";
+    ofs << "/ms {moveto show} bind def\n";
+    ofs << "/a{3.3 0 360 arc fill}def\n";
+    ofs << "/r{1 0 0 setrgbcolor}def\n";
+    ofs << "/g{0 1 0 setrgbcolor}def\n";
+    ofs << "/b{0 0 0 setrgbcolor}def\n";
+    ofs << "%%EndProlog\n\n";
+
+    ofs << "userdict/start-hook known{start-hook}if\n"; 
+
+    // all point are in a rectangle
+    double min_x = 0, max_x = size_x;
+    double min_y = 0, max_y = size_y;
+
+    ofs << "0 setlinewidth\n";
+    double mult = std::min(720./(max_y-min_y), 560./(max_x - min_x));
+
+    
+    uint left = 0, total = 0;
+    uint pages = 0;
+    for (int k = 0; k < nz; k += 7) {
+	// ofs << "%%Page: " << k+1 << " " << nz << std::endl;
+	ofs << "%%Page: " << ++pages << std::endl;
+	ofs << "30 40 translate\n";
+	ofs << "gsave\n";
+	ofs << mult << " " << mult << " scale\n";
+
+	uint i0, i1;
+	uint ltotal = 0, lleft = 0;
+	// first direction
+	for (int j = 0; j < ny; j++)
+	    for (int i = 0; i < nx-1; i++) {
+		ltotal++;
+
+		i0 = index(i, j, k);
+		i1 = index(i+1, j, k);
+
+		if (is_removed(i0, i1))
+		    continue;
+		lleft++;
+
+		const Point& a = nodes[i0], b = nodes[i1];
+		ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " v" << std::endl;
+	    }
+	// second direction
+	for (int i = 0; i < nx; i++) 
+	    for (int j = 0; j < ny-1; j++) {
+		ltotal++;
+
+		i0 = index(i, j, k);
+		i1 = index(i, j+1, k);
+
+		if (is_removed(i0, i1))
+		    continue;
+		lleft++;
+
+		const Point& a = nodes[i0], b = nodes[i1];
+		ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " v" << std::endl;
+	    }
+	for (int j = 0; j < ny; j++)
+	     for (int i = 0; i < nx; i++) {
+		 char fz = 0;
+		 i0 = index(i,j,k);
+		 if (k) {
+		     i1 = index(i,j,k-1);
+		     if (!is_removed(i0, i1))
+			 fz++;
+		 }
+		 if (k < nz-1) {
+		     i1 = index(i,j,k+1);
+		     if (!is_removed(i0, i1))
+			 fz++;
+		 }
+		 switch (fz) {
+		     case 0: continue;
+		     case 1: ofs << "g "; break;
+		     case 2: ofs << "r "; break;
+		 }
+		 const Point& a = nodes[i0];
+		 ofs << a.x << " " << a.y << " a\n";
+	     }
+
+	ofs << "grestore\n";
+	ofs << "b (Level = " << k << ", #links = " << lleft << "/" << ltotal << " = " << 
+		100.*lleft/ltotal << "%) 10 730 ms" << std::endl;
+	ofs << "showpage" << std::endl;
+	ofs << "%%EndPage\n";
+	
+	total += ltotal;
+	left  += lleft;
+    }
+    ofs << "userdict/end-hook known{end-hook}if\n";
+    ofs << "%%Pages: " << pages << std::endl;
+    ofs << "%%EOF\n";
+
+    std::cout << "#links = " << left << "/" << total << " = " << 100.*left/total << "%" << std::endl;
+}
+
+void Mesh::graph_z_lines() const {
+    std::ofstream ofs("graph.ps");
+    ASSERT(ofs.good(), "Cannot open file");
+    ofs << std::fixed << std::setprecision(2);
+    ofs << "%!PS-Adobe-2.0\n";
+    ofs << "%%Title: Graph\n";
+    ofs << "%%Creator: prok\n";
+    time_t t = time(NULL);
+    ofs << "%%Creation date: " << ctime(&t);
+    ofs << "%%Pages: (atend)\n";
     ofs << "%%EndComments\n\n";
 
     ofs << "%%BeginProlog\n";
@@ -117,64 +241,48 @@ void Mesh::graph_2D_plane(char type, uint pos) const {
 
     ofs << "userdict/start-hook known{start-hook}if\n"; 
 
-    // all point are in a rectangle
-    double min_x = 0, max_x = size_x;
-    double min_y = 0, max_y = size_y;
-
-    double mult = std::min(800./(max_y-min_y), 560./(max_x - min_x));
-    // LOG_DEBUG("mult = " << mult);
-
-    ofs << "20 20 translate" << std::endl;
-    ofs << "gsave\n";
     
-    for (int k = 0; k < nz; k++) {
-	ofs << "%%Page: " << k+1 << " " << nz << std::endl;
+    uint left = 0, total = 0;
+    uint pages = 0;
+    for (int j = 0; j < ny; j += 10) {
+	ofs << "%%Page: " << ++pages << std::endl;
+	ofs << "30 40 translate" << std::endl;
 	ofs << "gsave\n";
-	ofs << "1.0 1.0 scale 0 setlinewidth\n";
-	ofs << "0 setlinewidth" << std::endl;
+	// we need to scale the problem as size_z << size_x
+	ofs << 560./size_x << " " << 720./size_z << " scale\n";
+	ofs << "0 setlinewidth\n";
 
 	uint i0, i1;
-	uint total = 0, left = 0;
+	uint ltotal = 0, lleft = 0;
 	// first direction
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx-1; i++) {
-		total++;
+	for (int k = 0; k < nz-1; k++)
+	    for (int i = 0; i < nx; i++) {
+		ltotal++;
 
 		i0 = index(i, j, k);
-		i1 = index(i+1, j, k);
+		i1 = index(i, j, k+1);
 
-		if (1 - 12*A.get(i0,i1) > 3)
+		if (is_removed(i0, i1))
 		    continue;
-		left++;
+		lleft++;
 
 		const Point& a = nodes[i0], b = nodes[i1];
 
-		ofs <<  mult * (a.x - min_x) << " " << mult * (a.y - min_y) << " " <<
-			mult * (b.x - min_x) << " " << mult * (b.y - min_y) << " v" << std::endl;
+		ofs << a.x << " " << a.z << " " << b.x << " " << b.z << " v" << std::endl;
 	    }
-	// second direction
-	for (int i = 0; i < nx; i++) 
-	    for (int j = 0; j < ny-1; j++) {
-		total++;
 
-		i0 = index(i, j, k);
-		i1 = index(i, j+1, k);
-
-		if (1 - 12*A.get(i0,i1) > 3)
-		    continue;
-		left++;
-
-		const Point& a = nodes[i0], b = nodes[i1];
-
-		ofs <<	mult * (a.x - min_x) << " " << mult * (a.y - min_y) << " " <<
-			mult * (b.x - min_x) << " " << mult * (b.y - min_y) << " v" << std::endl;
-	    }
-	ofs << "(Level = " << k << ", #links = " << left << "/" << total << " = " << 
-		100.*left/total << "%) 10 810 ms" << std::endl;
-	ofs << "showpage" << std::endl;
 	ofs << "grestore\n";
+	ofs << "(j = " << j << ", #links = " << lleft << "/" << ltotal << " = " << 
+		100.*lleft/ltotal << "%) 10 720 ms" << std::endl;
+	ofs << "showpage" << std::endl;
 	ofs << "%%EndPage\n";
+	
+	total += ltotal;
+	left  += lleft;
     }
     ofs << "userdict/end-hook known{end-hook}if\n";
+    ofs << "%%Pages: " << pages << std::endl;
     ofs << "%%EOF\n";
+
+    std::cout << "#links = " << left << "/" << total << " = " << 100.*left/total << "%" << std::endl;
 }

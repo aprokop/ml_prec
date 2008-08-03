@@ -17,7 +17,8 @@ int main (int argc, char * argv[]) {
 #endif
 
     Mesh mesh;
-    mesh.graph_2D_plane('z', 0);
+    mesh.graph_xy_planes();
+    // mesh.graph_z_lines();
 
     return 0;
 }
