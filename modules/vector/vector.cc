@@ -12,8 +12,8 @@
 DEFINE_LOGGER("Vector");
 
 Vector::Vector(uint _n) {
-    data.reset(new data_type(_n, 0));
     n = _n;
+    data.reset(new data_type(n, 0));
 }
 
 Vector::Vector(const std::vector<double>& v) {
@@ -28,8 +28,8 @@ Vector::Vector(const std::vector<double>& v) {
 }
 
 Vector::Vector(const Vector& v) {
+    n = v.n;
     data = v.data;
-    n = data->size();
 }
 
 uint Vector::size() const {
@@ -37,8 +37,9 @@ uint Vector::size() const {
 }
 
 void Vector::resize(uint new_size, double v) {
-    data->resize(new_size, v);
+    set_unique();
     n = new_size;
+    data->resize(n, v);
 }
 
 double& Vector::operator[](uint index) THROW {
@@ -128,8 +129,8 @@ Vector Vector::operator/(double f) const THROW {
 }
 
 const Vector& Vector::operator=(const Vector& v) {
-    data = v.data;
     n = v.n;
+    data = v.data;
 
     return *this;
 }
@@ -140,7 +141,7 @@ void Vector::copy(const Vector& v) {
 }
 
 const Vector& Vector::operator+=(const Vector& v) THROW {
-    ASSERT(v.size() == n, "Adding vector with different dimension");
+    ASSERT(v.n == n, "Adding vector with different dimension");
     set_unique();
 
 #ifdef HAVE_LIBBLAS
@@ -155,7 +156,7 @@ const Vector& Vector::operator+=(const Vector& v) THROW {
 }
 
 const Vector& Vector::operator-=(const Vector& v) THROW {
-    ASSERT(v.size() == n, "Subtracting vector with different dimension");
+    ASSERT(v.n == n, "Subtracting vector with different dimension");
     set_unique();
 
 #ifdef HAVE_LIBBLAS

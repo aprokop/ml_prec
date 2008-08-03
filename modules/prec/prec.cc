@@ -19,14 +19,6 @@ Prec::Prec(uint _nlevels, double eps, uint ncheb, double _c, const SkylineMatrix
 	levels[level].ncheb = ncheb;
     }
 
-    // this parameters do not matter, it is not used; just want to set them to smth
-    Level& lc = levels[nlevels-1];
-    lc.ncheb = 0; 
-    lc.alpha = lc.beta = 0.;
-
-    // these DO matter
-    lc.lmin = lc.lmax = 1;
-
     construct_level(0, A);
 }
 
@@ -78,22 +70,44 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	for (uint j = 0; j < nA.ja.size(); j++) {
 	    nA.ja[j] = revtr[nA.ja[j]];
 	}
-	nA.nrow = nA.ncol = tr.size();
-	revtr.clear();
+	uint n = tr.size();
+	if (n) {
+	    nA.nrow = nA.ncol = n;
+	    revtr.clear();
 
-	li.x1.resize(tr.size());
-	li.f1.resize(tr.size());
+	    li.x1.resize(n);
+	    li.u0.resize(n);
+	    li.u1.resize(n);
+	    li.f1.resize(n);
 
-	construct_level(level+1, nA);
-    } else {
+	    construct_level(level+1, nA);
+	} else {
+	    nlevels--;
+	}
+    }
+
+    if (level == nlevels-1) {
+	// this parameters do not matter, it is not used; just want to set them to smth
+	Level& lc = levels[nlevels-1];
+	lc.ncheb = 0; 
+	lc.alpha = lc.beta = 0.;
+
+	// these DO matter
+	lc.lmin = lc.lmax = 1;
+
 	// chebyshev info
 	for (int level = nlevels-2; level >= 0; level--) {
 	    Level& li = levels[level];
 	    Level& ln = levels[level+1];
 
-	    double cs = cheb((ln.lmax + ln.lmin)/(ln.lmax - ln.lmin), li.ncheb);
-	    li.lmin = li.alpha*(1 - 1/cs);
-	    li.lmax = li.beta *(1 + 1/cs);
+	    if (li.ncheb) {
+		double cs = cheb((ln.lmax + ln.lmin)/(ln.lmax - ln.lmin), li.ncheb);
+		li.lmin = li.alpha*(1 - 1/cs);
+		li.lmax = li.beta *(1 + 1/cs);
+	    } else {
+		li.lmin = li.alpha*ln.lmin;
+		li.lmax = li.beta *ln.lmax;
+	    }
 	}
     }
 }
@@ -112,14 +126,57 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	const std::vector<int>& tr = li.tr;
 
 	uint n = levels[level+1].N;
+	ASSERT(n == tr.size(), "n = " << n << ", tr.size() = " << tr.size());
 
+	Vector& f1 = li.f1; 
 	for (uint i = 0; i < n; i++) 
-	    li.f1[i] = f[tr[i]];
+	    f1[i] = f[tr[i]];
 
-	solve(li.x1, li.f1, level+1);
+	Vector& x1 = li.x1; 
+	if (li.ncheb) {
+	    // Perform Chebyshev iterations
+	    Vector& u0 = li.u0; 
+	    Vector& u1 = li.u1;
+	    const CSRMatrix& A = levels[level+1].A;
+	    int N = A.size();
+
+	    memset(&u0[0], 0, N*sizeof(double));
+
+	    double lmin = levels[level+1].lmin;
+	    double lmax = levels[level+1].lmax;
+	    double eta = (lmax + lmin) / (lmax - lmin);
+
+	    double alpha, beta;
+	    alpha = 2/(lmax + lmin);
+
+	    solve(f1, x1, level+1);
+	    for (int i = 0; i < N; i++) 
+		x1[i] *= alpha;
+	    u1.copy(x1);
+
+	    for (uint i = 2; i <= li.ncheb; i++) {
+		alpha = 4/(lmax - lmin) * cheb(eta, i-1)/cheb(eta, i);
+		beta  = cheb(eta, i-2) / cheb(eta, i);
+
+		// x1 = u1 - alpha*solve(A*u1 - f1, level+1) + beta*(u1 - u0);
+		solve(A*u1 - f1, x1, level+1);
+		for (int k = 0; k < N; k++) {
+		    x1[k] = u1[k] - alpha*x1[k] + beta*(u1[k] - u0[k]);
+		}
+
+		// trick not to use any new/delete
+		Vector tmp = u0;
+		u0 = u1;
+		u1 = x1;
+		x1 = tmp;
+	    }
+	    x1 = u1;
+	} else {
+	    solve(x1, f1, level+1);
+	}
 
 	for (uint i = 0; i < n; i++)
-	    x[tr[i]] = li.x1[i];
+	    x[tr[i]] = x1[i];
 
     } else {
 	// for last level assert for now that we have only diagonal matrix
@@ -137,11 +194,13 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
 	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
 	const Prec::Level& li = p.levels[level];
 	os << "N = " << li.N << std::endl;
-	if (level != p.nlevels-1)
+	os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
+	if (level != p.nlevels-1) {
 	    os << "Ncheb = " << li.ncheb << ", ";
+	}
 	os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "]" << std::endl;
 	os << "alpha = " << li.alpha << ", beta = " << li.beta << std::endl;
-#if 1
+#if 0
 	if (level < p.nlevels-1) {
 	    os << "tr: " << li.tr;
 	    os << "dtr: " << li.dtr;
@@ -157,8 +216,8 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
     return os;
 } 
 
-double Prec::cheb(double x, int k) const {
-   ASSERT(k >= 0 && x >= 1, "");
+double Prec::cheb(double x, uint k) const {
+   ASSERT(x >= 1, "");
    // return cosh(k*acosh(x));
 
    switch(k) {

@@ -2,6 +2,7 @@
 #include "main.h"
 #include "modules/mesh/mesh.h"
 #include "modules/prec/prec.h"
+#include "modules/solvers/solvers.h"
 
 // logger
 #include "include/logger.h"
@@ -32,11 +33,15 @@ int main (int argc, char * argv[]) {
     std::cout << "c = " << c << std::endl;
 
     Mesh mesh(c);
+    const CSRMatrix& A = mesh.get_matrix();
     // mesh.graph_xy_planes();
     // mesh.graph_z_lines();
 
-    Prec B(nlevels, eps, ncheb, c, mesh.get_matrix());
+    ncheb = 0;
+    Prec B(nlevels, eps, ncheb, c, A);
     LOG_INFO(B);
+
+    PCG(A, Vector(A.size()), B, 1e-6);
 
     return 0;
 }

@@ -14,7 +14,8 @@ private:
     uint n;
 
     void check_index(uint i) const THROW {
-	ASSERT(i < data->size(), "Index is out of bundaries: i = " << i << ", n = " << n);
+	ASSERT(data->size() == n, "data->size() = " << data->size() << ", n = " << n);
+	ASSERT(i < n, "Index is out of bundaries: i = " << i << ", n = " << n);
     }
     void set_unique(void) {
 	if (!data.unique())

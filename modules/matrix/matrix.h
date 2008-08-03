@@ -99,5 +99,6 @@ public:
 
 typedef CSRMatrix SkylineMatrix;
 
+void multiply(const MatrixInterface& A, const Vector& v, Vector& res, char type = 'o') THROW;
 
 #endif // #ifndef __MATRIX_H__

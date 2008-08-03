@@ -16,7 +16,7 @@ private:
     struct Level {
 	uint N;
 
-	Vector x1, f1;
+	Vector x1, u0, u1, f1;
 	SkylineMatrix A; // is not set for level 0
 
 	std::vector<int> tr; // local->global
@@ -30,7 +30,7 @@ private:
     std::vector<Level> levels;
     double c;
 
-    double  cheb(double x, int k) const;
+    double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
     void    solve(const Vector& f, Vector& x, uint level) THROW;
 
