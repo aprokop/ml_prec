@@ -43,7 +43,8 @@ if test "x$__prof" = "xyes"; then
 fi
 
 # CXXFLAGS
-CXXFLAGS="-W -Wall -Wno-sign-compare -Wno-unused $CXXFLAGS"
+# CXXFLAGS="-W -Wall -Wno-sign-compare -Wno-unused $CXXFLAGS"
+CXXFLAGS="-W -Wall -Wno-unused $CXXFLAGS"
 AC_ARG_WITH(debug, AC_HELP_STRING([--with-debug@<:@=full|assert|none@:>@], [enable debugging and parameters check @<:@default=assert@:>@]),__debug="$withval", __debug="assert")
 test "x$__debug" = "xfull"   && CXXFLAGS="-g -O0 $CXXFLAGS"
 test "x$__debug" = "xassert" && CXXFLAGS="-O3 $CXXFLAGS"

@@ -8,7 +8,7 @@
 class PrecBase {
 public:
     virtual ~PrecBase() {};
-    virtual void solve(const Vector& f, Vector& x) const THROW = 0;
+    virtual void solve(const Vector& f, Vector& x) THROW = 0;
 };
 
 class Prec : public PrecBase {
@@ -16,22 +16,28 @@ private:
     struct Level {
 	uint N;
 
-	std::vector<double> x1, f1;
-	SkylineMatrix& A; // is not set for level 0
+	Vector x1, f1;
+	SkylineMatrix A; // is not set for level 0
 
 	std::vector<int> tr; // local->global
 	std::vector<int> dtr;
 
 	double alpha, beta;
 	double lmin, lmax;
+	uint ncheb;
     };
+    uint nlevels;
+    std::vector<Level> levels;
+    double c;
 
-    void solve(const Vector& f, Vector& x, uint level) const THROW;
+    double  cheb(double x, int k) const;
+    void    construct_level(uint i, const SkylineMatrix& A);
+    void    solve(const Vector& f, Vector& x, uint level) THROW;
 
 public:
-    Prec(uint nlevels, double eps, const SkylineMatrix& A);
+    Prec(uint nlevels, double eps, uint ncheb, double c, const SkylineMatrix& A);
 
-    virtual void solve(const Vector& f, Vector& x) const THROW;
+    virtual void solve(const Vector& f, Vector& x) THROW;
 
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };

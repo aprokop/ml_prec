@@ -21,8 +21,8 @@ SparseMatrix::SparseMatrix(const CSRMatrix& A) THROW {
     ncol = A.cols();
 
     vrows.resize(nrow);
-    for (int i = 0; i < nrow; i++) 
-	for (int j = A.ia[i]; j < A.ia[i+1]-1; j++) 
+    for (uint i = 0; i < nrow; i++) 
+	for (uint j = A.ia[i]; j < A.ia[i+1]-1; j++) 
 	    vrows[i][A.ja[j]] = A.a[j];
 }
 

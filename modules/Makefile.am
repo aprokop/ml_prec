@@ -9,4 +9,6 @@ libmodules_a_SOURCES = \
 		       vector/vector.cc \
 		       vector/vector.h \
 		       mesh/spe.cc \
-		       mesh/mesh.h
+		       mesh/mesh.h \
+		       prec/prec.cc \
+		       prec/prec.h

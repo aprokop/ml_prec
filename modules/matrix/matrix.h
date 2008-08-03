@@ -73,14 +73,12 @@ public:
 
 class CSRMatrix : public MatrixInterface {
 protected:
-    std::vector<int> ia, ja;
+    std::vector<uint> ia, ja;
     std::vector<double> a;
 
 public:
     CSRMatrix();
-    CSRMatrix(const SparseMatrix& A);
-    
-    void operator=(const SparseMatrix& A);
+
     Vector operator*(const Vector& v) const THROW {
 	Vector x(nrow);
 	multiply(*this, v, x);
@@ -90,12 +88,16 @@ public:
 
     // Friend classes
     friend class SparseMatrix;
+    friend class Mesh;
+    friend class Prec;
 
     // Friend functions
     friend void	multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
 };
+
+typedef CSRMatrix SkylineMatrix;
 
 
 #endif // #ifndef __MATRIX_H__

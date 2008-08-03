@@ -19,8 +19,8 @@ inline bool is_not_equal(double x, double y) {
     return (fabs(x-y) > epsilon) ? true : false;
 }
 
-#define LEAVE_MESSAGE(msg) \
-{ \
+#if 0
+#define LEAVE_MESSAGE(msg) { \
     pid_t ppid = getppid(); \
     std::ofstream os(".msg"); \
     if (os.good()) { \
@@ -28,5 +28,8 @@ inline bool is_not_equal(double x, double y) {
 	kill(ppid, SIGUSR1); \
     } \
 }
+#else
+#define LEAVE_MESSAGE(ms) 
+#endif
 
 #endif // __TOOLS_H__

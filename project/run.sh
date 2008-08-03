@@ -1,2 +1,2 @@
 #!/bin/bash
-../tools/check_memory.sh ./_main $*
+../tools/check_memory.sh ./main $*

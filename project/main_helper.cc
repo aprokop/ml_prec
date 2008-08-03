@@ -2,9 +2,9 @@
 #include <getopt.h>
 
 int set_params(int argc, char * argv[], uint& nlevels, double& eps, uint& ncheb) {
-    nlevels = 0;
-    ncheb = 0;
-    eps = 0.;
+    nlevels = 12;
+    ncheb = 2;
+    eps = 3.;
 
     while (1) {
 	static struct option long_options[] = {
@@ -28,7 +28,7 @@ int set_params(int argc, char * argv[], uint& nlevels, double& eps, uint& ncheb)
 		      return 1;
 	}
     }
-    if (nlevels || ncheb || eps)
+    if (!nlevels || !ncheb || !eps)
 	return 2;
 
     return 0;

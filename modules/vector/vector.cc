@@ -20,7 +20,8 @@ Vector::Vector(const std::vector<double>& v) {
     n = v.size();
 #ifdef HAVE_LIBBLAS
     data.reset(new data_type(n));
-    FORTRAN(dcopy)(&n, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dcopy)(&_n, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
 #else
     data.reset(new data_type(v));
 #endif
@@ -72,8 +73,9 @@ Vector Vector::operator+(const Vector& v) const THROW {
 
     Vector w(n);
 #ifdef HAVE_LIBBLAS
-    FORTRAN(dcopy)(&n, &(*data)[0], (int[]){1}, &w[0], (int[]){1});
-    FORTRAN(daxpy)(&n, (double[]){1}, &v[0], (int[]){1}, &w[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dcopy)(&_n, &(*data)[0], (int[]){1}, &w[0], (int[]){1});
+    FORTRAN(daxpy)(&_n, (double[]){1}, &v[0], (int[]){1}, &w[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	w[i] = (*data)[i] + v[i];
@@ -86,8 +88,9 @@ Vector Vector::operator-(const Vector& v) const THROW {
 
     Vector w(n);
 #ifdef HAVE_LIBBLAS
-    FORTRAN(dcopy)(&n, &(*data)[0], (int[]){1}, &w[0], (int[]){1}); 
-    FORTRAN(daxpy)(&n, (double[]){-1}, &v[0], (int[]){1}, &w[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dcopy)(&_n, &(*data)[0], (int[]){1}, &w[0], (int[]){1}); 
+    FORTRAN(daxpy)(&_n, (double[]){-1}, &v[0], (int[]){1}, &w[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	w[i] = (*data)[i] - v[i];
@@ -98,8 +101,9 @@ Vector Vector::operator-(const Vector& v) const THROW {
 Vector Vector::operator*(double f) const {
     Vector v(n);
 #ifdef HAVE_LIBBLAS
-    FORTRAN(dcopy)(&n, &(*data)[0], (int[]){1}, &v[0], (int[]){1});
-    FORTRAN(dscal)(&n, &f, &v[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dcopy)(&_n, &(*data)[0], (int[]){1}, &v[0], (int[]){1});
+    FORTRAN(dscal)(&_n, &f, &v[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	v[i] = f*(*data)[i];
@@ -112,9 +116,10 @@ Vector Vector::operator/(double f) const THROW {
 
     Vector v(n);
 #ifdef HAVE_LIBBLAS
-    FORTRAN(dcopy)(&n, &(*data)[0], (int[]){1}, &v[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dcopy)(&_n, &(*data)[0], (int[]){1}, &v[0], (int[]){1});
     double d = 1./f;
-    FORTRAN(dscal)(&n, &d, &v[0], (int[]){1});
+    FORTRAN(dscal)(&_n, &d, &v[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	v[i] = (*data)[i] / f;
@@ -139,7 +144,8 @@ const Vector& Vector::operator+=(const Vector& v) THROW {
     set_unique();
 
 #ifdef HAVE_LIBBLAS
-    FORTRAN(daxpy)(&n, (double[]){1}, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
+    int _n = n;
+    FORTRAN(daxpy)(&_n, (double[]){1}, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	(*data)[i] += v[i];
@@ -153,7 +159,8 @@ const Vector& Vector::operator-=(const Vector& v) THROW {
     set_unique();
 
 #ifdef HAVE_LIBBLAS
-    FORTRAN(daxpy)(&n, (double[]){-1}, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
+    int _n = n;
+    FORTRAN(daxpy)(&_n, (double[]){-1}, &v[0], (int[]){1}, &(*data)[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	(*data)[i] -= v[i];
@@ -166,7 +173,8 @@ const Vector& Vector::operator*=(double f) {
     set_unique();
 
 #ifdef HAVE_LIBBLAS
-    FORTRAN(dscal)(&n, &f, &(*data)[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dscal)(&_n, &f, &(*data)[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	(*data)[i] *= f;
@@ -181,7 +189,8 @@ const Vector& Vector::operator/=(double f) THROW {
 
 #ifdef HAVE_LIBBLAS
     double d = 1./f;
-    FORTRAN(dscal)(&n, &d, &(*data)[0], (int[]){1});
+    int _n = n;
+    FORTRAN(dscal)(&_n, &d, &(*data)[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
 	(*data)[i] /= f;
@@ -192,7 +201,8 @@ const Vector& Vector::operator/=(double f) THROW {
 
 double Vector::norm_1() const {
 #ifdef HAVE_LIBBLAS
-    return FORTRAN(dasum)(&n, &(*data)[0], (int[]){1});
+    int _n = n;
+    return FORTRAN(dasum)(&_n, &(*data)[0], (int[]){1});
 #else
     double s = 0.;
     for (int i = 0; i < n; i++)
@@ -203,7 +213,8 @@ double Vector::norm_1() const {
 
 double Vector::norm_2() const {
 #ifdef HAVE_LIBBLAS
-    return FORTRAN(dnrm2)(&n, &(*data)[0], (int[]){1});
+    int _n = n;
+    return FORTRAN(dnrm2)(&_n, &(*data)[0], (int[]){1});
 #else
     return sqrt(scalar_product(*this,*this));
 #endif
@@ -211,7 +222,8 @@ double Vector::norm_2() const {
 
 double Vector::norm_inf() const {
 #ifdef HAVE_LIBBLAS
-    return FORTRAN(idamax)(&n, &(*data)[0], (int[]){1});
+    int _n = n;
+    return FORTRAN(idamax)(&_n, &(*data)[0], (int[]){1});
 #else 
     double s = 0.;
     for (int i = 0; i < n; i++)
@@ -222,7 +234,7 @@ double Vector::norm_inf() const {
 
 std::ostream& operator<<(std::ostream& os, const Vector& v) {
     os << "Size = " << v.size() << std::endl;
-    for (int i = 0; i < v.size(); i++)
+    for (uint i = 0; i < v.size(); i++)
 	os << "   " << i << ": " << v[i] << std::endl;
     return os;
 }
@@ -236,11 +248,12 @@ Vector operator*(double f, const Vector& v) {
 }
 
 double scalar_product(const Vector& v1, const Vector& v2) THROW {
-    const int n = v1.size();
+    const uint n = v1.size();
     ASSERT(v2.size() == n, "Trying to find scalar product of vectors with different dimensions");
 
 #ifdef HAVE_LIBBLAS
-    return FORTRAN(ddot)(&n, &v1[0], (int[]){1}, &v2[0], (int[]){1});
+    int _n = n;
+    return FORTRAN(ddot)(&_n, &v1[0], (int[]){1}, &v2[0], (int[]){1});
 #else
     double s = 0.;
     for (int i = 0; i < n; i++)

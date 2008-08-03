@@ -11,7 +11,7 @@ class Vector {
 private:
     typedef std::vector<double> data_type;
     std::tr1::shared_ptr<data_type> data;
-    int n;
+    uint n;
 
     void check_index(uint i) const THROW {
 	ASSERT(i < data->size(), "Index is out of bundaries: i = " << i << ", n = " << n);

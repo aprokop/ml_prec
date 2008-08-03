@@ -9,9 +9,11 @@
 
 DEFINE_LOGGER("Mesh");
 
-Mesh::Mesh() {
+Mesh::Mesh(double _c) {
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
+
+    c = _c;
 
     std::vector<double> kx(N), ky(N), kz(N);
 
@@ -27,42 +29,49 @@ Mesh::Mesh() {
     uint i0, i1;
     double v;
 
+    A.ia.reserve(N+1);
+    A.ja.reserve(7*N);
+    A.a.reserve(7*N);
     TIME_START();
-    A = FVSparseMatrix(N);
-    LEAVE_MESSAGE("Matrix allocated");
-    // x links
-    for (int k = 0; k < nz; k++)
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx-1; i++) {
-		i0 = index(i  , j, k);
-		i1 = index(i+1, j, k);
-		v = 2/(1/kx[i0] + 1/kx[i1]) / (hx*hx);
-		A.new_link(i0, i1, v);
-	    }
-    // y links
-    for (int k = 0; k < nz; k++)
-	for (int j = 0; j < ny-1; j++)
-	    for (int i = 0; i < nx; i++) {
-		i0 = index(i, j  , k);
-		i1 = index(i, j+1, k);
-		v = 2/(1/ky[i0] + 1/ky[i1]) / (hy*hy);
-		A.new_link(i0, i1, v);
-	    }
-    // z links
-    for (int k = 0; k < nz-1; k++)
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx; i++) {
+    A.nrow = A.ncol = N;
+    A.ia.push_back(0);
+    for (uint j = 0; j < ny; j++)
+	for (uint i = 0; i < nx; i++)
+	    for (uint k = 0; k < nz; k++) {
 		i0 = index(i, j, k);
-		i1 = index(i, j, k+1);
-		v = 2/(1/kz[i0] + 1/kz[i1]) / (hz*hz);
-		A.new_link(i0, i1, v);
+		A.ja.push_back(i0);
+		A.a.push_back(c);
+
+		uint dind = A.a.size() - 1;
+		double v;
+
+#define ADD(di,dj,dk,axis) { \
+    i1 = index(i+di, j+dj, k+dk); \
+    A.ja.push_back(i1); \
+    v = 2/(1/k##axis[index_k(i,j,k)] + 1/k##axis[index_k(i+di,j+dj,k+dk)]) / (h##axis * h##axis); \
+    A.a.push_back(-v); \
+    A.a[dind] += v; \
+}
+		if (j)	      ADD( 0, -1,  0, y);
+		if (i)	      ADD(-1,  0,  0, x);
+		if (k)	      ADD( 0,  0, -1, z);
+		if (k < nz-1) ADD( 0,  0, +1, z);
+		if (i < nx-1) ADD(+1,  0,  0, x);
+		if (j < ny-1) ADD( 0, +1,  0, y);
+
+		A.ia.push_back(A.ja.size());
 	    }
+#undef ADD
     LEAVE_MESSAGE("Matrix constructed");
+    kx.clear();
+    ky.clear();
+    kz.clear();
+
     // nodes
     nodes.resize(N);
-    for (int k = 0; k < nz; k++)
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx; i++) {
+    for (uint k = 0; k < nz; k++)
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx; i++) {
 		uint ind = index(i,j,k);
 		nodes[ind].x = i*hx;
 		nodes[ind].y = j*hy;
@@ -79,16 +88,16 @@ void Mesh::graph3D() const {
     ofs << "gmvinput ascii" << std::endl << std::endl;
 
     ofs << "nodev " << nodes.size() << std::endl;
-    for (int i = 0; i < nodes.size(); i++)
+    for (uint i = 0; i < nodes.size(); i++)
 	ofs << nodes[i].x << " " << nodes[i].y << " " << nodes[i].z << std::endl;
     ofs << std::endl;
 
-    int klimit = 2;
+    uint klimit = 2;
     ofs << "faces " << ny*klimit*(nx-1) << " " << ny*klimit*(nx-1) << std::endl;
     // x links
-    for (int k = 0; k < klimit; k++)
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx-1; i++) {
+    for (uint k = 0; k < klimit; k++)
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx-1; i++) {
 		uint i0 = index(i  , j, k) + 1;
 		uint i1 = index(i+1, j, k) + 1;
 		ofs << "2 " << i0 << " " << i1 << " 1 0" << std::endl;
@@ -143,7 +152,7 @@ void Mesh::graph_xy_planes() const {
     
     uint left = 0, total = 0;
     uint pages = 0;
-    for (int k = 0; k < nz; k += 7) {
+    for (uint k = 0; k < nz; k += 7) {
 	// ofs << "%%Page: " << k+1 << " " << nz << std::endl;
 	ofs << "%%Page: " << ++pages << std::endl;
 	ofs << "30 40 translate\n";
@@ -153,12 +162,16 @@ void Mesh::graph_xy_planes() const {
 	uint i0, i1;
 	uint ltotal = 0, lleft = 0;
 	// first direction
-	for (int j = 0; j < ny; j++)
-	    for (int i = 0; i < nx-1; i++) {
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx-1; i++) {
 		ltotal++;
+
 
 		i0 = index(i, j, k);
 		i1 = index(i+1, j, k);
+
+		if (k == 0)
+		    LOG_DEBUG("(" << i << "," << j << ") - (" << i+1 << "," << j <<") : " << A.get(i0,i1));
 
 		if (is_removed(i0, i1))
 		    continue;
@@ -168,8 +181,8 @@ void Mesh::graph_xy_planes() const {
 		ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " v" << std::endl;
 	    }
 	// second direction
-	for (int i = 0; i < nx; i++) 
-	    for (int j = 0; j < ny-1; j++) {
+	for (uint i = 0; i < nx; i++) 
+	    for (uint j = 0; j < ny-1; j++) {
 		ltotal++;
 
 		i0 = index(i, j, k);
@@ -182,8 +195,8 @@ void Mesh::graph_xy_planes() const {
 		const Point& a = nodes[i0], b = nodes[i1];
 		ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " v" << std::endl;
 	    }
-	for (int j = 0; j < ny; j++)
-	     for (int i = 0; i < nx; i++) {
+	for (uint j = 0; j < ny; j++)
+	     for (uint i = 0; i < nx; i++) {
 		 char fz = 0;
 		 i0 = index(i,j,k);
 		 if (k) {
@@ -244,7 +257,7 @@ void Mesh::graph_z_lines() const {
     
     uint left = 0, total = 0;
     uint pages = 0;
-    for (int j = 0; j < ny; j += 10) {
+    for (uint j = 0; j < ny; j += 10) {
 	ofs << "%%Page: " << ++pages << std::endl;
 	ofs << "30 40 translate" << std::endl;
 	ofs << "gsave\n";
@@ -255,8 +268,8 @@ void Mesh::graph_z_lines() const {
 	uint i0, i1;
 	uint ltotal = 0, lleft = 0;
 	// first direction
-	for (int k = 0; k < nz-1; k++)
-	    for (int i = 0; i < nx; i++) {
+	for (uint k = 0; k < nz-1; k++)
+	    for (uint i = 0; i < nx; i++) {
 		ltotal++;
 
 		i0 = index(i, j, k);
