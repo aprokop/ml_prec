@@ -19,8 +19,8 @@ private:
 	Vector x1, u0, u1, f1;
 	SkylineMatrix A; // is not set for level 0
 
-	std::vector<int> tr; // local->global
-	std::vector<int> dtr;
+	std::vector<uint> tr; // local->global
+	std::vector<uint> dtr;
 
 	double alpha, beta;
 	double lmin, lmax;
