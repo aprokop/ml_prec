@@ -28,8 +28,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     if (level < nlevels-1) {
 	SkylineMatrix& nA = levels[level+1].A;
-	std::vector<int>& tr = li.tr;
-	std::vector<int>& dtr = li.dtr;
+	std::vector<uint>& tr = li.tr;
+	std::vector<uint>& dtr = li.dtr;
 
 	// reverse translation
 	std::vector<uint> revtr(N, -1);

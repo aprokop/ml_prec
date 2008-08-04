@@ -9,14 +9,12 @@ clock_t diag_time = 0;
 clock_t mult_time = 0;
 clock_t restr_f   = 0;
 clock_t prol_x    = 0;
-clock_t mems      = 0;
 clock_t c_time	  = 0;
 void Prec::solve(Vector& f, Vector& x) THROW {
     diag_time = 0;
     mult_time = 0;
     restr_f   = 0;
     prol_x    = 0;
-    mems      = 0;
     c_time    = 0;
 
     solve(f, x, 0);
@@ -26,9 +24,7 @@ void Prec::solve(Vector& f, Vector& x) THROW {
     LOG_DEBUG("Multipli time = " << std::setprecision(3) << double(mult_time)/CLOCKS_PER_SEC);
     LOG_DEBUG("Restrict time = " << std::setprecision(3) << double(restr_f)/CLOCKS_PER_SEC);
     LOG_DEBUG("Prolong  time = " << std::setprecision(3) << double(prol_x)/CLOCKS_PER_SEC);
-    LOG_DEBUG("Memset   time = " << std::setprecision(3) << double(mems)/CLOCKS_PER_SEC);
     LOG_DEBUG("Coarse   time = " << std::setprecision(3) << double(c_time)/CLOCKS_PER_SEC);
-    // exit(1);
 #endif
 }
 
@@ -57,24 +53,42 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    Vector& u1 = li.u1;
 	    const CSRMatrix& A = levels[level+1].A;
 
-	    delta = clock();
-	    memset(&u0[0], 0, n*sizeof(double));
-	    mems += clock() - delta;
-
 	    double lmin = levels[level+1].lmin;
 	    double lmax = levels[level+1].lmax;
 	    double eta = (lmax + lmin) / (lmax - lmin);
 
+	    Vector tmp(n);
 	    double alpha, beta;
+	    // ===============    STEP 1    ===============
 	    alpha = 2/(lmax + lmin);
 
 	    solve(f1, x1, level+1);
-	    for (uint i = 0; i < n; i++) 
-		x1[i] *= alpha;
-	    u1.copy(x1);
+	    x1 *= alpha;
 
-	    Vector tmp(n);
-	    for (uint i = 2; i <= li.ncheb; i++) {
+	    // ===============    STEP 2    ===============
+	    if (li.ncheb > 1) {
+		u1.copy(x1);
+		alpha = 4/(lmax - lmin) * cheb(eta, 1)/cheb(eta, 2);
+		beta  = cheb(eta, 0) / cheb(eta, 2);
+
+		delta = clock();
+		multiply(A, u1, tmp);
+		mult_time += clock() - delta;
+		tmp -= f1;
+		solve(tmp, x1, level+1);
+		for (uint k = 0; k < n; k++) 
+		    x1[k] = u1[k] - alpha*x1[k] + beta*u1[k];
+	    }
+
+	    // ===============    STEP 3+    ===============
+	    for (uint i = 3; i <= li.ncheb; i++) {
+		// hack to avoid allocating new memory
+		Vector htmp = u0;
+		u0 = u1;
+		u1 = x1;
+		x1 = htmp;
+		// end hack
+
 		alpha = 4/(lmax - lmin) * cheb(eta, i-1)/cheb(eta, i);
 		beta  = cheb(eta, i-2) / cheb(eta, i);
 
@@ -86,14 +100,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 		solve(tmp, x1, level+1);
 		for (uint k = 0; k < n; k++) 
 		    x1[k] = u1[k] - alpha*x1[k] + beta*(u1[k] - u0[k]);
-
-		// hack not to use any new/delete, just rotating
-		Vector htmp = u0;
-		u0 = u1;
-		u1 = x1;
-		x1 = htmp;
 	    }
-	    x1 = u1;
 	} else {
 	    solve(f1, x1, level+1);
 	}
