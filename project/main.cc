@@ -19,19 +19,17 @@ int main (int argc, char * argv[]) {
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
-    double c = 1.0;
-
     uint nlevels, ncheb;
-    double eps;
-    if (set_params(argc, argv, nlevels, eps, ncheb)) {
+    double c, eps;
+    if (set_params(argc, argv, nlevels, c, eps, ncheb)) {
 	LOG_INFO("Error while setting parameters, exiting...");
 	std::cout << "Error while setting parameters, exiting..." << std::endl;
 	return 1;
     }
     std::cout << "nlevels = " << nlevels << std::endl;
-    std::cout << "eps = " << eps << std::endl;
-    std::cout << "ncheb = " << ncheb << std::endl;
-    std::cout << "c = " << c << std::endl;
+    std::cout << "ncheb   = " << ncheb << std::endl;
+    std::cout << "eps     = " << eps << std::endl;
+    std::cout << "c       = " << c << std::endl;
 
     Mesh mesh(c);
     const CSRMatrix& A = mesh.get_matrix();
