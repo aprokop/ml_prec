@@ -53,34 +53,19 @@ void AMGPrec::solve(Vector& f, Vector& x) THROW {
     x.resize(n);
 }
 
-AMGPrec::AMGPrec(const SparseMatrix& A) {
+AMGPrec::AMGPrec(const SkylineMatrix& A) {
     n = A.rows();
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
     int ind = 0;
 
-    ia.resize(n + 1);
-    ja.reserve(n*5);
-    a.reserve(n*5);
-    // ***************************************************************
-    // Note: we use FORTRAN index enumeration
-    // Matrix is stored in skyline format (CSR with diagonal first)
-    // ***************************************************************
-    ia[0] = 1;
-    for (uint i = 0; i < (uint)n; i++) {
-	const SparseMatrix::Row& row = A.vrows[i];
-	ia[i+1] = ia[i] + row.size();
-
-	// first goes diagonal element
-	ja.push_back(i + 1);
-	a.push_back(row.find(i)->second);
-	// then all others
-	for (SparseMatrix::Row::const_iterator it = row.begin(); it != row.end(); it++) 
-	    if (it->first != i) {
-		ja.push_back(it->first + 1);
-		a.push_back(it->second);
-		ind++;
-	    }
+    ia.resize(A.ia.size());
+    for (uint i = 0; i < A.ia.size(); i++) {
+	ia[i] = A.ia[i] + 1;
     }
+    ja.resize(A.ja.size());
+    for (uint j = 0; j < A.ja.size(); j++)
+	ja[j] = A.ja[j] + 1;
+    a  = A.a;
 
     nnz = ia[n];
     LOG_DEBUG("nnz = " << nnz);

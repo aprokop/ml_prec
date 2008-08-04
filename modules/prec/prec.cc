@@ -121,7 +121,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     }
 }
 
-void Prec::solve(const Vector& f, Vector& x) THROW {
+void Prec::solve(Vector& f, Vector& x) THROW {
     solve(f, x, 0);
 }
 

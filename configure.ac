@@ -34,8 +34,11 @@ AC_C_INLINE
 
 LIBS="-lm $LIBS"
 
+# Boost
+AC_CHECK_HEADER([boost/version.hpp], [AC_DEFINE([HAVE_BOOST], [1], [Define to 1 if you have the Boost library])], [])
+
 # Logger
-AC_CHECK_LIB( log4cxx,	main, [LIBS="-llog4cxx $LIBS"], [AC_DEFINE(NO_LOGGER, 1, [Disable logger])] )
+AC_CHECK_LIB( log4cxx,	main, [LIBS="-llog4cxx $LIBS"], [AC_DEFINE(NO_LOGGER, [], [Disable logger])] )
 
 # BLAS
 AC_ARG_WITH(blas, AC_HELP_STRING([--with-blas@<:@=yes|no@:>@], [use BLAS @<:@default=yes@:>@]), __blas="$withval", __blas="yes")

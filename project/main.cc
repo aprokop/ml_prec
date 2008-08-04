@@ -39,10 +39,14 @@ int main (int argc, char * argv[]) {
     // mesh.graph_z_lines();
 
     TIME_INIT();
+#if 0
     TIME_START();
     Prec B(nlevels, eps, ncheb, c, A);
     std::cout << std::endl << TIME_INFO("Construction time: ") << std::endl;
     LOG_INFO(B);
+#else
+    AMGPrec B(A);
+#endif
 
     PCG(A, Vector(A.size()), B, 1e-6);
 

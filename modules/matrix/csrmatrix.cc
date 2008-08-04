@@ -6,7 +6,6 @@
 #include <iostream>
 #include <numeric>
 #include <algorithm>
-#include <boost/lambda/lambda.hpp>
 
 DEFINE_LOGGER("CSRMatrix");
 

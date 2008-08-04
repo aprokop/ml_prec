@@ -1,3 +1,4 @@
+#include "config/config.h"
 #include "include/logger.h"
 #include "include/time.h"
 #include "include/tools.h"
@@ -5,7 +6,9 @@
 
 #include <fstream>
 #include <algorithm>
+#ifdef HAVE_BOOST
 #include <boost/lambda/lambda.hpp>
+#endif
 
 DEFINE_LOGGER("Mesh");
 
@@ -20,9 +23,18 @@ Mesh::Mesh(double _c) {
     TIME_INIT();
 
     TIME_START();
+#ifdef HAVE_BOOST
     std::for_each(kx.begin(), kx.end(), spe >> boost::lambda::_1);
     std::for_each(ky.begin(), ky.end(), spe >> boost::lambda::_1);
     std::for_each(kz.begin(), kz.end(), spe >> boost::lambda::_1);
+#else
+    for (uint i = 0; i < N; i++)
+	spe >> kx[i];
+    for (uint i = 0; i < N; i++)
+	spe >> ky[i];
+    for (uint i = 0; i < N; i++)
+	spe >> kz[i];
+#endif
     LOG_DEBUG(TIME_INFO("Reading SPE file"));
     LEAVE_MESSAGE("Mesh read");
 

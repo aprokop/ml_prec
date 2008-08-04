@@ -8,7 +8,7 @@
 class PrecBase {
 public:
     virtual ~PrecBase() {};
-    virtual void solve(const Vector& f, Vector& x) THROW = 0;
+    virtual void solve(Vector& f, Vector& x) THROW = 0;
 };
 
 class Prec : public PrecBase {
@@ -37,7 +37,7 @@ private:
 public:
     Prec(uint nlevels, double eps, uint ncheb, double c, const SkylineMatrix& A);
 
-    virtual void solve(const Vector& f, Vector& x) THROW;
+    virtual void solve(Vector& f, Vector& x) THROW;
 
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };
@@ -66,6 +66,10 @@ private:
 	AMGConfig();
     } amg_config;
 
+    // ***************************************************************
+    // Note: we use FORTRAN index enumeration
+    // Matrix is stored in skyline format (CSR with diagonal first)
+    // ***************************************************************
     std::vector<int> ia, ja;
     std::vector<int> ig;
     std::vector<double> a;
@@ -80,8 +84,9 @@ private:
     int ndig;
 
 public:
-    AMGPrec(const SparseMatrix& A);
-    void solve(Vector& f, Vector& x) THROW;
+    AMGPrec(const SkylineMatrix& A);
+
+    virtual void solve(Vector& f, Vector& x) THROW;
 };
 
 #endif
