@@ -33,6 +33,7 @@ public:
     // std::vector functions
     void resize(uint new_size, double v = 0.);
     void reserve(uint size);
+    void swap(Vector& v);
 
     const double& operator[](uint index) const THROW {
 	check_index(index);

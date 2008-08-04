@@ -71,27 +71,22 @@ AMGPrec::AMGPrec(const SkylineMatrix& A) {
     nnz = ia[n];
     LOG_DEBUG("nnz = " << nnz);
 
+#if 0
     ndia = int(2.2*n);
     ndja = 3*n + 5*nnz;
     nda  = 3*n + 5*nnz;
     ndig = int(5.4*n);
     ndu  = int(2.2*nnz);
     ndf  = int(2.2*nnz);
-
-    // ndia = 15000000;
-    // ndja = 15000000;
-    // nda  = 15000000;
-    // ndig =  5000000;
-    // ndu  =  5000000;
-    // ndf  =  5000000;
-
-
-    LOG_VARIABLE(ndia);
-    LOG_VARIABLE(ndja);
-    LOG_VARIABLE(nda );
-    LOG_VARIABLE(ndig);
-    LOG_VARIABLE(ndu );
-    LOG_VARIABLE(ndf );
+#else
+    // these values are sufficient for SPE test
+    ndia =  5000000;
+    ndja = 50000000;
+    nda  = 50000000;
+    ndig =  7000000;
+    ndu  =  5000000;
+    ndf  =  5000000;
+#endif
 
     ia.resize(ndia);
     ja.resize(ndja);

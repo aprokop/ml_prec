@@ -42,6 +42,15 @@ void Vector::resize(uint new_size, double v) {
     data->resize(n, v);
 }
 
+void Vector::reserve(uint size) {
+    data->reserve(size);
+}
+
+void Vector::swap(Vector& v) {
+    std::swap(n, v.n);
+    data->swap(*(v.data));
+}
+
 double& Vector::operator[](uint index) THROW {
     check_index(index);
     set_unique();

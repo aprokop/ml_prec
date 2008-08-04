@@ -15,12 +15,12 @@ int set_params(int argc, char * argv[], uint& nlevels, double& c, double& eps, u
 	    {"c",	required_argument, 0, 'c'}
 	};
 	int option_index = 0;
-	int c = getopt_long(argc, argv, "l:e:c:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "l:e:b:c:", long_options, &option_index);
 
-	if (c == -1)
+	if (ch == -1)
 	    break;
 
-	switch (c) {
+	switch (ch) {
 	    case 'l': nlevels = uint(atoi(optarg)); break;
 	    case 'e': eps = atof(optarg); break;
 	    case 'c': c = atof(optarg); break;
