@@ -11,7 +11,7 @@ AC_LANG([C++])
 # Check for programs
 AC_PROG_CXX
 AC_PROG_CC
-AC_PROG_F77
+AC_PROG_F77([gfortran])
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
