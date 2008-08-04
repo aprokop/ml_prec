@@ -51,6 +51,7 @@ void AMGPrec::solve(Vector& f, Vector& x) THROW {
     amg_config.iswtch = 3; 
 
     x.resize(n);
+    f.resize(n);
 }
 
 AMGPrec::AMGPrec(const SkylineMatrix& A) {
