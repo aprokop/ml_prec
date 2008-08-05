@@ -14,7 +14,7 @@ public:
 class Prec : public PrecBase {
 private:
     struct Level {
-	uint N;
+	uint N, nnz;
 
 	Vector x1, u0, u1, f1;
 	SkylineMatrix A; // is not set for level 0

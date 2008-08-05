@@ -10,7 +10,7 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
     for (uint level = 0; level < p.nlevels; level++) {
 	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
 	const Prec::Level& li = p.levels[level];
-	os << "N = " << li.N << std::endl;
+	os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
 	os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
 	if (level != p.nlevels-1) {
 	    os << "Ncheb = " << li.ncheb << ", ";
