@@ -59,7 +59,7 @@ Vector PCG(const MatrixInterface& A, const Vector& b, PrecBase& B, double eps) T
 #endif
 
     while (norm/init_norm > eps) {
-	LOG_INFO("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
 	delta = clock();
 	// LOG_DEBUG("p = " << std::scientific << p);
@@ -102,8 +102,8 @@ Vector PCG(const MatrixInterface& A, const Vector& b, PrecBase& B, double eps) T
 	niter++;
     }
 
-    LOG_INFO("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
-    std::cout << "#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
+    LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+    std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
 #if 1
 #undef LOG_DEBUG
