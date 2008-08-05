@@ -35,6 +35,30 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	// reverse translation
 	std::vector<uint> revtr(N, -1);
 
+	std::vector<std::map<int,char> > vec(N);
+	if (level < 6)
+	    for (uint i = 0; i < N; i++) {
+		std::map<double,uint> rmap;
+		for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++)
+		    rmap[-A.a[j]] = A.ja[j];
+		double s = 0.;
+		for (std::map<double,uint>::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
+		    s += 2*it->first / (c*(li.beta-1));
+		    uint i0, i1;
+		    if (s <= 1) {
+			if (i < it->second) { i0 = i; i1 = it->second; }
+			else { i0 = it->second; i1 = i; }
+			if (vec[i0].find(i1) == vec[i0].end())
+			    vec[i0][i1] = 1;
+			else
+			    vec[i0][i1]++;
+		    } else {
+			break;
+		    }
+
+		}
+	    }
+
 	nA.ia.push_back(0);
 	for (uint i = 0; i < N; i++) {
 	    // dind corresponds to the position of diagonal
@@ -44,14 +68,17 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    nA.a.push_back(c);
 
 	    double v;
-	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) 
-		if (1 + 12*(-A.a[j]) / c > li.beta) {
-		    // if the link stays, scale it
+	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
+		uint jj = A.ja[j];
+		if ((level < 6  && (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2)) ||
+		    (level >= 6 && 1 + 12*(-A.a[j]) / c > li.beta)) {
+		    // link stays, scale it
 		    nA.ja.push_back(A.ja[j]);
 		    v = A.a[j] / li.beta;
 		    nA.a.push_back(v);
 		    nA.a[dind] += -v;
 		}
+	    }
 	    
 	    uint dia = nA.a.size() - dind;
 	    if (dia > 1) {
