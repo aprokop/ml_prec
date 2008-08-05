@@ -23,6 +23,7 @@ Prec::Prec(uint _nlevels, double eps, uint ncheb, double _c, const SkylineMatrix
 void Prec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     uint N = li.N = A.size();
+    li.nnz = A.ja.size();
 
     // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
 
