@@ -42,6 +42,7 @@ int main (int argc, char * argv[]) {
     Prec B(nlevels, eps, ncheb, c, A);
     std::cout << std::endl << TIME_INFO("Construction time: ") << std::endl;
     LOG_INFO(B);
+    // exit(1);
 #else
     AMGPrec B(A);
 #endif

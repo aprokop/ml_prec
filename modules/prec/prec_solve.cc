@@ -83,15 +83,8 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    // ===============    STEPS 3+    ===============
 	    for (uint i = 3; i <= li.ncheb; i++) {
 		// hack to avoid copying and allocating new memory
-#if 0
-		Vector htmp = u0;
-		u0 = u1;
-		u1 = x1;
-		x1 = htmp;
-#else
 		u0.swap(x1);
 		u1.swap(u0);
-#endif
 		// end hack
 
 		alpha = 4/(lmax - lmin) * cheb(eta, i-1)/cheb(eta, i);
