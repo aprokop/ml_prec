@@ -19,7 +19,7 @@ void Prec::solve(Vector& f, Vector& x) THROW {
 
     solve(f, x, 0);
 
-#if 1
+#if 0
     LOG_DEBUG("Diagonal time = " << std::setprecision(3) << double(diag_time)/CLOCKS_PER_SEC);
     LOG_DEBUG("Multipli time = " << std::setprecision(3) << double(mult_time)/CLOCKS_PER_SEC);
     LOG_DEBUG("Restrict time = " << std::setprecision(3) << double(restr_f)/CLOCKS_PER_SEC);

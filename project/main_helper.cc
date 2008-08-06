@@ -2,7 +2,7 @@
 #include <getopt.h>
 
 int set_params(int argc, char * argv[], uint& nlevels, double& c, double& eps, uint& ncheb, uint& nwells) {
-    nlevels = 12;
+    nlevels = 20;
     ncheb   = 2;
     eps     = 3.;
     c       = 1.;
