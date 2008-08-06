@@ -71,10 +71,16 @@ public:
     double  remove_link(uint i0, uint i1) THROW;
 };
 
+// We always assume that each row of CSRMatrix contains at least one element
 class CSRMatrix : public MatrixInterface {
 protected:
     std::vector<uint> ia, ja;
     std::vector<double> a;
+
+    enum {
+	csr,
+	skyline
+    } mode;
 
 public:
     CSRMatrix();
@@ -84,9 +90,10 @@ public:
 	multiply(*this, v, x);
 	return x;
     }
-    double get(uint i, uint j) const THROW;
+    virtual double get(uint i, uint j) const THROW;
+    virtual void   add(uint i, uint j, double x) THROW;
 
-    bool is_symmetric() const;
+    virtual bool is_symmetric() const;
 
     // Friend classes
     friend class SparseMatrix;
@@ -95,12 +102,19 @@ public:
     friend class AMGPrec;
 
     // Friend functions
+    friend int main(int argc, char* argv[]);
     friend void	multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
 };
 
-typedef CSRMatrix SkylineMatrix;
+class SkylineMatrix : public CSRMatrix {
+public:
+    SkylineMatrix();
+
+    double get(uint i, uint j) const THROW;
+    void   add(uint i, uint j, double x) THROW;
+};
 
 void multiply(const MatrixInterface& A, const Vector& v, Vector& res, char type = 'o') THROW;
 

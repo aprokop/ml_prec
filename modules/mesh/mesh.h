@@ -32,7 +32,7 @@ private:
     bool is_removed(uint i0, uint i1) const;
 
 public:
-    Mesh(double _c);
+    Mesh(double _c, uint nwells = 0);
 
     void graph3D() const;
     void graph_xy_planes() const;

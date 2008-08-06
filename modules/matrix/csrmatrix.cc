@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include "include/logger.h"
+#include "include/exception.h"
 #include "include/tools.h"
 
 #include <cmath>
@@ -44,10 +45,7 @@ void multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type) THROW 
 double CSRMatrix::get(uint i, uint j) const THROW {
     check_indices(i, j);
 
-    // in case matrix is in skyline form
-    if (ja[ia[i]] == j)
-	return a[ia[i]];
-    std::vector<uint>::const_iterator start = ja.begin() + ia[i] + 1; 
+    std::vector<uint>::const_iterator start = ja.begin() + ia[i]; 
     std::vector<uint>::const_iterator   end = ja.begin() + ia[i+1];
     std::vector<uint>::const_iterator it = std::lower_bound(start, end, j);
     if (it != end && !(*it < j)) 
@@ -55,6 +53,26 @@ double CSRMatrix::get(uint i, uint j) const THROW {
 
     LOG_WARN("Returning zero element for i = " << i << ", j = " << j);
     return 0;
+}
+
+void CSRMatrix::add(uint i, uint j, double v) THROW {
+    check_indices(i, j);
+
+    // in case matrix is in skyline form
+    std::vector<uint>::iterator start = ja.begin() + ia[i]; 
+    std::vector<uint>::iterator   end = ja.begin() + ia[i+1];
+    std::vector<uint>::iterator it = std::lower_bound(start, end, j);
+    if (it == end || j < *it) {
+	// creating new element
+	uint pos = it - ja.begin();
+	ja.insert(it, j);
+	a.insert (a.begin() + pos, v);
+	for (uint k = i+1; k <= nrow; k++)
+	    ia[k]++;
+    } else {
+	// adding to existing element
+	a[it - ja.begin()] += v;
+    }
 }
 
 void transpose(const CSRMatrix& A, CSRMatrix& B) {

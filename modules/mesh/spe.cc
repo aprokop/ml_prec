@@ -12,7 +12,7 @@
 
 DEFINE_LOGGER("Mesh");
 
-Mesh::Mesh(double _c) {
+Mesh::Mesh(double _c, uint nwells) {
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
 
@@ -72,8 +72,8 @@ Mesh::Mesh(double _c) {
 		if (j < ny-1) ADD( 0, +1,  0, y);
 
 		A.ia.push_back(A.ja.size());
-	    }
 #undef ADD
+	    }
     LEAVE_MESSAGE("Matrix constructed");
     kx.clear();
     ky.clear();
@@ -82,15 +82,43 @@ Mesh::Mesh(double _c) {
     // nodes
     nodes.resize(N);
     for (uint k = 0; k < nz; k++)
-	for (uint j = 0; j < ny; j++)
-	    for (uint i = 0; i < nx; i++) {
-		uint ind = index(i,j,k);
-		nodes[ind].x = i*hx;
-		nodes[ind].y = j*hy;
-		nodes[ind].z = k*hz;
-	    }
+    for (uint j = 0; j < ny; j++)
+    for (uint i = 0; i < nx; i++) {
+	uint ind = index(i,j,k);
+	nodes[ind].x = i*hx;
+	nodes[ind].y = j*hy;
+	nodes[ind].z = k*hz;
+    }
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
     LEAVE_MESSAGE("Nodes constructed");
+
+    // Wells
+    TIME_START();
+    uint nwp = 5;
+    v = 100;
+    std::vector<uint> ind(nwp);
+    for (uint i = 0; i < nwells; i++) {
+	LOG_DEBUG("== WELL " << i << " ==");
+	uint ix = random(0,nx-1);
+	uint iy = random(0,ny-1);
+	uint iz = random(0,20);
+	ind[0] = index(ix, iy, iz);
+	LOG_DEBUG(" (0): " << ix << " " << iy << " " << iz);
+	for (uint j = 1; j < nwp; j++) {
+	    ix = random(0,nx-1);
+	    iy = random(0,ny-1);
+	    iz = random(iz, nz-nwp+j);
+	    ind[j] = index(ix, iy, iz);
+	    LOG_DEBUG(" (" << j << "): " << ix << " " << iy << " " << iz);
+	}
+	for (uint j = 0; j < nwp-1; j++) {
+	    A.add(ind[j], ind[j], v);
+	    A.add(ind[j], ind[j+1], -v);
+	    A.add(ind[j+1], ind[j], -v);
+	    A.add(ind[j+1], ind[j+1], v);
+	}
+    }
+    LOG_DEBUG(TIME_INFO("Adding wells"));
 }
 
 void Mesh::graph3D() const {

@@ -1,6 +1,7 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -17,6 +18,11 @@ inline bool is_equal(double x, double y) {
 
 inline bool is_not_equal(double x, double y) {
     return (fabs(x-y) > epsilon) ? true : false;
+}
+
+inline uint random(uint i0, uint i1) {
+    assert(i0 < i1);
+    return i0 + uint((i1-i0)*double(random())/RAND_MAX);
 }
 
 #if 0
