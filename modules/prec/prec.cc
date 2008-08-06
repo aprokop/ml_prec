@@ -27,7 +27,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uint N = li.N = A.size();
     li.nnz = A.ja.size();
 
-    // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
+    ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
 
     if (level < nlevels-1) {
 	SkylineMatrix& nA = levels[level+1].A;
@@ -40,22 +40,18 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	std::vector<std::map<uint,char> > vec(N);
 	for (uint i = 0; i < N; i++) {
-	    // std::map<double,uint> rmap;
 	    std::multimap<double,uint> rmap;
 	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++)
 		rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
 
 	    double s = 0.;
-	    for (std::map<double,uint>::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
+	    for (std::multimap<double,uint>::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
 		s += 2*it->first / (c*(li.beta-1));
-		uint i0, i1;
 		if (s <= 1) {
+		    uint i0, i1;
 		    if (i < it->second) { i0 = i; i1 = it->second; }
-		    else { i0 = it->second; i1 = i; }
-		    if (vec[i0].find(i1) == vec[i0].end())
-			vec[i0][i1] = 1;
-		    else
-			vec[i0][i1]++;
+		    else		{ i0 = it->second; i1 = i; }
+		    vec[i0][i1]++;
 		} else {
 		    break;
 		}
@@ -125,12 +121,11 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	// this parameters do not matter, it is not used; just want to set them to smth
 	Level& lc = levels[nlevels-1];
 	lc.ncheb = 0; 
-	lc.alpha = lc.beta = 0.;
+	lc.alpha = 0;
 
 	// these DO matter
-	lc.lmin = lc.lmax = 1;
-
-	levels[nlevels-2].ncheb = 0;
+	lc.lmin = 1;
+	lc.lmax = lc.beta;
 
 	// chebyshev info
 	for (int l = nlevels-2; l >= 0; l--) {
