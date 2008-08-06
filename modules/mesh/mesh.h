@@ -34,7 +34,6 @@ private:
 public:
     Mesh(double _c, uint nwells = 0);
 
-    void graph3D() const;
     void graph_xy_planes() const;
     void graph_z_lines() const;
 

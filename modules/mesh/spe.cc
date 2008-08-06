@@ -121,31 +121,6 @@ Mesh::Mesh(double _c, uint nwells) {
     LOG_DEBUG(TIME_INFO("Adding wells"));
 }
 
-void Mesh::graph3D() const {
-    std::ofstream ofs("graph.gmv");
-    ASSERT(ofs.good(), "Cannot open file");
-
-    ofs << "gmvinput ascii" << std::endl << std::endl;
-
-    ofs << "nodev " << nodes.size() << std::endl;
-    for (uint i = 0; i < nodes.size(); i++)
-	ofs << nodes[i].x << " " << nodes[i].y << " " << nodes[i].z << std::endl;
-    ofs << std::endl;
-
-    uint klimit = 2;
-    ofs << "faces " << ny*klimit*(nx-1) << " " << ny*klimit*(nx-1) << std::endl;
-    // x links
-    for (uint k = 0; k < klimit; k++)
-	for (uint j = 0; j < ny; j++)
-	    for (uint i = 0; i < nx-1; i++) {
-		uint i0 = index(i  , j, k) + 1;
-		uint i1 = index(i+1, j, k) + 1;
-		ofs << "2 " << i0 << " " << i1 << " 1 0" << std::endl;
-	    }
-
-    ofs << std::endl << "endgmv" << std::endl;
-}
-
 bool Mesh::is_removed(uint i0, uint i1) const {
     ASSERT(i0 != i1, "");
 
