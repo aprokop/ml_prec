@@ -47,7 +47,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	restr_f += clock() - delta;
 
 	Vector& x1 = li.x1; 
-	if (li.ncheb) {
+	if (ncheb) {
 	    // Perform Chebyshev iterations
 	    Vector& u0 = li.u0; 
 	    Vector& u1 = li.u1;
@@ -66,7 +66,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    x1 *= alpha;
 
 	    // ===============    STEP 2    ===============
-	    if (li.ncheb > 1) {
+	    if (ncheb > 1) {
 		u1.copy(x1);
 		alpha = 4/(lmax - lmin) * cheb(eta, 1)/cheb(eta, 2);
 		beta  = cheb(eta, 0) / cheb(eta, 2);
@@ -81,7 +81,7 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	    }
 
 	    // ===============    STEPS 3+    ===============
-	    for (uint i = 3; i <= li.ncheb; i++) {
+	    for (uint i = 3; i <= ncheb; i++) {
 		// hack to avoid copying and allocating new memory
 		u0.swap(x1);
 		u1.swap(u0);

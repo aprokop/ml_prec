@@ -19,15 +19,14 @@ int main (int argc, char * argv[]) {
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
-    uint nlevels, ncheb;
+    uint ncheb;
     uint nwells;
     double c, eps;
-    if (set_params(argc, argv, nlevels, c, eps, ncheb, nwells)) {
+    if (set_params(argc, argv, c, eps, ncheb, nwells)) {
 	LOG_INFO("Error while setting parameters, exiting...");
 	std::cout << "Error while setting parameters, exiting..." << std::endl;
 	return 1;
     }
-    std::cout << "nlevels = " << nlevels << std::endl;
     std::cout << "ncheb   = " << ncheb << std::endl;
     std::cout << "eps     = " << eps << std::endl;
     std::cout << "c       = " << c << std::endl;
@@ -39,7 +38,7 @@ int main (int argc, char * argv[]) {
     TIME_INIT();
 #if 1
     TIME_START();
-    Prec B(nlevels, eps, ncheb, c, A);
+    Prec B(eps, ncheb, c, A);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
     // exit(1);

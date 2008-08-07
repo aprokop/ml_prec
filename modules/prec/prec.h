@@ -13,29 +13,30 @@ public:
 
 class Prec : public PrecBase {
 private:
+    double c;
+    double galpha, gbeta;
+
     struct Level {
 	uint N, nnz;
 
 	Vector x1, u0, u1, f1;
 	SkylineMatrix A; // is not set for level 0
 
-	std::vector<uint> tr; // local->global
+	std::vector<uint> tr; 
 	std::vector<uint> dtr;
 
-	double alpha, beta;
 	double lmin, lmax;
-	uint ncheb;
     };
     uint nlevels;
     std::vector<Level> levels;
-    double c;
+    uint ncheb;
 
     double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
     void    solve(const Vector& f, Vector& x, uint level) THROW;
 
 public:
-    Prec(uint nlevels, double eps, uint ncheb, double c, const SkylineMatrix& A);
+    Prec(double eps, uint ncheb, double c, const SkylineMatrix& A);
 
     virtual void solve(Vector& f, Vector& x) THROW;
 

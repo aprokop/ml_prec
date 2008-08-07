@@ -6,17 +6,15 @@
 DEFINE_LOGGER("Prec");
 
 std::ostream& operator<<(std::ostream& os, const Prec& p) {
-    os << "nlevels = " << p.nlevels;
+    os << "nlevels = " << p.nlevels << std::endl;
+    os << "alpha = " << p.galpha << ", beta = " << p.gbeta << std::endl;
+    os << "Ncheb = " << p.ncheb << ", ";
     for (uint level = 0; level < p.nlevels; level++) {
 	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
 	const Prec::Level& li = p.levels[level];
 	os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
 	os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
-	if (level != p.nlevels-1) {
-	    os << "Ncheb = " << li.ncheb << ", ";
-	}
 	os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "], cond = " << li.lmax/li.lmin << std::endl;
-	os << "alpha = " << li.alpha << ", beta = " << li.beta << std::endl;
 #if 0
 	if (level < p.nlevels-1) {
 	    os << "tr: " << li.tr;
@@ -28,8 +26,6 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
 	    os << "A: " << li.A;
 #endif
     }
-    if (p.levels[p.nlevels-1].ncheb)
-	std::cout << "Coarse ncheb = " << p.levels[p.nlevels-1].ncheb << std::endl;
     return os;
 } 
 
