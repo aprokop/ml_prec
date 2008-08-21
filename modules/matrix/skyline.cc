@@ -10,19 +10,31 @@ SkylineMatrix::SkylineMatrix() {
 }
 
 double SkylineMatrix::get(uint i, uint j) const THROW {
+    // LOG_DEBUG("i = " << i << ", j = " << j);
     check_indices(i, j);
 
-    // in case matrix is in skyline mode
     if (i == j)
 	return a[ia[i]];
     std::vector<uint>::const_iterator start = ja.begin() + ia[i] + 1; 
     std::vector<uint>::const_iterator   end = ja.begin() + ia[i+1];
     std::vector<uint>::const_iterator it = std::lower_bound(start, end, j);
-    if (it != end && !(*it < j)) 
+    if (it != end && !(j < *it)) 
 	return a[it-ja.begin()];
 
     LOG_WARN("Returning zero element for i = " << i << ", j = " << j);
-    return 0;
+    return 0.;
+}
+
+bool SkylineMatrix::exist(uint i, uint j) const THROW {
+    check_indices(i, j);
+
+    if (i == j)
+	return true;
+    std::vector<uint>::const_iterator start = ja.begin() + ia[i] + 1; 
+    std::vector<uint>::const_iterator   end = ja.begin() + ia[i+1];
+    std::vector<uint>::const_iterator it = std::lower_bound(start, end, j);
+
+    return it != end && !(j < *it);
 }
 
 void SkylineMatrix::add(uint i, uint j, double v) THROW {

@@ -43,12 +43,13 @@ void multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type) THROW 
 }
 
 double CSRMatrix::get(uint i, uint j) const THROW {
+    // LOG_DEBUG("i = " << i << ", j = " << j);
     check_indices(i, j);
 
     std::vector<uint>::const_iterator start = ja.begin() + ia[i]; 
     std::vector<uint>::const_iterator   end = ja.begin() + ia[i+1];
     std::vector<uint>::const_iterator it = std::lower_bound(start, end, j);
-    if (it != end && !(*it < j)) 
+    if (it != end && !(j < *it)) 
 	return a[it-ja.begin()];
 
     LOG_WARN("Returning zero element for i = " << i << ", j = " << j);

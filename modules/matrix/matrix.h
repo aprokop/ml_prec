@@ -114,6 +114,8 @@ public:
 
     double get(uint i, uint j) const THROW;
     void   add(uint i, uint j, double x) THROW;
+
+    bool exist(uint i, uint j) const THROW;
 };
 
 void multiply(const MatrixInterface& A, const Vector& v, Vector& res, char type = 'o') THROW;
