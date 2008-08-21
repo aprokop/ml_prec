@@ -14,13 +14,13 @@ private:
     static const double size_x = 1200, size_y = 2200, size_z = 170;
 
     double c;
-    SkylineMatrix A;
+    std::vector<double> kx, ky, kz;
     std::vector<Point> nodes;
 
-    // x oriented ordering: zyx
     uint index_k(uint i, uint j, uint k) const {
 	return k*ny*nx + j*nx + i;
     }
+    // x oriented ordering: zyx
     uint index(uint i, uint j, uint k) const {
 	ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
 #if 1
@@ -32,14 +32,12 @@ private:
     bool is_removed(uint i0, uint i1) const;
 
 public:
-    Mesh(double _c, uint nwells = 0);
+    Mesh(double _c);
 
     void graph_xy_planes() const;
     void graph_z_lines() const;
 
-    const SkylineMatrix& get_matrix() const {
-	return A;
-    }
+    void construct_matrix(SkylineMatrix& A, uint nwells = 0) const;
 };
 
 #endif // __MESH_H__

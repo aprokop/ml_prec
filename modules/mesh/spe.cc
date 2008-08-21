@@ -12,17 +12,17 @@
 
 DEFINE_LOGGER("Mesh");
 
-Mesh::Mesh(double _c, uint nwells) {
+Mesh::Mesh(double _c) {
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
 
     c = _c;
 
-    std::vector<double> kx(N), ky(N), kz(N);
-
     TIME_INIT();
-
     TIME_START();
+    kx.resize(N);
+    ky.resize(N);
+    kz.resize(N);
 #ifdef HAVE_BOOST
     std::for_each(kx.begin(), kx.end(), spe >> boost::lambda::_1);
     std::for_each(ky.begin(), ky.end(), spe >> boost::lambda::_1);
@@ -38,8 +38,25 @@ Mesh::Mesh(double _c, uint nwells) {
     LOG_DEBUG(TIME_INFO("Reading SPE file"));
     LEAVE_MESSAGE("Mesh read");
 
+    // nodes
+    nodes.resize(N);
+    for (uint k = 0; k < nz; k++)
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx; i++) {
+		uint ind = index(i,j,k);
+		nodes[ind].x = i*hx;
+		nodes[ind].y = j*hy;
+		nodes[ind].z = k*hz;
+	    }
+    LEAVE_MESSAGE("Nodes constructed");
+
+}
+
+void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
     uint i0, i1;
     double v;
+
+    TIME_INIT();
 
     A.ia.reserve(N+1);
     A.ja.reserve(7*N);
@@ -74,23 +91,8 @@ Mesh::Mesh(double _c, uint nwells) {
 		A.ia.push_back(A.ja.size());
 #undef ADD
 	    }
-    LEAVE_MESSAGE("Matrix constructed");
-    kx.clear();
-    ky.clear();
-    kz.clear();
-
-    // nodes
-    nodes.resize(N);
-    for (uint k = 0; k < nz; k++)
-    for (uint j = 0; j < ny; j++)
-    for (uint i = 0; i < nx; i++) {
-	uint ind = index(i,j,k);
-	nodes[ind].x = i*hx;
-	nodes[ind].y = j*hy;
-	nodes[ind].z = k*hz;
-    }
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
-    LEAVE_MESSAGE("Nodes constructed");
+    LEAVE_MESSAGE("Matrix constructed");
 
     // Wells
     TIME_START();
@@ -127,7 +129,7 @@ bool Mesh::is_removed(uint i0, uint i1) const {
     static double c = 81;
     static double eps = 2;
 
-    if (1 + 12*(-A.get(i0,i1))/c > eps)
+    // if (1 + 12*(-A.get(i0,i1))/c > eps)
 	return false;
 
     return true;
@@ -184,9 +186,6 @@ void Mesh::graph_xy_planes() const {
 
 		i0 = index(i, j, k);
 		i1 = index(i+1, j, k);
-
-		if (k == 0)
-		    LOG_DEBUG("(" << i << "," << j << ") - (" << i+1 << "," << j <<") : " << A.get(i0,i1));
 
 		if (is_removed(i0, i1))
 		    continue;

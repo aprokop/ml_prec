@@ -32,8 +32,10 @@ int main (int argc, char * argv[]) {
     std::cout << "c       = " << c << std::endl;
     std::cout << "nwells  = " << nwells << std::endl;
 
-    Mesh mesh(c, nwells);
-    const SkylineMatrix& A = mesh.get_matrix();
+    SkylineMatrix A;
+
+    Mesh mesh(c);
+    mesh.construct_matrix(A, nwells);
 
     TIME_INIT();
 #if 1
