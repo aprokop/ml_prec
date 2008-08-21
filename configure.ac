@@ -17,6 +17,8 @@ AC_PROG_LN_S
 
 # Check for libraries
 
+# FFLAGS
+FFLAGS="-O3"
 # CXXFLAGS
 CFLAGS="-O3"
 CXXFLAGS="-W -Wall -Wno-unused"
