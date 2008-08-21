@@ -43,7 +43,8 @@ int main (int argc, char * argv[]) {
     Prec B(eps, ncheb, c, A);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    // exit(1);
+    B.graph_xy_planes(1, mesh, A);
+    exit(1);
 #else
     AMGPrec B(A);
 #endif

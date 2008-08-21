@@ -67,7 +67,13 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	double v;
 	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
 	    uint jj = A.ja[j];
+#if 0
+	    // dynamic c
 	    if (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2) {
+#else
+	    // static c
+	    if (1 + 12*(-A.a[j]) / c > gbeta) {
+#endif
 		// link stays, scale it
 		nA.ja.push_back(A.ja[j]);
 		v = A.a[j] / gbeta;
@@ -98,6 +104,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	nA.ja[j] = revtr[nA.ja[j]];
     }
+
     uint n = tr.size();
     if (n) {
 	nA.nrow = nA.ncol = n;

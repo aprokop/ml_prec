@@ -20,6 +20,7 @@ private:
     uint index_k(uint i, uint j, uint k) const {
 	return k*ny*nx + j*nx + i;
     }
+
     // x oriented ordering: zyx
     uint index(uint i, uint j, uint k) const {
 	ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
@@ -29,15 +30,13 @@ private:
 	return index_k(i, j, k);
 #endif
     }
-    bool is_removed(uint i0, uint i1) const;
 
 public:
     Mesh(double _c);
 
-    void graph_xy_planes() const;
-    void graph_z_lines() const;
-
     void construct_matrix(SkylineMatrix& A, uint nwells = 0) const;
+
+    friend class Prec;
 };
 
 #endif // __MESH_H__
