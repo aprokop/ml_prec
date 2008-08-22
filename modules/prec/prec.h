@@ -39,7 +39,7 @@ private:
 public:
     Prec(double eps, uint ncheb, double c, const SkylineMatrix& A);
 
-    void graph_xy_planes(uint level, const Mesh& mesh, const SkylineMatrix& A) const;
+    void graph_planes(uint level, const Mesh& mesh, char plane) const;
     // void graph_z_lines() const;
 
     virtual void solve(Vector& f, Vector& x) THROW;

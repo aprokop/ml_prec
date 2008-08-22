@@ -67,7 +67,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	double v;
 	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
 	    uint jj = A.ja[j];
-#if 0
+#if 1
 	    // dynamic c
 	    if (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2) {
 #else
