@@ -20,7 +20,7 @@ Prec::Prec(double eps, uint _ncheb, double _c, const SkylineMatrix& A) {
 }
 
 void Prec::construct_level(uint level, const SkylineMatrix& A) {
-    ASSERT(level < nlevels, "??");
+    ASSERT(level < nlevels, "Incorrect level: " << level << " (" << nlevels << ")");
     Level& li = levels[level];
 
     // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
@@ -29,25 +29,59 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     li.nnz = A.ja.size();
     uint N = li.N;
 
+    std::vector<uint> nlinks(N);
+    std::vector<double> _c(N);
+
     std::vector<std::map<uint,char> > vec(N);
+    std::multimap<double,uint> rmap;
     for (uint i = 0; i < N; i++) {
-	std::multimap<double,uint> rmap;
-	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++)
+	rmap.clear();
+
+	_c[i] = A.a[A.ia[i]];
+	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
 	    rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
+	    _c[i] += A.a[j];
+	}
+
+	nlinks[i] = A.ia[i+1] - A.ia[i] - 1;
 
 	double s = 0.;
 	for (std::multimap<double,uint>::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
-	    s += 2*it->first / (c*(gbeta-1));
+	    s += 2*it->first / (_c[i]*(gbeta-1));
 	    if (s <= 1) {
 		uint i0, i1;
 		if (i < it->second) { i0 = i; i1 = it->second; }
 		else		    { i0 = it->second; i1 = i; }
 		vec[i0][i1]++;
+
+		if (i > it->second && vec[i0][i1] == 2) {
+		    nlinks[i]--;
+		    nlinks[it->second]--;
+		}
 	    } else {
 		break;
 	    }
 	}
     }
+    
+    for (uint i = 0; i < N; i++) 
+	if (nlinks[i] == 1) {
+	    uint i0 = i, i1;
+	    do {
+		for (uint j = A.ia[i0]+1; j < A.ia[i0+1]; j++) {
+		    uint jj = A.ja[j];
+		    if (i0 < jj && vec[i0][jj] != 2 || i0 > jj && vec[jj][i0] != 2) {
+			i1 = jj;
+			break;
+		    }
+		}
+		nlinks[i0]--;
+		nlinks[i1]--;
+		if (i0 < i1) vec[i0][i1] = 2;
+		else         vec[i1][i0] = 2;
+		i0 = i1;
+	    } while (nlinks[i0] == 1);
+	}
 
     std::vector<uint>& tr  = li.tr;
     std::vector<uint>& dtr = li.dtr;
@@ -57,46 +91,37 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     SkylineMatrix& nA = levels[level+1].A;
     nA.ia.push_back(0);
-    for (uint i = 0; i < N; i++) {
-	// dind corresponds to the position of diagonal
-	uint dind = nA.a.size(); 
+    for (uint i = 0; i < N; i++) 
+	if (nlinks[i]) {
+	    // this node goes to the next level
 
-	nA.ja.push_back(i);
-	nA.a.push_back(c);
+	    // dind corresponds to the position of diagonal
+	    uint dind = nA.a.size(); 
 
-	double v;
-	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
-	    uint jj = A.ja[j];
-#if 1
-	    // dynamic c
-	    if (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2) {
-#else
-	    // static c
-	    if (1 + 12*(-A.a[j]) / c > gbeta) {
-#endif
-		// link stays, scale it
-		nA.ja.push_back(A.ja[j]);
-		v = A.a[j] / gbeta;
-		nA.a.push_back(v);
-		nA.a[dind] += -v;
+	    nA.ja.push_back(i);
+	    nA.a.push_back(c);
+
+	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
+		uint jj = A.ja[j];
+		// dynamic c
+		if (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2) {
+		    // link stays, scale it
+		    nA.ja.push_back(A.ja[j]);
+		    double v = A.a[j] / gbeta;
+		    nA.a.push_back(v);
+		    nA.a[dind] += -v;
+		}
 	    }
-	}
 
-	uint dia = nA.a.size() - dind;
-	if (dia > 1) {
 	    nA.ia.push_back(nA.a.size());
 
 	    tr.push_back(i);
 	    revtr[i] = nA.ia.size()-2;
 	} else {
 	    // all links for this point are gone
-	    nA.ja.pop_back();
-	    nA.a.pop_back();
-
 	    // add point to the diagonal vector
 	    dtr.push_back(i);
 	}
-    }
 
     // change nA.ja to use local indices
     for (uint j = 0; j < nA.ja.size(); j++) {
@@ -104,6 +129,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	nA.ja[j] = revtr[nA.ja[j]];
     }
+
+    // add local indices numbers to tails
 
     uint n = tr.size();
     if (n) {
