@@ -225,3 +225,4 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
 
     std::cout << "#links = " << left << "/" << total << " = " << 100.*left/total << "%" << std::endl;
 }
+

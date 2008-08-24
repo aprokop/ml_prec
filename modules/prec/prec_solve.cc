@@ -9,7 +9,6 @@ clock_t diag_time = 0;
 clock_t mult_time = 0;
 clock_t restr_f   = 0;
 clock_t prol_x    = 0;
-clock_t c_time	  = 0;
 void Prec::solve(Vector& f, Vector& x) THROW {
     diag_time = 0;
     mult_time = 0;
@@ -19,12 +18,11 @@ void Prec::solve(Vector& f, Vector& x) THROW {
 
     solve(f, x, 0);
 
-#if 0
+#if 1
     LOG_DEBUG("Diagonal time = " << std::setprecision(3) << double(diag_time)/CLOCKS_PER_SEC);
     LOG_DEBUG("Multipli time = " << std::setprecision(3) << double(mult_time)/CLOCKS_PER_SEC);
     LOG_DEBUG("Restrict time = " << std::setprecision(3) << double(restr_f)/CLOCKS_PER_SEC);
     LOG_DEBUG("Prolong  time = " << std::setprecision(3) << double(prol_x)/CLOCKS_PER_SEC);
-    LOG_DEBUG("Coarse   time = " << std::setprecision(3) << double(c_time)/CLOCKS_PER_SEC);
 #endif
 }
 
@@ -35,11 +33,11 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 
     clock_t delta, gdelta = clock();
 
-    const std::vector<uint>& dtr   = li.dtr;
-    const std::vector<uint>& tr    = li.tr;
-    std::vector<Tail>& tails = li.tails;
+    const std::vector<uint>& dtr = li.dtr;
+    const std::vector<uint>& tr  = li.tr;
+    std::vector<Tail>& tails     = li.tails;
 
-    for (uint i = 0; i < tails.size()-1; i++) {
+    for (uint i = 0; i < tails.size(); i++) {
 	Tail& tail = tails[i];
 	TailNode& tn = tail[0];
 	tn.f = tn.a2*f[tn.index];
@@ -57,6 +55,11 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	delta = clock();
 	for (uint i = 0; i < n; i++) 
 	    f1[i] = f[tr[i]];
+	for (uint i = 0; i < tails.size(); i++) {
+	    Tail& tail = tails[i];
+	    if (tail.end_is_local) 
+		f1[tail.end_index] = tail[tail.size()-1].f;
+	}
 	restr_f += clock() - delta;
 
 	Vector& x1 = li.x1; 
@@ -137,11 +140,11 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
     // restore tails
     for (int i = tails.size()-1; i >= 0; i--) {
 	const Tail& tail = tails[i];
-	uint next_index = tail.end_index;
-	for (int j = tail.size() - 1; j >= 0; j--) {
+	if (tail.end_is_local == false) 
+	    x[tail.end_index] = f[tail.end_index];
+	for (int j = tail.size() - 2; j >= 0; j--) {
 	    const TailNode& tn = tail[j];
-	    x[tn.index] = tn.a1*x[next_index] + tn.f;
-	    next_index = tn.index;
+	    x[tn.index] = tn.a1*x[tail[j+1].index] + tn.f;
 	}
     }
 }

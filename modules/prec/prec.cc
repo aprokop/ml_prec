@@ -110,6 +110,21 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	    tail.end_index = i0;
 
+	    TailNode tn;
+	    tn.index = i0;
+	    tn.a2    = 1/aux[i0];
+	    tn.a3    = -v*tn.a2; // v is link with previous node
+
+	    if (nlinks[i0] == 0) {
+		// end node in fully tridiagonal matrix
+		nlinks[i0] = -1;
+		tail.end_is_local = false;
+	    } else {
+		tail.end_is_local = true;
+	    }
+
+	    tail.push_back(tn);
+
 	    tails.push_back(tail);
 	}
 
@@ -158,6 +173,18 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	ASSERT(revtr[nA.ja[j]] != uint(-1), 
 	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	nA.ja[j] = revtr[nA.ja[j]];
+    }
+
+    for (uint i = 0; i < tails.size(); i++) {
+	Tail& tail = tails[i];
+	if (tail.end_is_local) {
+	    i0 = revtr[tail.end_index];
+	    if (i0 != uint(-1))
+		tail.end_index = revtr[tail.end_index];
+	    else {
+		tail.end_is_local = false;
+	    }
+	}
     }
 
     uint n = tr.size();

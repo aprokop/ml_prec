@@ -24,6 +24,13 @@ private:
     };
     struct Tail : std::vector<TailNode> {
 	uint end_index;
+	bool end_is_local;
+	friend std::ostream& operator<<(std::ostream& os, const Tail& t) {
+	    os << t[0].index;
+	    for (uint i = 1; i < t.size(); i++)
+		os << "-" << t[i].index;
+	    return os << "\n";
+	}
     };
 
     struct Level {
