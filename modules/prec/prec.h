@@ -14,8 +14,17 @@ public:
 
 class Prec : public PrecBase {
 private:
-    double c;
     double galpha, gbeta;
+
+    struct TailNode {
+	uint index;
+	// x_i = a1*x_{i+1} + a2*f_i + a3*f_{i-1}
+	double a1, a2, a3;
+	double f;
+    };
+    struct Tail : std::vector<TailNode> {
+	uint end_index;
+    };
 
     struct Level {
 	uint N, nnz;
@@ -25,6 +34,9 @@ private:
 
 	std::vector<uint> tr; 
 	std::vector<uint> dtr;
+	std::vector<Tail> tails;
+
+	std::vector<double> aux;
 
 	double lmin, lmax;
     };
@@ -37,7 +49,7 @@ private:
     void    solve(const Vector& f, Vector& x, uint level) THROW;
 
 public:
-    Prec(double eps, uint ncheb, double c, const SkylineMatrix& A);
+    Prec(double eps, uint ncheb, const SkylineMatrix& A);
 
     void graph_planes(uint level, const Mesh& mesh, char plane) const;
     // void graph_z_lines() const;

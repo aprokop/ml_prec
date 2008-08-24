@@ -34,10 +34,23 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());
 
     clock_t delta, gdelta = clock();
-    const std::vector<uint>& dtr = li.dtr;
-    if (level < nlevels-1) {
-	const std::vector<uint>& tr = li.tr;
 
+    const std::vector<uint>& dtr   = li.dtr;
+    const std::vector<uint>& tr    = li.tr;
+    std::vector<Tail>& tails = li.tails;
+
+    for (uint i = 0; i < tails.size()-1; i++) {
+	Tail& tail = tails[i];
+	TailNode& tn = tail[0];
+	tn.f = tn.a2*f[tn.index];
+
+	for (uint j = 1; j < tail.size(); j++) {
+	    TailNode& tn = tail[j];
+	    tn.f = tn.a2*f[tn.index] + tn.a3*tail[j-1].f;
+	}
+    }
+
+    if (level < nlevels-1) {
 	uint n = levels[level+1].N;
 
 	Vector& f1 = li.f1; 
@@ -110,16 +123,25 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 
     } else {
 	// for last level assert for now that we have only diagonal matrix
-	ASSERT(dtr.size() == N, "We must have a diagonal on the coarsest level");
+	ASSERT(tr.size() == 0, "We must have an \"almost\" diagonal on the coarsest level");
     }
 
     // solve diagonal part
     delta = clock();
-    for (uint i = 0; i < dtr.size(); i++) 
-	x[dtr[i]] = f[dtr[i]] / c;
+    for (uint i = 0; i < dtr.size(); i++) {
+	uint ii = dtr[i];
+	x[ii] = f[ii] / li.aux[ii];
+    }
     diag_time += clock() - delta;
 
-    if (level > 6)
-	c_time += clock() - gdelta;
+    // restore tails
+    for (int i = tails.size()-1; i >= 0; i--) {
+	const Tail& tail = tails[i];
+	uint next_index = tail.end_index;
+	for (int j = tail.size() - 1; j >= 0; j--) {
+	    const TailNode& tn = tail[j];
+	    x[tn.index] = tn.a1*x[next_index] + tn.f;
+	    next_index = tn.index;
+	}
+    }
 }
-

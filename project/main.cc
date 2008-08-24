@@ -40,11 +40,11 @@ int main (int argc, char * argv[]) {
     TIME_INIT();
 #if 1
     TIME_START();
-    Prec B(eps, ncheb, c, A);
+    Prec B(eps, ncheb, A);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    B.graph_planes(3, mesh, 'x');
-    exit(1);
+    // B.graph_planes(1, mesh, 'z');
+    // exit(1);
 #else
     AMGPrec B(A);
 #endif
