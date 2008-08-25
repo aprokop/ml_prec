@@ -1,6 +1,10 @@
 #include "main.h"
 #include <getopt.h>
 
+static void usage() {
+    std::cout << "Usage: ./main [-e <eps>] [-c <c>] [-b <ncheb>] [-w <nwells>]\n";
+}
+
 int set_params(int argc, char * argv[], double& c, double& eps, uint& ncheb, uint& nwells) {
     ncheb   = 2;
     eps     = 3.;
@@ -12,11 +16,12 @@ int set_params(int argc, char * argv[], double& c, double& eps, uint& ncheb, uin
 	{"ncheb",   required_argument, NULL, 'b'},
 	{"c",	    required_argument, NULL, 'c'},
 	{"nwells",  required_argument, NULL, 'w'},
+	{"help",          no_argument, NULL, 'h'},
 	{0, 0, 0, 0}
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "e:b:c:w:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "e:b:c:w:h", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -26,10 +31,11 @@ int set_params(int argc, char * argv[], double& c, double& eps, uint& ncheb, uin
 	    case 'c': c = atof(optarg); break;
 	    case 'b': ncheb = uint(atoi(optarg)); break;
 	    case 'w': nwells = uint(atoi(optarg)); break;
+	    case 'h': usage();
+		      exit(0);
 	    case '?': 
-		      break;
 	    default:
-		      return 1;
+		      abort();
 	}
     }
 
