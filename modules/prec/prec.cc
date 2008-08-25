@@ -42,6 +42,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
 	    aux[i] += A.a[j];
 	}
+	// aux[i] == c[i]
 
 	nlinks[i] = A.ia[i+1] - A.ia[i] - 1;
 
@@ -65,9 +66,10 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     }
     
     std::vector<Tail>& tails = li.tails;
-    uint ntail = 0;
-    uint i0, i1;
-    double v;
+    tails.clear(); // just in case
+
+    uint i0 = -1, i1 = -1;
+    double v = 0;
     for (uint i = 0; i < N; i++) 
 	if (nlinks[i] == 1) {
 	    Tail tail;
@@ -108,20 +110,19 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		tail.push_back(tn);
 	    } while (nlinks[i0] == 1);
 
-	    tail.end_index = i0;
-
 	    TailNode tn;
 	    tn.index = i0;
-	    tn.a2    = 1/aux[i0];
-	    tn.a3    = -v*tn.a2; // v is link with previous node
 
 	    if (nlinks[i0] == 0) {
 		// end node in fully tridiagonal matrix
+		tn.a2 = 1/aux[i0];
 		nlinks[i0] = -1;
 		tail.end_is_local = false;
 	    } else {
+		tn.a2 = 1.;
 		tail.end_is_local = true;
 	    }
+	    tn.a3 = -v*tn.a2;
 
 	    tail.push_back(tn);
 
@@ -177,14 +178,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     for (uint i = 0; i < tails.size(); i++) {
 	Tail& tail = tails[i];
-	if (tail.end_is_local) {
-	    i0 = revtr[tail.end_index];
-	    if (i0 != uint(-1))
-		tail.end_index = revtr[tail.end_index];
-	    else {
-		tail.end_is_local = false;
-	    }
-	}
+	if (tail.end_is_local && revtr[tail[tail.size()-1].index] == uint(-1))
+	    tail.end_is_local = false;
     }
 
     uint n = tr.size();

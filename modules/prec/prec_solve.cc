@@ -14,7 +14,6 @@ void Prec::solve(Vector& f, Vector& x) THROW {
     mult_time = 0;
     restr_f   = 0;
     prol_x    = 0;
-    c_time    = 0;
 
     solve(f, x, 0);
 
@@ -26,7 +25,7 @@ void Prec::solve(Vector& f, Vector& x) THROW {
 #endif
 }
 
-void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
+void Prec::solve(Vector f, Vector& x, uint level) THROW {
     Level& li = levels[level];
     uint N = li.N;
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());
@@ -39,12 +38,11 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 
     for (uint i = 0; i < tails.size(); i++) {
 	Tail& tail = tails[i];
-	TailNode& tn = tail[0];
-	tn.f = tn.a2*f[tn.index];
+	f[tail[0].index] *= tail[0].a2;
 
 	for (uint j = 1; j < tail.size(); j++) {
 	    TailNode& tn = tail[j];
-	    tn.f = tn.a2*f[tn.index] + tn.a3*tail[j-1].f;
+	    f[tn.index] = tn.a2*f[tn.index] + tn.a3*f[tail[j-1].index];
 	}
     }
 
@@ -55,11 +53,6 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
 	delta = clock();
 	for (uint i = 0; i < n; i++) 
 	    f1[i] = f[tr[i]];
-	for (uint i = 0; i < tails.size(); i++) {
-	    Tail& tail = tails[i];
-	    if (tail.end_is_local) 
-		f1[tail.end_index] = tail[tail.size()-1].f;
-	}
 	restr_f += clock() - delta;
 
 	Vector& x1 = li.x1; 
@@ -140,11 +133,12 @@ void Prec::solve(const Vector& f, Vector& x, uint level) THROW {
     // restore tails
     for (int i = tails.size()-1; i >= 0; i--) {
 	const Tail& tail = tails[i];
+	uint tsize = tail.size();
 	if (tail.end_is_local == false) 
-	    x[tail.end_index] = f[tail.end_index];
-	for (int j = tail.size() - 2; j >= 0; j--) {
+	    x[tail[tsize-1].index] = f[tail[tsize-1].index];
+	for (int j = tsize - 2; j >= 0; j--) {
 	    const TailNode& tn = tail[j];
-	    x[tn.index] = tn.a1*x[tail[j+1].index] + tn.f;
+	    x[tn.index] = tn.a1*x[tail[j+1].index] + f[tn.index];
 	}
     }
 }

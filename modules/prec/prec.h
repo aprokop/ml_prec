@@ -23,7 +23,6 @@ private:
 	double f;
     };
     struct Tail : std::vector<TailNode> {
-	uint end_index;
 	bool end_is_local;
 	friend std::ostream& operator<<(std::ostream& os, const Tail& t) {
 	    os << t[0].index;
@@ -53,7 +52,7 @@ private:
 
     double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
-    void    solve(const Vector& f, Vector& x, uint level) THROW;
+    void    solve(Vector f, Vector& x, uint level) THROW;
 
 public:
     Prec(double eps, uint ncheb, const SkylineMatrix& A);
