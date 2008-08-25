@@ -103,7 +103,8 @@ public:
 
     // Friend functions
     friend int main(int argc, char* argv[]);
-    friend void	multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type = 'o') THROW;
+    friend void	multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
+    friend void	multiply(const CSRMatrix& A, const SVector& v, SVector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
 };

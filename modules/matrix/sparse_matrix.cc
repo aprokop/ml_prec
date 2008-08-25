@@ -53,7 +53,7 @@ void SparseMatrix::add(uint i, uint j, double x) THROW {
 	vrows[i][j] = x;
 }
 
-void multiply(const SparseMatrix& A, const Vector&v, Vector& res, char type) THROW {
+void multiply(const SparseMatrix& A, const Vector& v, Vector& res, char type) THROW {
     switch (type) {
 	case 'o': // A*v
 	    ASSERT(A.ncol == v.size(), "Multiplying sparse matrix and vector with different dimensions");

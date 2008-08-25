@@ -34,7 +34,7 @@ private:
     struct Level {
 	uint N, nnz;
 
-	Vector x1, u0, u1, f1;
+	SVector x1, u0, u1, f1;
 	SkylineMatrix A; // is not set for level 0
 
 	std::vector<uint> tr; 
@@ -51,7 +51,7 @@ private:
 
     double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
-    void    solve(Vector f, Vector& x, uint level) THROW;
+    void    solve(SVector f, SVector& x, uint level) THROW;
 
 public:
     Prec(double eps, uint ncheb, const SkylineMatrix& A);

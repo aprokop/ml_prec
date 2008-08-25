@@ -64,6 +64,41 @@ public:
     double norm_inf() const;
 };
 
+class SVector {
+private:
+    std::vector<double> data;
+
+public:
+    SVector(uint n = 0) : data(n) { }
+    SVector(const Vector& v);
+    ~SVector() { }
+    const SVector& operator=(const SVector& v);
+
+    const double& operator[](uint i) const THROW {
+	ASSERT(i < data.size(), "Index is out of bundaries: i = " << i << ", n = " << data.size());
+	return data[i];
+    }
+    double& operator[](uint i) THROW {
+	ASSERT(i < data.size(), "Index is out of bundaries: i = " << i << ", n = " << data.size());
+	return data[i];
+    }
+
+    uint size() const {
+	return data.size();
+    }
+    void resize(uint n) {
+	data.resize(n, 0.);
+    }
+    void swap(SVector& v) {
+	data.swap(v.data);
+    }
+
+    const SVector& operator+=(const SVector& v) THROW;
+    const SVector& operator-=(const SVector& v) THROW;
+    const SVector& operator*=(double f);
+    const SVector& operator/=(double f) THROW;
+};
+
 std::ostream& operator<<(std::ostream& os, const Vector& v);
 Vector operator*(double f, const Vector& v);
 

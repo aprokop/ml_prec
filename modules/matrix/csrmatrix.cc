@@ -14,7 +14,35 @@ CSRMatrix::CSRMatrix() {
     nrow = ncol = 0;
 }
 
-void multiply(const CSRMatrix& A, const Vector&v, Vector& res, char type) THROW {
+void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW {
+    ASSERT(res.size(), "Memory for result must have been already allocated");
+
+    memset(&res[0], 0, res.size()*sizeof(double));
+    switch (type) {
+	case 'o': // A*v
+	    ASSERT(A.ncol == v.size(), "Multiplying sparse matrix and vector with different dimensions");
+	    ASSERT(res.size() == A.nrow, "Not enough space in res vector");
+
+	    for (uint i = 0; i < A.nrow; i++) 
+		for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
+		    res[i] += A.a[j] * v[A.ja[j]];
+	    break;
+
+	case 't': // A^T*v
+	    ASSERT(A.nrow == v.size(), "Multiplying sparse matrix and vector with different dimensions");
+	    ASSERT(res.size() == A.ncol, "Not enough space in res vector");
+
+	    for (uint i = 0; i < A.nrow; i++) 
+		for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
+		    res[A.ja[j]] += A.a[j] * v[i];
+	    break;
+
+	default:
+	    THROW_EXCEPTION("Unknown type");
+    }
+}
+
+void multiply(const CSRMatrix& A, const SVector& v, SVector& res, char type) THROW {
     ASSERT(res.size(), "Memory for result must have been already allocated");
 
     memset(&res[0], 0, res.size()*sizeof(double));

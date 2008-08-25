@@ -8,6 +8,7 @@ libmodules_a_SOURCES = \
 		       matrix/skyline.cc \
 		       matrix/matrix.h \
 		       vector/vector.cc \
+		       vector/svector.cc \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
