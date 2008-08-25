@@ -5,9 +5,8 @@
 #include "include/exception.h"
 #include "modules/vector/vector.h"
 
-#include <map>
-
-class MatrixInterface {
+// We always assume that each row of CSRMatrix contains at least one element
+class CSRMatrix {
 protected:
     uint nrow, ncol;
 
@@ -16,9 +15,16 @@ protected:
 	ASSERT(j < ncol, "Col index is out of boudaries: j = " << j << ", ncol = " << ncol);
     }
 
+    std::vector<uint> ia, ja;
+    std::vector<double> a;
+
+    enum {
+	csr,
+	skyline
+    } mode;
+
 public:
-    virtual ~MatrixInterface() {}
-    virtual Vector operator*(const Vector& v) const THROW = 0;
+    CSRMatrix();
 
     uint rows() const {
 	return nrow;
@@ -30,60 +36,6 @@ public:
 	ASSERT(nrow == ncol, "size was called for rectangular matrix: nrow = " << nrow << ", ncol = " << ncol);
 	return nrow;
     }
-};
-
-// Class implements sparse matrix and operations with it
-class CSRMatrix;
-class SparseMatrix : public MatrixInterface {
-protected:
-    typedef std::map<uint, double> Row;
-    std::vector<Row> vrows;
-
-public:
-    SparseMatrix(uint m = 0) THROW;
-    SparseMatrix(uint m, uint n) THROW;
-    SparseMatrix(const CSRMatrix& A) THROW;
-
-    double  get(uint i, uint j) const THROW;
-    void    set(uint i, uint j, double x) THROW;
-    void    add(uint i, uint j, double x) THROW;
-
-    Vector operator*(const Vector& v) const THROW {
-	Vector x(nrow);
-	multiply(*this, v, x);
-	return x;
-    }
-
-    // Friend classes
-    friend class CSRMatrix;
-
-    // Friend functions
-    friend void multiply(const SparseMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
-    friend std::ostream& operator<<(std::ostream& os, const SparseMatrix& sm);
-};
-
-class FVSparseMatrix : public SparseMatrix {
-public:
-    FVSparseMatrix(uint m = 0) THROW : SparseMatrix(m) { }
-    FVSparseMatrix(uint m, uint n) THROW : SparseMatrix(m, n) { }
-
-    void    new_link(uint i0, uint i1, double x) THROW;
-    double  remove_link(uint i0, uint i1) THROW;
-};
-
-// We always assume that each row of CSRMatrix contains at least one element
-class CSRMatrix : public MatrixInterface {
-protected:
-    std::vector<uint> ia, ja;
-    std::vector<double> a;
-
-    enum {
-	csr,
-	skyline
-    } mode;
-
-public:
-    CSRMatrix();
 
     Vector operator*(const Vector& v) const THROW {
 	Vector x(nrow);
@@ -96,7 +48,6 @@ public:
     virtual bool is_symmetric() const;
 
     // Friend classes
-    friend class SparseMatrix;
     friend class Mesh;
     friend class Prec;
     friend class AMGPrec;
@@ -104,7 +55,6 @@ public:
     // Friend functions
     friend int main(int argc, char* argv[]);
     friend void	multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
-    friend void	multiply(const CSRMatrix& A, const SVector& v, SVector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
 };
@@ -119,6 +69,6 @@ public:
     bool exist(uint i, uint j) const THROW;
 };
 
-void multiply(const MatrixInterface& A, const Vector& v, Vector& res, char type = 'o') THROW;
+void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) THROW;
 
 #endif // #ifndef __MATRIX_H__

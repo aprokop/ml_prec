@@ -15,10 +15,7 @@ void Prec::solve(Vector& f, Vector& x) THROW {
     restr_f   = 0;
     prol_x    = 0;
 
-    SVector _f(f);
-    SVector _x(x.size());
-    solve(_f, _x, 0);
-    memcpy(&x[0], &_x[0], x.size()*sizeof(double));
+    solve(f, x, 0);
 
 #if 1
     LOG_DEBUG("Diagonal time = " << std::setprecision(3) << double(diag_time)/CLOCKS_PER_SEC);
@@ -28,7 +25,7 @@ void Prec::solve(Vector& f, Vector& x) THROW {
 #endif
 }
 
-void Prec::solve(SVector f, SVector& x, uint level) THROW {
+void Prec::solve(Vector f, Vector& x, uint level) THROW {
     Level& li = levels[level];
     uint N = li.N;
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());
@@ -53,24 +50,24 @@ void Prec::solve(SVector f, SVector& x, uint level) THROW {
     if (level < nlevels-1) {
 	uint n = levels[level+1].N;
 
-	SVector& f1 = li.f1; 
+	Vector& f1 = li.f1; 
 	delta = clock();
 	for (uint i = 0; i < n; i++) 
 	    f1[i] = f[tr[i]];
 	restr_f += clock() - delta;
 
-	SVector& x1 = li.x1; 
+	Vector& x1 = li.x1; 
 	if (ncheb) {
 	    // Perform Chebyshev iterations
-	    SVector& u0 = li.u0; 
-	    SVector& u1 = li.u1;
+	    Vector& u0 = li.u0; 
+	    Vector& u1 = li.u1;
 	    const CSRMatrix& A = levels[level+1].A;
 
 	    double lmin = levels[level+1].lmin;
 	    double lmax = levels[level+1].lmax;
 	    double eta = (lmax + lmin) / (lmax - lmin);
 
-	    SVector tmp(n);
+	    Vector tmp(n);
 	    double alpha, beta;
 	    // ===============    STEP 1    ===============
 	    alpha = 2/(lmax + lmin);

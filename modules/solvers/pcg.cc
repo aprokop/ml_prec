@@ -8,7 +8,7 @@
 
 DEFINE_LOGGER("PCG");
 
-Vector PCG(const MatrixInterface& A, const Vector& b, PrecBase& B, double eps) THROW {
+Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     ASSERT(A.rows() == A.cols() && A.cols() == b.size(), "Wrong dimesions: " << 
 	   "A:" << A.rows() << " x " << A.cols() << ", b: " << b.size());
 
@@ -34,7 +34,8 @@ Vector PCG(const MatrixInterface& A, const Vector& b, PrecBase& B, double eps) T
 	// x[i] = 100;
     }
     delta = clock();
-    r = b - A*x;
+    residual(A, b, x, r);
+    // r = b - A*x;
     mult += clock() - delta;
     nmult++;
 #else
