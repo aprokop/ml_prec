@@ -20,10 +20,9 @@ private:
 	uint index;
 	// x_i = a1*x_{i+1} + a2*f_i + a3*f_{i-1}
 	double a1, a2, a3;
-	double f;
     };
     struct Tail : std::vector<TailNode> {
-	bool end_is_local;
+	char end_type;
 	friend std::ostream& operator<<(std::ostream& os, const Tail& t) {
 	    os << t[0].index;
 	    for (uint i = 1; i < t.size(); i++)

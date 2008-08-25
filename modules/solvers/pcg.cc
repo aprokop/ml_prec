@@ -59,7 +59,6 @@ Vector PCG(const MatrixInterface& A, const Vector& b, PrecBase& B, double eps) T
 #endif
 
     while (norm/init_norm > eps) {
-	if (niter == 4) break;
 	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
 	delta = clock();

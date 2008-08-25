@@ -32,16 +32,17 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 
     clock_t delta, gdelta = clock();
 
-    const std::vector<uint>& dtr = li.dtr;
-    const std::vector<uint>& tr  = li.tr;
-    std::vector<Tail>& tails     = li.tails;
+    const std::vector<uint>& dtr   = li.dtr;
+    const std::vector<uint>& tr    = li.tr;
+    const std::vector<Tail>& tails = li.tails;
 
+    // truncate tails
     for (uint i = 0; i < tails.size(); i++) {
-	Tail& tail = tails[i];
+	const Tail& tail = tails[i];
 	f[tail[0].index] *= tail[0].a2;
 
 	for (uint j = 1; j < tail.size(); j++) {
-	    TailNode& tn = tail[j];
+	    const TailNode& tn = tail[j];
 	    f[tn.index] = tn.a2*f[tn.index] + tn.a3*f[tail[j-1].index];
 	}
     }
@@ -134,7 +135,7 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
     for (int i = tails.size()-1; i >= 0; i--) {
 	const Tail& tail = tails[i];
 	uint tsize = tail.size();
-	if (tail.end_is_local == false) 
+	if (tail.end_type == 'f')
 	    x[tail[tsize-1].index] = f[tail[tsize-1].index];
 	for (int j = tsize - 2; j >= 0; j--) {
 	    const TailNode& tn = tail[j];
