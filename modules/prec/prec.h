@@ -34,7 +34,7 @@ private:
     struct Level {
 	uint N, nnz;
 
-	Vector x1, u0, u1, f1;
+	Vector x1, f1, u0, u1;
 	SkylineMatrix A; // is not set for level 0
 
 	std::vector<uint> tr; 

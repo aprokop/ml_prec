@@ -49,7 +49,6 @@ Mesh::Mesh(double _c) {
 		nodes[ind].z = k*hz;
 	    }
     LEAVE_MESSAGE("Nodes constructed");
-
 }
 
 void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {

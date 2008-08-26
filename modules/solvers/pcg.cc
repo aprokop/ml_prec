@@ -43,7 +43,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     B.solve(r, z);
     cstr = clock() - delta;
 
-    memcpy(&p[0], &z[0], n*sizeof(double));
+    p = z;
     rz0 = ddot(r, z);
     norm = init_norm = r.norm_2();
 

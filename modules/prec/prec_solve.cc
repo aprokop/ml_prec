@@ -40,8 +40,6 @@ void Prec::solve(Vector& f, Vector& x, uint level) THROW {
 	Vector& x1 = li.x1; 
 	if (ncheb) {
 	    // Perform Chebyshev iterations
-	    Vector& u0 = li.u0; 
-	    Vector& u1 = li.u1;
 	    const CSRMatrix& A = levels[level+1].A;
 
 	    double lmin = levels[level+1].lmin;
@@ -57,6 +55,7 @@ void Prec::solve(Vector& f, Vector& x, uint level) THROW {
 	    x1 *= alpha;
 
 	    // ===============    STEP 2    ===============
+	    Vector& u1 = li.u1;
 	    if (ncheb > 1) {
 		u1 = x1;
 		alpha = 4/(lmax - lmin) * cheb(eta, 1)/cheb(eta, 2);
@@ -65,11 +64,12 @@ void Prec::solve(Vector& f, Vector& x, uint level) THROW {
 		multiply(A, u1, tmp);
 		tmp -= f1;
 		solve(tmp, x1, level+1);
-		for (uint k = 0; k < n; k++) 
-		    x1[k] = u1[k] - alpha*x1[k] + beta*u1[k];
+		x1 *= -alpha;
+		daxpy(1 + beta, u1, x1);
 	    }
 
 	    // ===============    STEPS 3+    ===============
+	    Vector& u0 = li.u0;
 	    for (uint i = 3; i <= ncheb; i++) {
 		// hack to avoid copying and allocating new memory
 		u0.swap(x1);

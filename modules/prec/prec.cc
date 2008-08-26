@@ -188,9 +188,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	revtr.clear();
 
 	li.x1.resize(n);
+	li.f1.resize(n);
 	li.u0.resize(n);
 	li.u1.resize(n);
-	li.f1.resize(n);
 
 	construct_level(level+1, nA);
     } else {
