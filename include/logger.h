@@ -162,15 +162,15 @@ namespace log4cxx {
 #else // #ifndef NO_LOGGER
 
 #define DEFINE_LOGGER(l) 
-#define LOG_DEBUG(v)	 std::cout << "DEBUG : " << __func__ << " : " << v << std::endl 
-#define LOG_INFO(v)      std::cout << "INFO  : " << __func__ << " : " << v << std::endl
-#define LOG_WARN(v)      std::cout << "WARN  : " << __func__ << " : " << v << std::endl
-#define LOG_ERROR(v)     std::cout << "ERROR : " << __func__ << " : " << v << std::endl
-#define LOG_FATAL(v)     std::cout << "FATAL : " << __func__ << " : " << v << std::endl
+#define LOG_DEBUG(v)	 std::cout << "DEBUG : " << __func__ << " : " << (v) << std::endl 
+#define LOG_INFO(v)      std::cout << "INFO  : " << __func__ << " : " << (v) << std::endl
+#define LOG_WARN(v)      std::cout << "WARN  : " << __func__ << " : " << (v) << std::endl
+#define LOG_ERROR(v)     std::cout << "ERROR : " << __func__ << " : " << (v) << std::endl
+#define LOG_FATAL(v)     std::cout << "FATAL : " << __func__ << " : " << (v) << std::endl
 
 #endif // #ifndef NO_LOGGER
 
-#define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << v)
+#define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 
 // Some other staff
 template<typename T>
