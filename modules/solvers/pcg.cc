@@ -2,10 +2,6 @@
 #include "include/logger.h"
 #include "include/time.h"
 
-#ifdef HAVE_LIBBLAS
-#include "include/blas.h"
-#endif
-
 DEFINE_LOGGER("PCG");
 
 Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
@@ -48,7 +44,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     cstr = clock() - delta;
 
     memcpy(&p[0], &z[0], n*sizeof(double));
-    rz0 = scalar_product(r, z);
+    rz0 = ddot(r, z);
     norm = init_norm = r.norm_2();
 
     int niter = 1;
@@ -64,16 +60,10 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	mult += clock() - delta;
 	nmult++;
 
-	alpha = rz0 / scalar_product(Ap, p);
+	alpha = rz0 / ddot(Ap, p);
 
-#ifdef HAVE_LIBBLAS
-	FORTRAN(daxpy)(&n, &alpha, &p[0], (int[]){1}, &x[0], (int[]){1});
-	double nalpha = -alpha;
-	FORTRAN(daxpy)(&n, &nalpha, &Ap[0], (int[]){1}, &r[0], (int[]){1});
-#else
-	x += alpha*p;
-	r -= alpha*Ap;
-#endif
+	daxpy(alpha, p, x);
+	daxpy(-alpha, Ap, r);
 
 	norm = r.norm_2();
 
@@ -82,15 +72,11 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	inv += clock() - delta;
 	ninv++;
 
-	rz1 = scalar_product(r, z);
+	rz1 = ddot(r, z);
 	beta = rz1 / rz0;
 
-#ifdef HAVE_LIBBLAS
-	FORTRAN(dscal)(&n, &beta, &p[0], (int[]){1});
-	FORTRAN(daxpy)(&n, (double[]){1}, &z[0], (int[]){1}, &p[0], (int[]){1});
-#else
-	p = z + beta*p;
-#endif
+	dscal(beta, p);
+	daxpy(1, z, p);
 
 	rz0 = rz1;
 	niter++;

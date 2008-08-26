@@ -43,6 +43,8 @@ public:
     double norm_2() const;
 };
 
-double scalar_product(const Vector& v1, const Vector& v2) THROW;
+void daxpy(double alpha, const Vector& x, Vector& y);
+void dscal(double alpha, Vector& x);
+double ddot(const Vector& x, const Vector& y);
 
 #endif // #ifndef __VECTOR_H__
