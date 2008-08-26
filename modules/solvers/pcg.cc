@@ -8,7 +8,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     ASSERT(A.rows() == A.cols() && A.cols() == b.size(), "Wrong dimesions: " << 
 	   "A:" << A.rows() << " x " << A.cols() << ", b: " << b.size());
 
-    int    n = b.size();
+    uint   n = b.size();
     Vector r(n), x(n), z(n);
     Vector p(n), Ap(n);
     double alpha, beta;
@@ -18,25 +18,23 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     clock_t  mult = 0,  inv = 0,  cstr = 0, delta;
     int	    nmult = 0, ninv = 0;
 
-#if 1
     LOG_DEBUG("Generating random initial approximation");
     srandom(time(NULL)); 
-    for (int i = 0; i < n; i++) {
-	x[i] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
-	// x[i] = 400.*(random() - 0.5*RAND_MAX)/RAND_MAX + 300;
+    for (uint i = 0; i < n; i++) {
+	// x[i] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
 	// x[i] = 1 - (i&1)*2;
-	// x[i] = 100*sin(3*i);
-	// x[i] = 1;
-	// x[i] = 100;
+	x[i] = 1;
     }
-    delta = clock();
-    // r = b - A*x;
     residual(A, b, x, r);
-    mult += clock() - delta;
-    nmult++;
-#else
-    // We take x0 = 0
-    r = b;
+#if 0
+    // w-Jacobi relaxation (w = 0.5)
+    double w = 0.5;
+    for (uint i = 0; i < n; i++)
+	x[i] += r[i] / (w*A.get(i,i));
+    residual(A, b, x, r);
+    for (uint i = 0; i < n; i++)
+	x[i] += r[i] / (w*A.get(i,i));
+    residual(A, b, x, r);
 #endif
 
     delta = clock();
