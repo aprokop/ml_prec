@@ -55,7 +55,7 @@ double Vector::norm_2() const {
 
 void daxpy(double alpha, const Vector& x, Vector& y) {
     int n = x.size();
-    ASSERT(y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
+    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
 #ifdef HAVE_LIBBLAS
     FORTRAN(daxpy)(&n, &alpha, &x[0], (int[]){1}, &y[0], (int[]){1});
@@ -67,7 +67,7 @@ void daxpy(double alpha, const Vector& x, Vector& y) {
 
 double ddot(const Vector& x, const Vector& y) {
     int n = x.size();
-    ASSERT(y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
+    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
 #ifdef HAVE_LIBBLAS
     return FORTRAN(ddot)(&n, &x[0], (int[]){1}, &y[0], (int[]){1});
@@ -86,6 +86,6 @@ void dscal(double alpha, Vector& x) {
     FORTRAN(dscal)(&n, &alpha, &x[0], (int[]){1});
 #else
     for (int i = 0; i < n; i++)
-	x[i] *= f;
+	x[i] *= alpha;
 #endif
 }
