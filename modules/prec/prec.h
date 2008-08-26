@@ -51,13 +51,12 @@ private:
 
     double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
-    void    solve(Vector f, Vector& x, uint level) THROW;
+    void    solve(Vector& f, Vector& x, uint level) THROW;
 
 public:
     Prec(double eps, uint ncheb, const SkylineMatrix& A);
 
     void graph_planes(uint level, const Mesh& mesh, char plane) const;
-    // void graph_z_lines() const;
 
     virtual void solve(Vector& f, Vector& x) THROW;
 

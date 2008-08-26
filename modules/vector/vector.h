@@ -1,11 +1,9 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
-#include "config/config.h"
 #include "include/exception.h"
 
 #include <vector>
-#include <tr1/memory>
 
 class Vector {
 private:
@@ -13,6 +11,7 @@ private:
 
 public:
     Vector(uint n = 0) : data(n) { }
+    Vector(const Vector& v);
     ~Vector() { }
     const Vector& operator=(const Vector& v);
 

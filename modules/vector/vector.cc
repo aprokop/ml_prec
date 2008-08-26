@@ -23,6 +23,10 @@ const Vector& Vector::operator=(const Vector& v) {
     return *this;
 }
 
+Vector::Vector(const Vector& v) {
+    *this = v;
+}
+
 const Vector& Vector::operator+=(const Vector& v) THROW {
     daxpy(1, v, *this);
     return *this;

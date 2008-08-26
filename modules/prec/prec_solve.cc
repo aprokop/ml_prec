@@ -6,10 +6,11 @@
 DEFINE_LOGGER("Prec");
 
 void Prec::solve(Vector& f, Vector& x) THROW {
-    solve(f, x, 0);
+    Vector _f(f);
+    solve(_f, x, 0);
 }
 
-void Prec::solve(Vector f, Vector& x, uint level) THROW {
+void Prec::solve(Vector& f, Vector& x, uint level) THROW {
     Level& li = levels[level];
     uint N = li.N;
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());
@@ -47,12 +48,12 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 	    double lmax = levels[level+1].lmax;
 	    double eta = (lmax + lmin) / (lmax - lmin);
 
-	    Vector tmp(n);
+	    Vector tmp(f1);
 	    double alpha, beta;
 	    // ===============    STEP 1    ===============
 	    alpha = 2/(lmax + lmin);
 
-	    solve(f1, x1, level+1);
+	    solve(tmp, x1, level+1);
 	    x1 *= alpha;
 
 	    // ===============    STEP 2    ===============
