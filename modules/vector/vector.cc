@@ -16,9 +16,10 @@ const Vector& Vector::operator=(const Vector& v) {
     if (this == &v)
 	return *this;
     const int n = v.size();
-    data.resize(v.size(), 0.);
+    data.resize(n, 0.);
 
-    memcpy(&data[0], &v[0], n*sizeof(double));
+    if (n)
+	memcpy(&data[0], &v[0], n*sizeof(double));
 
     return *this;
 }
