@@ -5,32 +5,14 @@
 
 DEFINE_LOGGER("Prec");
 
-clock_t diag_time = 0;
-clock_t mult_time = 0;
-clock_t restr_f   = 0;
-clock_t prol_x    = 0;
 void Prec::solve(Vector& f, Vector& x) THROW {
-    diag_time = 0;
-    mult_time = 0;
-    restr_f   = 0;
-    prol_x    = 0;
-
     solve(f, x, 0);
-
-#if 1
-    LOG_DEBUG("Diagonal time = " << std::setprecision(3) << double(diag_time)/CLOCKS_PER_SEC);
-    LOG_DEBUG("Multipli time = " << std::setprecision(3) << double(mult_time)/CLOCKS_PER_SEC);
-    LOG_DEBUG("Restrict time = " << std::setprecision(3) << double(restr_f)/CLOCKS_PER_SEC);
-    LOG_DEBUG("Prolong  time = " << std::setprecision(3) << double(prol_x)/CLOCKS_PER_SEC);
-#endif
 }
 
 void Prec::solve(Vector f, Vector& x, uint level) THROW {
     Level& li = levels[level];
     uint N = li.N;
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());
-
-    clock_t delta, gdelta = clock();
 
     const std::vector<uint>& dtr   = li.dtr;
     const std::vector<uint>& tr    = li.tr;
@@ -51,10 +33,8 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 	uint n = levels[level+1].N;
 
 	Vector& f1 = li.f1; 
-	delta = clock();
 	for (uint i = 0; i < n; i++) 
 	    f1[i] = f[tr[i]];
-	restr_f += clock() - delta;
 
 	Vector& x1 = li.x1; 
 	if (ncheb) {
@@ -77,14 +57,11 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 
 	    // ===============    STEP 2    ===============
 	    if (ncheb > 1) {
-		// u1.copy(x1);
 		u1 = x1;
 		alpha = 4/(lmax - lmin) * cheb(eta, 1)/cheb(eta, 2);
 		beta  = cheb(eta, 0) / cheb(eta, 2);
 
-		delta = clock();
 		multiply(A, u1, tmp);
-		mult_time += clock() - delta;
 		tmp -= f1;
 		solve(tmp, x1, level+1);
 		for (uint k = 0; k < n; k++) 
@@ -102,9 +79,7 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 		beta  = cheb(eta, i-2) / cheb(eta, i);
 
 		// x1 = u1 - alpha*solve(A*u1 - f1, level+1) + beta*(u1 - u0);
-		delta = clock();
 		multiply(A, u1, tmp);
-		mult_time += clock() - delta;
 		tmp -= f1;
 		solve(tmp, x1, level+1);
 		for (uint k = 0; k < n; k++) 
@@ -114,10 +89,8 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
 	    solve(f1, x1, level+1);
 	}
 
-	delta = clock();
 	for (uint i = 0; i < n; i++)
 	    x[tr[i]] = x1[i];
-	prol_x += clock() - delta;
 
     } else {
 	// for last level assert for now that we have only diagonal matrix
@@ -125,12 +98,10 @@ void Prec::solve(Vector f, Vector& x, uint level) THROW {
     }
 
     // solve diagonal part
-    delta = clock();
     for (uint i = 0; i < dtr.size(); i++) {
 	uint ii = dtr[i];
 	x[ii] = f[ii] / li.aux[ii];
     }
-    diag_time += clock() - delta;
 
     // restore tails
     for (int i = tails.size()-1; i >= 0; i--) {

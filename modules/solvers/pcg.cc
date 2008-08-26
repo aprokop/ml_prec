@@ -34,8 +34,8 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	// x[i] = 100;
     }
     delta = clock();
-    residual(A, b, x, r);
     // r = b - A*x;
+    residual(A, b, x, r);
     mult += clock() - delta;
     nmult++;
 #else
@@ -44,15 +44,12 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 #endif
 
     delta = clock();
-    // LOG_DEBUG("r = " << std::scientific << r);
     B.solve(r, z);
     cstr = clock() - delta;
 
     memcpy(&p[0], &z[0], n*sizeof(double));
-    // LOG_DEBUG("p = " << std::scientific << p);
     rz0 = scalar_product(r, z);
     norm = init_norm = r.norm_2();
-    // exit(0);
 
     int niter = 1;
 #ifdef ABSOLUTE_NORM
@@ -63,9 +60,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
 	delta = clock();
-	// LOG_DEBUG("p = " << std::scientific << p);
 	multiply(A, p, Ap);
-	// LOG_DEBUG("Ap = " << std::scientific << Ap);
 	mult += clock() - delta;
 	nmult++;
 
@@ -79,8 +74,6 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	x += alpha*p;
 	r -= alpha*Ap;
 #endif
-	// LOG_DEBUG("x = " << std::scientific << x);
-	// LOG_DEBUG("r = " << std::scientific << r);
 
 	norm = r.norm_2();
 
