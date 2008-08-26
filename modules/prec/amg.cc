@@ -66,7 +66,7 @@ AMGPrec::AMGPrec(const SkylineMatrix& A) {
     ja.resize(A.ja.size());
     for (uint j = 0; j < A.ja.size(); j++)
 	ja[j] = A.ja[j] + 1;
-    a  = A.a;
+    a = A.a;
 
     nnz = ia[n];
     LOG_DEBUG("nnz = " << nnz);

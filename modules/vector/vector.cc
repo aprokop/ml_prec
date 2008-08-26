@@ -49,47 +49,63 @@ const Vector& Vector::operator/=(double f) THROW {
 }
 
 double Vector::norm_2() const {
-#ifdef HAVE_LIBBLAS
-    int n = data.size();
-    return FORTRAN(dnrm2)(&n, &data[0], (int[]){1});
-#else
-    return sqrt(ddot(*this,*this));
-#endif
+    return dnrm2(*this);
 }
 
+// ===========================  BLAS PROCEDURES WRAPPERS  ===========================
+#ifdef HAVE_LIBBLAS
 void daxpy(double alpha, const Vector& x, Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
-#ifdef HAVE_LIBBLAS
     FORTRAN(daxpy)(&n, &alpha, &x[0], (int[]){1}, &y[0], (int[]){1});
-#else
-    for (int i = 0; i < n; i++)
-	y[i] += alpha*x[i];
-#endif
+}
+
+void dscal(double alpha, Vector& x) {
+    int n = x.size();
+
+    FORTRAN(dscal)(&n, &alpha, &x[0], (int[]){1});
 }
 
 double ddot(const Vector& x, const Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
-#ifdef HAVE_LIBBLAS
     return FORTRAN(ddot)(&n, &x[0], (int[]){1}, &y[0], (int[]){1});
+}
+
+double dnrm2(const Vector& x) {
+    int n = x.size();
+
+    return FORTRAN(dnrm2)(&n, &x[0], (int[]){1});
+}
 #else
-    double s = 0.;
+void daxpy(double alpha, const Vector& x, Vector& y) {
+    int n = x.size();
+    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
+
     for (int i = 0; i < n; i++)
-	s += x[i] * y[i];
-    return s;
-#endif
+	y[i] += alpha*x[i];
 }
 
 void dscal(double alpha, Vector& x) {
     int n = x.size();
 
-#ifdef HAVE_LIBBLAS
-    FORTRAN(dscal)(&n, &alpha, &x[0], (int[]){1});
-#else
     for (int i = 0; i < n; i++)
 	x[i] *= alpha;
-#endif
 }
+
+double ddot(const Vector& x, const Vector& y) {
+    int n = x.size();
+    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
+
+    double s = 0.;
+    for (int i = 0; i < n; i++)
+	s += x[i] * y[i];
+    return s;
+}
+
+double dnrm2(const Vector& x) {
+    return sqrt(ddot(*this,*this));
+}
+#endif

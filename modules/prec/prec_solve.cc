@@ -104,7 +104,7 @@ void Prec::solve(Vector& f, Vector& x, uint level) THROW {
 	x[ii] = f[ii] / li.aux[ii];
     }
 
-    // restore tails
+    // restore tails in *backward* order
     for (int i = tails.size()-1; i >= 0; i--) {
 	const Tail& tail = tails[i];
 	uint tsize = tail.size();

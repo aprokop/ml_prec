@@ -42,8 +42,9 @@ public:
     double norm_2() const;
 };
 
-void daxpy(double alpha, const Vector& x, Vector& y);
-void dscal(double alpha, Vector& x);
+void   daxpy(double alpha, const Vector& x, Vector& y);
+void   dscal(double alpha, Vector& x);
 double ddot(const Vector& x, const Vector& y);
+double dnrm2(const Vector& x);
 
 #endif // #ifndef __VECTOR_H__
