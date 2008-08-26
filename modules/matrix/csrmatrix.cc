@@ -14,6 +14,30 @@ CSRMatrix::CSRMatrix() {
     nrow = ncol = 0;
 }
 
+const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
+    nrow = A.nrow;
+    ncol = A.ncol;
+    mode = A.mode;
+
+    if (nrow) {
+	uint n = A.ia.size();
+	uint nnz = A.ia[n-1];
+	ia.resize(n);
+	ja.resize(nnz);
+	a.resize(nnz);
+	memcpy(&ia[0], &A.ia[0], n*sizeof(int));
+	memcpy(&ja[0], &A.ja[0], nnz*sizeof(int));
+	memcpy(&a[0],  &A.a[0],  nnz*sizeof(double));
+
+    } else {
+	ia.clear();
+	ja.clear();
+	a.clear();
+    }
+
+    return *this;
+}
+
 double CSRMatrix::get(uint i, uint j) const THROW {
     // LOG_DEBUG("i = " << i << ", j = " << j);
     check_indices(i, j);
@@ -139,11 +163,10 @@ void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW
 }
 
 void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) THROW {
-    multiply(A, x, r);
+    const int n = A.size();
+    ASSERT((int)b.size() == n && (int)x.size() == n && (int)r.size() == n, "Wrong sizes");
 
-    const int n = r.size();
-    ASSERT(b.size() == n, "XX");
+    multiply(A, x, r);
     for (int i = 0; i < n; i++)
 	r[i] = b[i] - r[i];
 }
-

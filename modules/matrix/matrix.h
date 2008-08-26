@@ -25,6 +25,7 @@ protected:
 
 public:
     CSRMatrix();
+    const CSRMatrix& operator=(const CSRMatrix& A);
 
     uint rows() const {
 	return nrow;

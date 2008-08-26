@@ -15,6 +15,7 @@ Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A) {
     // reserve
     nlevels = 20;
     levels.resize(nlevels);
+    levels[0].A = A;
     construct_level(0, A);
 }
 
