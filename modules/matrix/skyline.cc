@@ -3,6 +3,8 @@
 #include "include/exception.h"
 #include "include/tools.h"
 
+#include <algorithm>
+
 DEFINE_LOGGER("SkylineMatrix");
 
 SkylineMatrix::SkylineMatrix() {
@@ -40,7 +42,6 @@ bool SkylineMatrix::exist(uint i, uint j) const THROW {
 void SkylineMatrix::add(uint i, uint j, double v) THROW {
     check_indices(i, j);
 
-    // in case matrix is in skyline form
     if (i == j) {
 	a[ia[i]] += v;
 	return;

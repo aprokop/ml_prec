@@ -4,6 +4,7 @@
 #include <cmath>
 #include <fstream>
 #include <iomanip>
+#include <map>
 
 DEFINE_LOGGER("Prec");
 
@@ -44,7 +45,7 @@ double Prec::cheb(double x, uint k) const {
    }
 }
 
-void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
+void Prec::graph_planes(const std::string& filename, uint level, const Mesh& mesh, char plane) const {
     ASSERT(level, "Does not work for initial level");
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
 
@@ -67,7 +68,7 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
     mult_x = mult_y = std::min(mult_x, mult_y);
 #endif
 
-    std::ofstream ofs("graph.ps");
+    std::ofstream ofs(filename.c_str());
     ASSERT(ofs.good(), "Cannot open file");
     ofs << std::fixed << std::setprecision(4);
 
@@ -92,18 +93,20 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
     ofs << "userdict/start-hook known{start-hook}if\n"; 
 
     // construct reverse map
-    std::vector<uint> gtr = levels[level-1].tr;
-    uint n = gtr.size();
-    for (int l = level-2; l >= 0; l--)
-	for (uint i = 0; i < n; i++)
-	    gtr[i] = levels[l].tr[gtr[i]];
     std::map<uint,uint> rev_map;
-    for (uint i = 0; i < n; i++)
-	rev_map[gtr[i]] = i;
-    gtr.clear();
+    if (level) {
+	std::vector<uint> gtr = levels[level-1].tr;
+	uint n = gtr.size();
+	for (int l = level-2; l >= 0; l--)
+	    for (uint i = 0; i < n; i++)
+		gtr[i] = levels[l].tr[gtr[i]];
+	for (uint i = 0; i < n; i++)
+	    rev_map[gtr[i]] = i;
+	gtr.clear();
+    } 
 
     uint i0 = -1, i1 = -1;
-    uint li0, li1;
+    uint li0 = -1, li1 = -1;
     std::map<uint,uint>::const_iterator it0, it1;
     const SkylineMatrix& A = levels[level].A;
     ASSERT(A.size() == n, "");
@@ -138,12 +141,17 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
 			    break;
 		    }
 
-		    if ((it0 = rev_map.find(i0)) == rev_map.end() || 
-			(it1 = rev_map.find(i1)) == rev_map.end())
-			continue;
+		    if (level) {
+			if ((it0 = rev_map.find(i0)) == rev_map.end() || 
+			    (it1 = rev_map.find(i1)) == rev_map.end())
+			    continue;
 
-		    li0 = it0->second;
-		    li1 = it1->second;
+			li0 = it0->second;
+			li1 = it1->second;
+		    } else {
+			li0 = i0;
+			li1 = i1;
+		    }
 
 		    if (!A.exist(li0, li1))
 			continue;
@@ -169,9 +177,11 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
 		     case 'y': i0 = mesh.index(i,k,j); break;
 		 }
 
-		 if ((it0 = rev_map.find(i0)) == rev_map.end())
-		     continue;
-		 li0 = it0->second;
+		 if (level) {
+		     if ((it0 = rev_map.find(i0)) == rev_map.end())
+			 continue;
+		     li0 = it0->second;
+		 } 
 
 		 if (k) { 
 		     switch (plane) {
@@ -179,11 +189,17 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
 			 case 'x': i1 = mesh.index(k-1,i,j); break;
 			 case 'y': i1 = mesh.index(i,k-1,j); break;
 		     }
-		     if ((it1 = rev_map.find(i1)) != rev_map.end()) {
-			 li1 = it1->second;
-			 if (A.exist(li0, li1))
+		     if (level) {
+			 if ((it1 = rev_map.find(i1)) != rev_map.end()) {
+			     li1 = it1->second;
+			     if (A.exist(li0, li1))
+				 fz++;
+			 } 
+		     } else {
+			 if (A.exist(i0,i1))
 			     fz++;
 		     }
+
 		 }
 		 if (k < n3-1) {
 		     switch (plane) {
@@ -191,9 +207,14 @@ void Prec::graph_planes(uint level, const Mesh& mesh, char plane) const {
 			 case 'x': i1 = mesh.index(k+1,i,j); break;
 			 case 'y': i1 = mesh.index(i,k+1,j); break;
 		     }
-		     if ((it1 = rev_map.find(i1)) != rev_map.end()) {
-			 li1 = it1->second;
-			 if (A.exist(li0, li1))
+		     if (level) {
+			 if ((it1 = rev_map.find(i1)) != rev_map.end()) {
+			     li1 = it1->second;
+			     if (A.exist(li0, li1))
+				 fz++;
+			 }
+		     } else {
+			 if (A.exist(i0,i1))
 			     fz++;
 		     }
 		 }

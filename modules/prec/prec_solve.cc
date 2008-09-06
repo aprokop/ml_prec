@@ -107,10 +107,9 @@ void Prec::solve(Vector& f, Vector& x, uint level) THROW {
     // restore tails in *backward* order
     for (int i = tails.size()-1; i >= 0; i--) {
 	const Tail& tail = tails[i];
-	uint tsize = tail.size();
 	if (tail.end_type == 'f')
-	    x[tail[tsize-1].index] = f[tail[tsize-1].index];
-	for (int j = tsize - 2; j >= 0; j--) {
+	    x[tail.back().index] = f[tail.back().index];
+	for (int j = tail.size() - 2; j >= 0; j--) {
 	    const TailNode& tn = tail[j];
 	    x[tn.index] = tn.a1*x[tail[j+1].index] + f[tn.index];
 	}

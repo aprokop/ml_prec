@@ -5,6 +5,8 @@
 #include "include/exception.h"
 #include "modules/vector/vector.h"
 
+typedef unsigned int uint;
+
 // We always assume that each row of CSRMatrix contains at least one element
 class CSRMatrix {
 protected:
@@ -25,6 +27,8 @@ protected:
 
 public:
     CSRMatrix();
+    virtual ~CSRMatrix() { }
+
     const CSRMatrix& operator=(const CSRMatrix& A);
 
     uint rows() const {

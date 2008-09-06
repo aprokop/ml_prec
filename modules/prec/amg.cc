@@ -284,5 +284,5 @@ AMGPrec::AMGConfig::AMGConfig() {
      * 1 - no coarse grid operator truncation
      */
     ntr = 0;
-};
+}
 

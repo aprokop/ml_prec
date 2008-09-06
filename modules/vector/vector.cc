@@ -7,6 +7,7 @@
 #endif
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 
 DEFINE_LOGGER("Vector");
@@ -59,26 +60,30 @@ void daxpy(double alpha, const Vector& x, Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
-    FORTRAN(daxpy)(&n, &alpha, &x[0], (int[]){1}, &y[0], (int[]){1});
+    int one = 1;
+    FORTRAN(daxpy)(&n, &alpha, &x[0], &one, &y[0], &one);
 }
 
 void dscal(double alpha, Vector& x) {
     int n = x.size();
 
-    FORTRAN(dscal)(&n, &alpha, &x[0], (int[]){1});
+    int one = 1;
+    FORTRAN(dscal)(&n, &alpha, &x[0], &one);
 }
 
 double ddot(const Vector& x, const Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
-    return FORTRAN(ddot)(&n, &x[0], (int[]){1}, &y[0], (int[]){1});
+    int one = 1;
+    return FORTRAN(ddot)(&n, &x[0], &one, &y[0], &one);
 }
 
 double dnrm2(const Vector& x) {
     int n = x.size();
 
-    return FORTRAN(dnrm2)(&n, &x[0], (int[]){1});
+    int one = 1;
+    return FORTRAN(dnrm2)(&n, &x[0], &one);
 }
 #else
 void daxpy(double alpha, const Vector& x, Vector& y) {

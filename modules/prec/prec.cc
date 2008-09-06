@@ -1,7 +1,7 @@
 #include "prec.h"
 #include "include/logger.h"
 
-#include <set>
+#include <map>
 
 DEFINE_LOGGER("Prec");
 
@@ -71,6 +71,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     uint i0 = -1, i1 = -1;
     double v = 0;
+#if 1
     for (uint i = 0; i < N; i++) 
 	if (nlinks[i] == 1) {
 	    Tail tail;
@@ -85,7 +86,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		uint j;
 		for (j = A.ia[i0]+1; j < A.ia[i0+1]; j++) {
 		    uint jj = A.ja[j];
-		    if (i0 < jj && vec[i0][jj] != 2 || i0 > jj && vec[jj][i0] != 2) {
+		    if ((i0 < jj && vec[i0][jj] != 2) || (i0 > jj && vec[jj][i0] != 2)) {
 			i1 = jj;
 			v = A.a[j] / gbeta;
 			break;
@@ -128,6 +129,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	    tails.push_back(tail);
 	}
+#endif
 
     std::vector<uint>& tr  = li.tr;
     std::vector<uint>& dtr = li.dtr;
@@ -150,7 +152,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
 		uint jj = A.ja[j];
 		// dynamic c
-		if (i < jj && vec[i][jj] != 2 || i > jj && vec[jj][i] != 2) {
+		if ((i < jj && vec[i][jj] != 2) || (i > jj && vec[jj][i] != 2)) {
 		    // link stays, scale it
 		    nA.ja.push_back(A.ja[j]);
 		    double v = A.a[j] / gbeta;
@@ -179,7 +181,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     // check whether the ends are really local
     for (uint i = 0; i < tails.size(); i++) {
 	Tail& tail = tails[i];
-	if (tail.end_type == 'l' && revtr[tail[tail.size()-1].index] == uint(-1))
+	if (tail.end_type == 'l' && revtr[tail.back().index] == uint(-1))
 	    tail.end_type = 't';
     }
 

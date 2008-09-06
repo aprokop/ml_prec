@@ -12,7 +12,12 @@
 
 DEFINE_LOGGER("Mesh");
 
-Mesh::Mesh(double _c) {
+Mesh::Mesh(double _c) :
+	nx(60),	      ny(220),	    nz(85), N(nx*ny*nz),
+	hx(20),	      hy(10),	    hz(2),
+	size_x(1200), size_y(2200), size_z(170)
+
+{
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
 

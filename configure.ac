@@ -21,7 +21,7 @@ AC_PROG_LN_S
 FFLAGS="-O3"
 # CXXFLAGS
 CFLAGS="-O3"
-CXXFLAGS="-W -Wall -Wno-unused"
+CXXFLAGS="-W -Wall -Wno-unused -pedantic -ansi"
 AC_ARG_WITH(debug, AC_HELP_STRING([--with-debug@<:@=full|assert|none@:>@], [enable debugging and parameters check @<:@default=assert@:>@]),__debug="$withval", __debug="assert")
 test "x$__debug" = "xfull"   && CXXFLAGS="-g -O0 $CXXFLAGS"
 test "x$__debug" = "xassert" && CXXFLAGS="-O3 $CXXFLAGS"

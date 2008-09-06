@@ -3,15 +3,17 @@
 
 #include "modules/matrix/matrix.h"
 
+typedef unsigned int uint;
+
 struct Point {
     double x, y, z;
 };
 
 class Mesh {
 private:
-    static const uint	    nx = 60,	   ny = 220,	  nz = 85, N = nx*ny*nz;
-    static const double	    hx = 20,	   hy = 10, 	  hz = 2;
-    static const double size_x = 1200, size_y = 2200, size_z = 170;
+    const uint	 nx,	 ny,	 nz,	N;
+    const double hx,	 hy, 	 hz;
+    const double size_x, size_y, size_z;
 
     double c;
     std::vector<double> kx, ky, kz;

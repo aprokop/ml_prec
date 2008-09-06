@@ -4,6 +4,7 @@
 #include "include/tools.h"
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <numeric>
 #include <algorithm>

@@ -5,6 +5,8 @@
 
 #include <vector>
 
+typedef unsigned int uint;
+
 class Vector {
 private:
     std::vector<double> data;

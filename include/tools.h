@@ -3,10 +3,14 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <sys/types.h>
 #include <signal.h>
+
+typedef unsigned int uint;
 
 #define FORTRAN(f) f ## _
 

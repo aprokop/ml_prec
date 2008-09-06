@@ -2,6 +2,8 @@
 #include "include/logger.h"
 #include "include/time.h"
 
+#include <cstdlib>
+
 DEFINE_LOGGER("PCG");
 
 Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {

@@ -6,6 +6,8 @@
 #include "modules/mesh/mesh.h"
 #include <iostream>
 
+typedef unsigned int uint;
+
 class PrecBase {
 public:
     virtual ~PrecBase() {};
@@ -34,7 +36,7 @@ private:
     struct Level {
 	uint N, nnz;
 
-	Vector x1, f1, u0, u1;
+	mutable Vector x1, f1, u0, u1;
 	SkylineMatrix A; // is not set for level 0
 
 	std::vector<uint> tr; 
@@ -56,9 +58,9 @@ private:
 public:
     Prec(double eps, uint ncheb, const SkylineMatrix& A);
 
-    void graph_planes(uint level, const Mesh& mesh, char plane) const;
+    void graph_planes(const std::string& filename, uint level, const Mesh& mesh, char plane) const;
 
-    virtual void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x) THROW;
 
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };
@@ -85,7 +87,8 @@ private:
 	int ntr; 
 
 	AMGConfig();
-    } amg_config;
+    };
+    AMGConfig amg_config;
 
     // ***************************************************************
     // Note: we use FORTRAN index enumeration
@@ -107,7 +110,7 @@ private:
 public:
     AMGPrec(const SkylineMatrix& A);
 
-    virtual void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x) THROW;
 };
 
 #endif
