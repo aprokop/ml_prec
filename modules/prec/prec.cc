@@ -19,6 +19,39 @@ Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A) {
     construct_level(0, A);
 }
 
+class LinkType {
+private:
+    std::vector<std::map<uint,char> > vec;
+
+    void check(uint i, uint j) const {
+	ASSERT(i != j, "i == j == " << i);
+	ASSERT(i < vec.size() && j < vec.size(), "i = " << i << ", j = " << j << ", vec.size() == " << vec.size());
+    }
+
+public:
+    LinkType(uint n) : vec(n) { }
+
+    char operator()(uint i, uint j) const {
+	check(i,j);
+
+	uint i0, i1;
+	if (i < j) { i0 = i; i1 = j; }
+	else       { i0 = j; i1 = i; }
+
+	std::map<uint,char>::const_iterator it = vec[i0].find(i1);
+	if (it != vec[i0].end())
+	    return it->second;
+	return 0;
+    }
+
+    char& operator()(uint i, uint j) {
+	check(i,j);
+	if (i < j)
+	    return vec[i][j];
+	return vec[j][i];
+    }
+};
+
 void Prec::construct_level(uint level, const SkylineMatrix& A) {
     ASSERT(level < nlevels, "Incorrect level: " << level << " (" << nlevels << ")");
     Level& li = levels[level];
@@ -33,7 +66,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     aux.resize(N);
 
     std::vector<int> nlinks(N);
-    std::vector<std::map<uint,char> > vec(N);
+    LinkType ltype(N);
+
+    // ===============  STEP 1 : link removing : using c  ===============
     std::multimap<double,uint> rmap;
     for (uint i = 0; i < N; i++) {
 	rmap.clear();
@@ -52,11 +87,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    s += 2*it->first / (aux[i]*(gbeta-1));
 	    if (s <= 1) {
 		uint i0, i1;
-		if (i < it->second) { i0 = i; i1 = it->second; }
-		else		    { i0 = it->second; i1 = i; }
-		vec[i0][i1]++;
+		ltype(i,it->second)++;
 
-		if (i > it->second && vec[i0][i1] == 2) {
+		if (i > it->second && ltype(i,it->second) == 2) {
 		    nlinks[i]--;
 		    nlinks[it->second]--;
 		}
@@ -65,7 +98,10 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    }
 	}
     }
+
+    // ===============  STEP 2 : link removing : not using c  ===============
     
+    // ===============  STEP 3 : tail removing ===============
     std::vector<Tail>& tails = li.tails;
     tails.clear(); // just in case
 
@@ -86,7 +122,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		uint j;
 		for (j = A.ia[i0]+1; j < A.ia[i0+1]; j++) {
 		    uint jj = A.ja[j];
-		    if ((i0 < jj && vec[i0][jj] != 2) || (i0 > jj && vec[jj][i0] != 2)) {
+		    if (ltype(i0,jj) != 2) {
 			i1 = jj;
 			v = A.a[j] / gbeta;
 			break;
@@ -103,9 +139,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 		aux[i1] += aux[i0]*(-v) / (aux[i0] - v);
 
-		if (i0 < i1) vec[i0][i1] = 2;
-		else         vec[i1][i0] = 2;
-
+		ltype(i0,i1) = 2;
 		i0 = i1;
 
 		tail.push_back(tn);
@@ -152,7 +186,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
 		uint jj = A.ja[j];
 		// dynamic c
-		if ((i < jj && vec[i][jj] != 2) || (i > jj && vec[jj][i] != 2)) {
+		if (ltype(i,jj) != 2) {
 		    // link stays, scale it
 		    nA.ja.push_back(A.ja[j]);
 		    double v = A.a[j] / gbeta;

@@ -46,7 +46,6 @@ double Prec::cheb(double x, uint k) const {
 }
 
 void Prec::graph_planes(const std::string& filename, uint level, const Mesh& mesh, char plane) const {
-    ASSERT(level, "Does not work for initial level");
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
 
     uint n1 = 0, n2 = 0, n3 = 0;
@@ -109,7 +108,6 @@ void Prec::graph_planes(const std::string& filename, uint level, const Mesh& mes
     uint li0 = -1, li1 = -1;
     std::map<uint,uint>::const_iterator it0, it1;
     const SkylineMatrix& A = levels[level].A;
-    ASSERT(A.size() == n, "");
     
     uint left = 0, total = 0;
     uint pages = 0;

@@ -2,4 +2,5 @@ syn keyword cType uint
 syn keyword cType VectorInterface Vector SVector
 syn keyword cType MatrixInterface SparseMatrix FVSparseMatrix CSRMatrix SkylineMatrix
 syn keyword cType Mesh Prec AMGPrec PrecBase
+syn keyword cType LinkType
 syn keyword cDefine ASSERT THROW_EXCEPTION THROW
