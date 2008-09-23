@@ -68,9 +68,15 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
     TIME_START();
     A.nrow = A.ncol = N;
     A.ia.push_back(0);
+#if   defined ORDER_ZXY
     for (uint j = 0; j < ny; j++)
 	for (uint i = 0; i < nx; i++)
 	    for (uint k = 0; k < nz; k++) {
+#elif defined ORDER_XYZ
+    for (uint k = 0; k < nz; k++) 
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx; i++) {
+#endif
 		i0 = index(i, j, k);
 		A.ja.push_back(i0);
 		A.a.push_back(c);

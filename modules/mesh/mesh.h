@@ -9,6 +9,8 @@ struct Point {
     double x, y, z;
 };
 
+// #define ORDER_XYZ
+#define ORDER_ZXY
 class Mesh {
 private:
     const uint	 nx,	 ny,	 nz,	N;
@@ -26,9 +28,10 @@ private:
     // x oriented ordering: zyx
     uint index(uint i, uint j, uint k) const {
 	ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
-#if 1
+
+#if   defined ORDER_ZXY
 	return j*nx*nz + i*nz + k; // z oriented ordering: yxz
-#else
+#elif defined ORDER_XYZ
 	return index_k(i, j, k);
 #endif
     }
