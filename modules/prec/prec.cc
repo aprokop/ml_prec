@@ -5,7 +5,7 @@
 
 DEFINE_LOGGER("Prec");
 
-Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A) {
+Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
 
     galpha = 1.;
@@ -100,6 +100,75 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     }
 
     // ===============  STEP 2 : link removing : not using c  ===============
+    // it changes spectrum on the finest level to at least [1,4], but we don't use that estimate
+#if 1
+    if (level == 0) {
+	uint removed = 0;
+
+	uint iis[4];
+	uint nx = mesh.nx, ny = mesh.ny, nz = mesh.nz;
+#if 0
+	for (uint k = 0; k < nz; k++)
+	    for (uint j = 0; j < ny-1; j++)
+		for (uint i = j&1; i < nx-1; i += 2) {
+		    // xy plane
+		    iis[0] = mesh.index(  i,  j,k);
+		    iis[1] = mesh.index(i+1,  j,k);
+		    iis[2] = mesh.index(i+1,j+1,k);
+		    iis[3] = mesh.index(  i,j+1,k);
+#else
+	for (uint i = 0; i < nx; i++) 
+	    for (uint k = 0; k < nz-1; k++)
+		for (uint j = k&1; j < ny-1; j += 2) {
+		    // yz plane
+		    iis[0] = mesh.index(i,  j,  k);
+		    iis[1] = mesh.index(i,j+1,  k);
+		    iis[2] = mesh.index(i,j+1,k+1);
+		    iis[3] = mesh.index(i,  j,k+1);
+#endif
+
+		    if (ltype(iis[0],iis[1]) == 2 ||
+			ltype(iis[1],iis[2]) == 2 ||
+			ltype(iis[2],iis[3]) == 2 ||
+			ltype(iis[3],iis[0]) == 2)
+			continue;
+
+		    uint i0, i1;
+#if 0
+		    double min = -A.get(iis[0],iis[1]), t;
+		    if ((t = -A.get(iis[1],iis[2])) < min) { min = t; i0 = 1; i1 = 2; }
+		    if ((t = -A.get(iis[2],iis[3])) < min) { min = t; i0 = 2; i1 = 3; }
+		    if ((t = -A.get(iis[3],iis[0])) < min) { min = t; i0 = 3; i1 = 0; }
+#else
+		    rmap.clear();
+		    // LOG_DEBUG("iis: " << iis[0] << ", " << iis[1] << ", " << iis[2] << ", " << iis[3]);
+		    // LOG_DEBUG("As : " << -A.get(iis[0],iis[1]) << ", " << -A.get(iis[1],iis[2]) << ", " << 
+			      // -A.get(iis[2],iis[3]) << ", " << -A.get(iis[3],iis[0]));
+
+		    rmap.insert(std::pair<double,uint>(-A.get(iis[0],iis[1]), 0));
+		    rmap.insert(std::pair<double,uint>(-A.get(iis[1],iis[2]), 1));
+		    rmap.insert(std::pair<double,uint>(-A.get(iis[2],iis[3]), 2));
+		    rmap.insert(std::pair<double,uint>(-A.get(iis[3],iis[0]), 3));
+
+		    std::multimap<double,uint>::const_iterator it = rmap.begin();
+		    double min = it->first, smin = (++it)->first;
+		    // LOG_DEBUG("(1) " << min << ", (2) " << smin);
+		    if (smin < 3./(gbeta-1)*min)
+			continue;
+		    i0 = rmap.begin()->second;
+#endif
+		    i1 = (i0+1)&3;
+
+		    ltype(iis[i0],iis[i1]) = 2;
+		    nlinks[iis[i0]]--;
+		    nlinks[iis[i1]]--;
+
+		    removed++;
+		}
+	std::cout << "removed: " << removed << std::endl;
+	ASSERT(false, "want to abort");
+    }
+#endif
     
     // ===============  STEP 3 : tail removing ===============
     std::vector<Tail>& tails = li.tails;

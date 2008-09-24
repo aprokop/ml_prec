@@ -45,7 +45,7 @@ double Prec::cheb(double x, uint k) const {
    }
 }
 
-void Prec::graph_planes(const std::string& filename, uint level, const Mesh& mesh, char plane) const {
+void Prec::graph_planes(const std::string& filename, uint level, char plane) const {
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
 
     uint n1 = 0, n2 = 0, n3 = 0;

@@ -16,6 +16,8 @@ public:
 
 class Prec : public PrecBase {
 private:
+    const Mesh& mesh;
+
     double galpha, gbeta;
 
     struct TailNode {
@@ -56,9 +58,9 @@ private:
     void    solve(Vector& f, Vector& x, uint level) THROW;
 
 public:
-    Prec(double eps, uint ncheb, const SkylineMatrix& A);
+    Prec(double eps, uint ncheb, const SkylineMatrix& A, const Mesh& _mesh);
 
-    void graph_planes(const std::string& filename, uint level, const Mesh& mesh, char plane) const;
+    void graph_planes(const std::string& filename, uint level, char plane) const;
 
     void solve(Vector& f, Vector& x) THROW;
 
