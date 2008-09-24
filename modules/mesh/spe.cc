@@ -68,21 +68,6 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
     TIME_START();
     A.nrow = A.ncol = N;
     A.ia.push_back(0);
-#if   defined ORDER_ZXY
-    for (uint j = 0; j < ny; j++)
-	for (uint i = 0; i < nx; i++)
-	    for (uint k = 0; k < nz; k++) {
-#elif defined ORDER_XYZ
-    for (uint k = 0; k < nz; k++) 
-	for (uint j = 0; j < ny; j++)
-	    for (uint i = 0; i < nx; i++) {
-#endif
-		i0 = index(i, j, k);
-		A.ja.push_back(i0);
-		A.a.push_back(c);
-
-		uint dind = A.a.size() - 1;
-		double v;
 
 #define ADD(di,dj,dk,axis) { \
     i1 = index(i+di, j+dj, k+dk); \
@@ -91,6 +76,18 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
     A.a.push_back(-v); \
     A.a[dind] += v; \
 }
+
+#if defined ORDER_ZXY
+    for (uint j = 0; j < ny; j++)
+	for (uint i = 0; i < nx; i++)
+	    for (uint k = 0; k < nz; k++) {
+		i0 = index(i, j, k);
+		A.ja.push_back(i0);
+		A.a.push_back(c);
+
+		uint dind = A.a.size() - 1;
+		double v;
+
 		if (j)	      ADD( 0, -1,  0, y);
 		if (i)	      ADD(-1,  0,  0, x);
 		if (k)	      ADD( 0,  0, -1, z);
@@ -99,8 +96,28 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
 		if (j < ny-1) ADD( 0, +1,  0, y);
 
 		A.ia.push_back(A.ja.size());
-#undef ADD
 	    }
+#elif defined ORDER_XYZ
+    for (uint k = 0; k < nz; k++) 
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx; i++) {
+		i0 = index(i, j, k);
+		A.ja.push_back(i0);
+		A.a.push_back(c);
+
+		uint dind = A.a.size() - 1;
+		double v;
+
+		if (k)	      ADD( 0,  0, -1, z);
+		if (j)	      ADD( 0, -1,  0, y);
+		if (i)	      ADD(-1,  0,  0, x);
+		if (i < nx-1) ADD(+1,  0,  0, x);
+		if (j < ny-1) ADD( 0, +1,  0, y);
+		if (k < nz-1) ADD( 0,  0, +1, z);
+
+		A.ia.push_back(A.ja.size());
+	    }
+#endif
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
     LEAVE_MESSAGE("Matrix constructed");
 

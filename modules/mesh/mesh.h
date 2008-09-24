@@ -9,8 +9,8 @@ struct Point {
     double x, y, z;
 };
 
-// #define ORDER_XYZ
-#define ORDER_ZXY
+#define ORDER_XYZ
+// #define ORDER_ZXY
 class Mesh {
 private:
     const uint	 nx,	 ny,	 nz,	N;
