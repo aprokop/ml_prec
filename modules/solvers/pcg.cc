@@ -21,7 +21,12 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     int	    nmult = 0, ninv = 0;
 
     LOG_DEBUG("Generating random initial approximation");
+#if 0
     srandom(time(NULL)); 
+#else
+    // we don't want it to change from run to run
+    srandom(3);
+#endif
     for (uint i = 0; i < n; i++) {
 	// x[i] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
 	// x[i] = 1 - (i&1)*2;
