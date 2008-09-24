@@ -1,3 +1,4 @@
+#include "include/logger.h"
 #include "main.h"
 
 #include <getopt.h>
@@ -43,6 +44,12 @@ int set_params(int argc, char * argv[], double& c, double& eps, uint& ncheb, uin
 
     if (!ncheb || !eps) 
 	return 2;
+    if (ncheb == 2 && eps >= 4 ||
+	ncheb == 3 && eps >= 9) {
+	std::cout << "Wrong relation between ncheb and eps" << std::endl;
+	return 3;
+    }
+
 
     return 0;
 }
