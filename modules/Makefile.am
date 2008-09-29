@@ -9,11 +9,13 @@ libmodules_a_SOURCES = \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
-		       prec/prec.cc \
-		       prec/prec_misc.cc \
-		       prec/prec_solve.cc \
-		       prec/amg.cc \
-		       prec/prec.h \
+		       prec/cheb/cheb_constr.cc \
+		       prec/cheb/cheb_misc.cc \
+		       prec/cheb/cheb_solve.cc \
+		       prec/cheb/cheb_prec.h \
+		       prec/amg/amg.cc \
+		       prec/amg/amg_prec.h \
+		       prec/prec_base.h \
 		       solvers/pcg.cc \
 		       solvers/amg1r6.f \
 		       solvers/solvers.h
