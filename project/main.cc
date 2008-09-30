@@ -55,8 +55,8 @@ int main (int argc, char * argv[]) {
     RelPrec B(eps, A, mesh);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    B.graph_planes("l1.ps", 1, 'z');
-    exit(1);
+    // B.graph_planes("grid.ps", 2, 'z');
+    // exit(1);
 #elif defined AMG_PREC
     AMGPrec B(A);
 #endif

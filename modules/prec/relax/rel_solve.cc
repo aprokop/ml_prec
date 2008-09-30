@@ -33,18 +33,36 @@ void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
     if (level < nlevels-1) {
 	uint n = levels[level+1].N;
 
-	// Vector& f1 = li.f1; 
-	// for (uint i = 0; i < n; i++) 
-	    // f1[i] = f[tr[i]];
+	Vector& f1 = li.f1; 
+	for (uint i = 0; i < n; i++) 
+	    f1[i] = f[tr[i]];
 
-	// Vector& x1 = li.x1; 
-	// if (ncheb) {
-	    // Perform Chebyshev iterations
-	    // const CSRMatrix& A = levels[level+1].A;
+	Vector& x1 = li.x1; 
+	if (niter) {
+	    const CSRMatrix& A = levels[level+1].A;
 
+	    Vector& x0 = li.x0; 
+	    Vector& x1 = li.x1; 
 
-	// for (uint i = 0; i < n; i++)
-	    // x[tr[i]] = x1[i];
+	    Vector tmp(f1);
+	    // ===============    STEP 1    ===============
+	    // x1 = B^{-1}f
+	    solve(tmp, x1, level+1);
+
+	    // ===============    STEP 2+    ===============
+	    for (uint i = 1; i < niter; i++) {
+		// x1 = x0 + B^{-1}(f - A*x0)
+		x0.swap(x1);
+		residual(A, f1, x0, tmp);
+		solve(tmp, x1, level+1);
+		daxpy(1., x0, x1);
+	    }
+	} else {
+	    solve(f1, x1, level+1);
+	}
+
+	for (uint i = 0; i < n; i++)
+	    x[tr[i]] = x1[i];
 
     } else {
 	// for last level assert for now that we have only diagonal matrix

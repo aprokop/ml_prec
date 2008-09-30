@@ -13,11 +13,13 @@ private:
     const Mesh& mesh;
 
     std::vector<double> sigmas;
+    double gamma;
+    uint niter;
 
     struct Level {
 	uint N, nnz;
-	uint niter;
 
+	mutable Vector x0, x1, f1;
 	SkylineMatrix A;
 
 	std::vector<uint> tr; 

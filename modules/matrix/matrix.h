@@ -75,6 +75,7 @@ public:
     bool exist(uint i, uint j) const THROW;
 };
 
+// r = b - Ax
 void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) THROW;
 
 #endif // #ifndef __MATRIX_H__

@@ -1,6 +1,8 @@
 #include "rel_prec.h"
 #include "include/logger.h"
+#include "include/tools.h"
 
+#include <numeric>
 #include <map>
 
 DEFINE_LOGGER("Prec");
@@ -8,9 +10,19 @@ DEFINE_LOGGER("Prec");
 RelPrec::RelPrec(double eps, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
 
-    sigmas.resize(2);
-    sigmas[0] = 3;
-    sigmas[1] = 4;
+    niter = 2;
+
+    uint type = 2;
+    sigmas.resize(type);
+    switch (type) {
+	case 3:
+	    sigmas[2] = 5;
+	case 2:
+	    sigmas[1] = 4;
+	case 1 :
+	    sigmas[0] = 3;
+    }
+    gamma = 2;
 
     // reserve
     nlevels = 20;
@@ -37,11 +49,8 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 
     // ===============  STEP 1 : link removing : using c  ===============
     // calculate c
-    for (uint i = 0; i < N; i++) {
-	aux[i] = A.a[A.ia[i]];
-	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) 
-	    aux[i] += A.a[j];
-    }
+    for (uint i = 0; i < N; i++) 
+	aux[i] = std::accumulate(A.a.begin() + A.ia[i], A.a.begin() + A.ia[i+1], 0.);
 
     typedef std::multimap<double,uint> map_type;
     map_type rmap;
@@ -54,12 +63,14 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	double c = aux[i];
 
 	double s = 0., beta;
-	for (map_type::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
+	map_type::const_iterator it;
+	for (it = rmap.begin(); it != rmap.end(); it++) {
 	    // s + 2a/(c(sigma-1)) <= 1
 	    std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(), 
 								      1 + 2*it->first / (c*(1-s)));
 	    if (lb != sigmas.end()) {
-		beta = 2*it->first / (c*(sigmas[*lb]-1));
+		double sigma = *lb;
+		beta = 2*it->first / (c*(sigma-1));
 		s += beta;
 		uint i0, i1;
 		ltype(i,it->second)++;
@@ -67,11 +78,11 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 		if (i > it->second && ltype(i,it->second) == 2) {
 		    nlinks[i]--;
 		    nlinks[it->second]--;
-		    aux[i]          += (sigmas[*lb-1] - 1)*beta*c;
-		    aux[it->second] += (sigmas[*lb-1] - 1)*beta*c;
+		    aux[i]          += (sigma - 1)*beta*c;
+		    aux[it->second] += (sigma - 1)*beta*c;
 		}
 	    } else {
-		aux[i] += (sigmas.back() - 1)*(1-s)*c;
+		aux[i] += (gamma - 1)*(1-s)*c;
 		break;
 	    }
 	}
@@ -198,6 +209,12 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     uint n = tr.size();
     if (n) {
 	nA.nrow = nA.ncol = n;
+	revtr.clear();
+
+	li.x0.resize(n);
+	li.x1.resize(n);
+	li.f1.resize(n);
+
 	construct_level(level+1, nA);
     } else {
 	LOG_INFO("Decreasing number of levels: " << nlevels << " -> " << level+1);
