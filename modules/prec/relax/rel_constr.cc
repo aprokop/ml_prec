@@ -12,7 +12,7 @@ RelPrec::RelPrec(double eps, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_
 
     niter = 2;
 
-    uint type = 2;
+    uint type = 1;
     sigmas.resize(type);
     switch (type) {
 	case 3:
@@ -22,7 +22,7 @@ RelPrec::RelPrec(double eps, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_
 	case 1 :
 	    sigmas[0] = 3;
     }
-    gamma = 2;
+    gamma = 3;
 
     // reserve
     nlevels = 20;
@@ -73,13 +73,26 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 		beta = 2*it->first / (c*(sigma-1));
 		s += beta;
 		uint i0, i1;
-		ltype(i,it->second)++;
 
-		if (i > it->second && ltype(i,it->second) == 2) {
-		    nlinks[i]--;
-		    nlinks[it->second]--;
-		    aux[i]          += (sigma - 1)*beta*c;
-		    aux[it->second] += (sigma - 1)*beta*c;
+		if (i < it->second) {
+		    // scale this part by gamma in case 
+		    // link won't be removed later
+		    aux[i] += (gamma-1)*beta*c;
+		    ltype(i,it->second)++;
+		}
+		if (i > it->second) {
+		    if (ltype(i,it->second) == 1) {
+			// remove link
+			ltype(i,it->second) = 2;
+
+			nlinks[i]--;
+			nlinks[it->second]--;
+			aux[i]          += (sigma - 1)*beta*c;
+			aux[it->second] += (sigma - gamma)*beta*c;
+		    } else {
+			// we don't delete link
+			aux[i] += (gamma-1)*beta*c;
+		    }
 		}
 	    } else {
 		aux[i] += (gamma - 1)*(1-s)*c;
