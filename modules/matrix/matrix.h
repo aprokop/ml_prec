@@ -55,6 +55,7 @@ public:
     // Friend classes
     friend class Mesh;
     friend class Prec;
+    friend class RelPrec;
     friend class AMGPrec;
 
     // Friend functions

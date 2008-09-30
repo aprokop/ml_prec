@@ -42,6 +42,7 @@ public:
     void construct_matrix(SkylineMatrix& A, uint nwells = 0) const;
 
     friend class Prec;
+    friend class RelPrec;
 };
 
 #endif // __MESH_H__

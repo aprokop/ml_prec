@@ -15,6 +15,10 @@ libmodules_a_SOURCES = \
 		       prec/cheb/cheb_prec.h \
 		       prec/amg/amg.cc \
 		       prec/amg/amg_prec.h \
+		       prec/relax/rel_constr.cc \
+		       prec/relax/rel_misc.cc \
+		       prec/relax/rel_solve.cc \
+		       prec/relax/rel_prec.h \
 		       prec/prec_base.h \
 		       solvers/pcg.cc \
 		       solvers/amg1r6.f \

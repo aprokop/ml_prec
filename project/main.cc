@@ -4,6 +4,7 @@
 #include "modules/mesh/mesh.h"
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/amg/amg_prec.h"
+#include "modules/prec/relax/rel_prec.h"
 #include "modules/solvers/solvers.h"
 
 // logger
@@ -39,9 +40,9 @@ int main (int argc, char * argv[]) {
     mesh.construct_matrix(A, nwells);
 
     TIME_INIT();
-#define CHEB_PREC
+// #define CHEB_PREC
 // #define AMG_PREC
-// #define RELX_PREC
+#define RELX_PREC
 #if   defined CHEB_PREC
     TIME_START();
     Prec B(eps, ncheb, A, mesh);
@@ -51,11 +52,11 @@ int main (int argc, char * argv[]) {
     // exit(1);
 #elif defined RELX_PREC
     TIME_START();
-    Prec B(eps, ncheb, A, mesh);
+    RelPrec B(eps, A, mesh);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    // B.graph_planes("l1.ps", 1, 'z');
-    // exit(1);
+    B.graph_planes("l1.ps", 1, 'z');
+    exit(1);
 #elif defined AMG_PREC
     AMGPrec B(A);
 #endif
