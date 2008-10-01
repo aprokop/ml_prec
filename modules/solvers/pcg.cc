@@ -91,16 +91,15 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
 #if 1
-#undef LOG_DEBUG
-#define LOG_DEBUG(v)	 std::cout << "DEBUG : " << __func__ << " : " << v << std::endl 
-
+#define LLL_DEBUG(v)	 LOG_DEBUG(v);std::cout << v << std::endl 
     double out = double(mult)/CLOCKS_PER_SEC;
-    LOG_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
+    LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
     out = double(inv)/CLOCKS_PER_SEC;
-    LOG_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
-    LOG_DEBUG(std::fixed << std::setprecision(3) << 
+    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
+    LLL_DEBUG(std::fixed << std::setprecision(3) << 
 	      "Time of (possible construction) [time of first inversion - avg] = " << 
 	      double(cstr - inv/ninv)/CLOCKS_PER_SEC);
+#undef LLL_DEBUG
 #endif
 
     return x;

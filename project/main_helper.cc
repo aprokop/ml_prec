@@ -60,6 +60,8 @@ int set_params(int argc, char * argv[], double& c, double& sigma, std::vector<do
 	niter == 3 && sigma >= 9) {
 	LOG_WARN("Possibly wrong relation between niter and sigma");
     }
+    if (sigmas.empty())
+	sigmas.push_back(sigma);
 
 
     return 0;

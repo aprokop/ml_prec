@@ -32,16 +32,14 @@ private:
     std::vector<Level> levels;
     uint ncheb;
 
-    double  cheb(double x, uint k) const;
     void    construct_level(uint i, const SkylineMatrix& A);
     void    solve(Vector& f, Vector& x, uint level) THROW;
 
 public:
     Prec(double eps, uint ncheb, const SkylineMatrix& A, const Mesh& _mesh);
 
-    void graph_planes(const std::string& filename, uint level, char plane) const;
-
     void solve(Vector& f, Vector& x) THROW;
+    void graph_planes(const std::string& filename, uint level, char plane) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };

@@ -19,7 +19,8 @@ private:
     struct Level {
 	uint N, nnz;
 
-	mutable Vector x0, x1, f1;
+	mutable Vector x1, f1;
+	Vector tmp0, tmp1;
 	SkylineMatrix A;
 
 	std::vector<uint> tr; 
@@ -37,8 +38,9 @@ private:
 public:
     RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, const std::vector<double>& _sigmas, const Mesh& _mesh);
 
-    void graph_planes(const std::string& filename, uint level, char plane) const;
     void solve(Vector& f, Vector& x) THROW;
+    void graph_planes(const std::string& filename, uint level, char plane) const;
+
     friend std::ostream& operator<<(std::ostream& os, const RelPrec& p);
 };
 

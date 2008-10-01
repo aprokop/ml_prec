@@ -19,6 +19,8 @@ libmodules_a_SOURCES = \
 		       prec/relax/rel_misc.cc \
 		       prec/relax/rel_solve.cc \
 		       prec/relax/rel_prec.h \
+		       prec/misc/misc.cc \
+		       prec/misc/misc.h \
 		       prec/prec_base.h \
 		       solvers/pcg.cc \
 		       solvers/amg1r6.f \

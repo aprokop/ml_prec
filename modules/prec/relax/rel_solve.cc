@@ -41,21 +41,25 @@ void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
 	if (niter) {
 	    const CSRMatrix& A = levels[level+1].A;
 
-	    Vector& x0 = li.x0; 
-	    Vector& x1 = li.x1; 
-
-	    Vector tmp(f1);
+	    Vector& tmp0 = li.tmp0;
+	    Vector& tmp1 = li.tmp1;
+#if 1
+	    double tau = 1.;
+#else
+	    double tau = 2./(1 + 1./sigmas.back());
+#endif
+	    tmp0 = f1;
 	    // ===============    STEP 1    ===============
 	    // x1 = B^{-1}f
-	    solve(tmp, x1, level+1);
+	    solve(tmp0, x1, level+1);
+	    dscal(tau, x1);
 
 	    // ===============    STEP 2+    ===============
 	    for (uint i = 1; i < niter; i++) {
 		// x1 = x0 + B^{-1}(f - A*x0)
-		x0.swap(x1);
-		residual(A, f1, x0, tmp);
-		solve(tmp, x1, level+1);
-		daxpy(1., x0, x1);
+		residual(A, f1, x1, tmp0); 
+		solve(tmp0, tmp1, level+1); 
+		daxpy(tau, tmp1, x1);
 	    }
 	} else {
 	    solve(f1, x1, level+1);

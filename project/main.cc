@@ -41,7 +41,10 @@ int main (int argc, char * argv[]) {
 #elif defined RELX_PREC
     std::cout << "niter   = " << niter << std::endl;
     std::cout << "gamma   = " << sigma << std::endl;
-    std::cout << "sigmas  = " << sigmas << std::endl;
+    std::cout << "sigmas  = ";
+    for (uint i = 0; i < sigmas.size(); i++)
+	std::cout << sigmas[i] << " ";
+    std::cout << std::endl;
 #endif
     // std::cout << "nwells  = " << nwells << std::endl;
 
@@ -63,8 +66,8 @@ int main (int argc, char * argv[]) {
     RelPrec B(A, niter, sigma, sigmas, mesh);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    // B.graph_planes("grid.ps", 2, 'z');
-    // exit(1);
+    // B.graph_planes("grid.ps", 1, 'z');
+    // return 0;
 #elif defined AMG_PREC
     AMGPrec B(A);
 #endif

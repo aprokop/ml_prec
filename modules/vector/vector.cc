@@ -97,6 +97,8 @@ void daxpy(double alpha, const Vector& x, Vector& y) {
 void dscal(double alpha, Vector& x) {
     int n = x.size();
 
+    if (is_equal(alpha, 1.))
+	return;
     for (int i = 0; i < n; i++)
 	x[i] *= alpha;
 }

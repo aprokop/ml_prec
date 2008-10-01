@@ -50,6 +50,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     typedef std::multimap<double,uint> map_type;
     map_type rmap;
     for (uint i = 0; i < N; i++) {
+	// rmap contains links in ascending order
 	rmap.clear();
 	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) 
 	    rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
@@ -57,13 +58,16 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 	double c = aux[i];
 
+	// s corresponds to already used part of c in this node
 	double s = 0., beta;
 	map_type::const_iterator it;
 	for (it = rmap.begin(); it != rmap.end(); it++) {
+	    // calculate what would be the minimum sigma so that corresponding beta is less than 1-s
 	    // s + 2a/(c(sigma-1)) <= 1
 	    std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(), 
 								      1 + 2*it->first / (c*(1-s)));
 	    if (lb != sigmas.end()) {
+		// there exists sigma so that we can throw this link from this side
 		double sigma = *lb;
 		beta = 2*it->first / (c*(sigma-1));
 		s += beta;
@@ -83,13 +87,16 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 			nlinks[i]--;
 			nlinks[it->second]--;
 			aux[i]          += (sigma - 1)*beta*c;
+			// fix erroneous earlier assumption, multiply by proper sigma
 			aux[it->second] += (sigma - gamma)*beta*c;
 		    } else {
-			// we don't delete link
+			// we don't delete link thus multiply the corresponding
+			// part by gamma
 			aux[i] += (gamma-1)*beta*c;
 		    }
 		}
 	    } else {
+		// multiply remaining part by gamma
 		aux[i] += (gamma - 1)*(1-s)*c;
 		break;
 	    }
@@ -219,7 +226,8 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	nA.nrow = nA.ncol = n;
 	revtr.clear();
 
-	li.x0.resize(n);
+	li.tmp0.resize(n);
+	li.tmp1.resize(n);
 	li.x1.resize(n);
 	li.f1.resize(n);
 
