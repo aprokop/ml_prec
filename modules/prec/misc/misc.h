@@ -2,6 +2,7 @@
 #define __MISC_H__
 
 #include "include/exception.h"
+#include "modules/matrix/matrix.h"
 #include "modules/mesh/mesh.h"
 
 #include <iostream>
