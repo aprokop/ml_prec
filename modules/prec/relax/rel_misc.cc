@@ -10,6 +10,9 @@ DEFINE_LOGGER("Prec");
 
 std::ostream& operator<<(std::ostream& os, const RelPrec& p) {
     os << "nlevels = " << p.nlevels << std::endl;
+    os << "niter   = " << p.niter << std::endl;
+    os << "gamma   = " << p.gamma << std::endl;
+    os << "sigmas  = " << p.sigmas << std::endl;
     for (uint level = 0; level < p.nlevels; level++) {
 	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
 	const RelPrec::Level& li = p.levels[level];

@@ -35,7 +35,7 @@ private:
     void    solve(Vector& f, Vector& x, uint level) THROW;
 
 public:
-    RelPrec(double eps, const SkylineMatrix& A, const Mesh& _mesh);
+    RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, const std::vector<double>& _sigmas, const Mesh& _mesh);
 
     void graph_planes(const std::string& filename, uint level, char plane) const;
     void solve(Vector& f, Vector& x) THROW;

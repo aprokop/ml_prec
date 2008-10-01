@@ -7,22 +7,17 @@
 
 DEFINE_LOGGER("Prec");
 
-RelPrec::RelPrec(double eps, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_mesh) {
+RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, 
+		 const std::vector<double>& _sigmas, const Mesh& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
+    ASSERT(_gamma >= 1, "Wrong gamma: " << _gamma);
+    ASSERT(_sigmas.size(), "Sigmas is empty");
+    for (uint i = 0; i < _sigmas.size(); i++)
+	ASSERT(_sigmas[i] > 1, "Wrong sigmas[" << i << "]: " << _sigmas[i]);
 
-    niter = 2;
-
-    uint type = 1;
-    sigmas.resize(type);
-    switch (type) {
-	case 3:
-	    sigmas[2] = 5;
-	case 2:
-	    sigmas[1] = 4;
-	case 1 :
-	    sigmas[0] = 3;
-    }
-    gamma = 3;
+    niter  = _niter;
+    gamma  = _gamma;
+    sigmas = _sigmas;
 
     // reserve
     nlevels = 20;

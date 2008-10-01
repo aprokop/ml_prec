@@ -15,24 +15,35 @@
 
 DEFINE_LOGGER("Main");
 
+// #define CHEB_PREC
+// #define AMG_PREC
+#define RELX_PREC
+
 int main (int argc, char * argv[]) {
     // Initialize logger
 #ifndef NO_LOGGER
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
-    uint ncheb;
+    uint niter;
     uint nwells;
-    double c, eps;
-    if (set_params(argc, argv, c, eps, ncheb, nwells)) {
+    double c, sigma, gamma;
+    std::vector<double> sigmas;
+    if (set_params(argc, argv, c, sigma, sigmas, niter, nwells)) {
 	LOG_INFO("Error while setting parameters, exiting...");
 	std::cout << "Error while setting parameters, exiting..." << std::endl;
 	return 1;
     }
-    std::cout << "ncheb   = " << ncheb << std::endl;
-    std::cout << "eps     = " << eps << std::endl;
     std::cout << "c       = " << c << std::endl;
-    std::cout << "nwells  = " << nwells << std::endl;
+#if   defined CHEB_PREC
+    std::cout << "ncheb   = " << niter << std::endl;
+    std::cout << "sigma   = " << sigma << std::endl;
+#elif defined RELX_PREC
+    std::cout << "niter   = " << niter << std::endl;
+    std::cout << "gamma   = " << sigma << std::endl;
+    std::cout << "sigmas  = " << sigmas << std::endl;
+#endif
+    // std::cout << "nwells  = " << nwells << std::endl;
 
     SkylineMatrix A;
 
@@ -40,19 +51,16 @@ int main (int argc, char * argv[]) {
     mesh.construct_matrix(A, nwells);
 
     TIME_INIT();
-// #define CHEB_PREC
-// #define AMG_PREC
-#define RELX_PREC
 #if   defined CHEB_PREC
     TIME_START();
-    Prec B(eps, ncheb, A, mesh);
+    Prec B(sigma, niter, A, mesh);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
     // B.graph_planes("l1.ps", 1, 'z');
     // exit(1);
 #elif defined RELX_PREC
     TIME_START();
-    RelPrec B(eps, A, mesh);
+    RelPrec B(A, niter, sigma, sigmas, mesh);
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
     // B.graph_planes("grid.ps", 2, 'z');
