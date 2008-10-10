@@ -43,23 +43,18 @@ void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
 
 	    Vector& tmp0 = li.tmp0;
 	    Vector& tmp1 = li.tmp1;
-#if 1
-	    double tau = 1.;
-#else
-	    double tau = 2./(1 + 1./sigmas.back());
-#endif
+
 	    tmp0 = f1;
 	    // ===============    STEP 1    ===============
 	    // x1 = B^{-1}f
 	    solve(tmp0, x1, level+1);
-	    dscal(tau, x1);
 
 	    // ===============    STEP 2+    ===============
 	    for (uint i = 1; i < niter; i++) {
 		// x1 = x0 + B^{-1}(f - A*x0)
 		residual(A, f1, x1, tmp0); 
 		solve(tmp0, tmp1, level+1); 
-		daxpy(tau, tmp1, x1);
+		daxpy(1., tmp1, x1);
 	    }
 	} else {
 	    solve(f1, x1, level+1);
