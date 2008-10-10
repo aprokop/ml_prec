@@ -108,8 +108,12 @@ void daxpy(double alpha, const Vector& x, Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
-    for (int i = 0; i < n; i++)
-	y[i] += alpha*x[i];
+    if (!is_equal(alpha, 1.))
+	for (int i = 0; i < n; i++)
+	    y[i] += alpha*x[i];
+    else
+	for (int i = 0; i < n; i++)
+	    y[i] += x[i];
 }
 
 void dscal(double alpha, Vector& x) {
