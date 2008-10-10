@@ -56,8 +56,8 @@ int set_params(int argc, char * argv[], double& c, double& sigma, std::vector<do
 
     if (!niter || !sigma) 
 	return 2;
-    if (niter == 2 && sigma >= 4 ||
-	niter == 3 && sigma >= 9) {
+    if ((niter == 2 && sigma >= 4) ||
+	(niter == 3 && sigma >= 9)) {
 	LOG_WARN("Possibly wrong relation between niter and sigma");
     }
     if (sigmas.empty())

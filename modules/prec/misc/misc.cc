@@ -19,7 +19,7 @@ double cheb(double x, uint k) {
 }
 
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
-		  char plane, bool map_identity, const Mesh& mesh) {
+		  char plane, bool map_identity, const MeshBase& mesh) {
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
 
     uint n1 = 0, n2 = 0, n3 = 0;
@@ -69,7 +69,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     uint li0 = -1, li1 = -1;
     std::map<uint,uint>::const_iterator it0, it1;
 
-    const std::vector<Point>& nodes = mesh.get_nodes();
+    const std::vector<Point>& nodes = mesh.nodes;
     
     uint left = 0, total = 0;
     uint pages = 0;

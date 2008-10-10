@@ -10,7 +10,7 @@ typedef unsigned int uint;
 
 class Prec : public PrecBase {
 private:
-    const Mesh& mesh;
+    const MeshBase& mesh;
 
     double galpha, gbeta;
 
@@ -36,7 +36,7 @@ private:
     void    solve(Vector& f, Vector& x, uint level) THROW;
 
 public:
-    Prec(double eps, uint ncheb, const SkylineMatrix& A, const Mesh& _mesh);
+    Prec(double eps, uint ncheb, const SkylineMatrix& A, const MeshBase& _mesh);
 
     void solve(Vector& f, Vector& x) THROW;
     void graph_planes(const std::string& filename, uint level, char plane) const;

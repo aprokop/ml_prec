@@ -1,5 +1,6 @@
 #include "vector.h"
 #include "include/logger.h"
+#include "include/tools.h"
 
 #include "config/config.h"
 #ifdef HAVE_LIBBLAS
@@ -50,9 +51,26 @@ const Vector& Vector::operator/=(double f) THROW {
     return *this;
 }
 
+bool Vector::operator>=(double v) const {
+    const uint n = data.size();
+    for (uint i = 0; i < n; i++)
+	if (data[i] < v)
+	    return false;
+    return true;
+}
+
 double Vector::norm_2() const {
     return dnrm2(*this);
 }
+
+bool Vector::is_nan() const {
+    const uint n = data.size();
+    for (uint i = 0; i < n; i++)
+	if (::is_nan(data[i]))
+	    return true;
+    return false;
+}
+
 
 // ===========================  BLAS PROCEDURES WRAPPERS  ===========================
 #ifdef HAVE_LIBBLAS
@@ -114,6 +132,6 @@ double ddot(const Vector& x, const Vector& y) {
 }
 
 double dnrm2(const Vector& x) {
-    return sqrt(ddot(*this,*this));
+    return sqrt(ddot(x,x));
 }
 #endif

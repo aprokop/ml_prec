@@ -1,5 +1,6 @@
 #include "solvers.h"
 #include "include/logger.h"
+#include "include/tools.h"
 #include "include/time.h"
 
 #include <cstdlib>
@@ -14,7 +15,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     Vector r(n), x(n), z(n);
     Vector p(n), Ap(n);
     double alpha, beta;
-    double rz0, rz1;
+    double app, rz0, rz1;
     double norm, init_norm;
 
     clock_t  mult = 0,  inv = 0,  cstr = 0, delta;
@@ -65,7 +66,12 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
 	mult += clock() - delta;
 	nmult++;
 
-	alpha = rz0 / ddot(Ap, p);
+	app = ddot(Ap, p);
+	if (is_equal(app, 0.)) {
+	    LOG_WARN("ddot(Ap, p) = 0");
+	    break;
+	}
+	alpha = rz0 / app;
 
 	daxpy(alpha, p, x);
 	daxpy(-alpha, Ap, r);

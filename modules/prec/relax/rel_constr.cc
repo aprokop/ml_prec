@@ -1,16 +1,20 @@
 #include "rel_prec.h"
 #include "include/logger.h"
 #include "include/tools.h"
+#include "include/time.h"
 
+#include <cstring>
+#include <algorithm>
 #include <numeric>
 #include <map>
+#include <vector>
 
-DEFINE_LOGGER("Prec");
+DEFINE_LOGGER("RelPrec");
 
 RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, 
-		 const std::vector<double>& _sigmas, const Mesh& _mesh) : mesh(_mesh) {
+		 const std::vector<double>& _sigmas, const MeshBase& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
-    ASSERT(_gamma >= 1, "Wrong gamma: " << _gamma);
+    ASSERT(_gamma > 1, "Wrong gamma: " << _gamma);
     ASSERT(_sigmas.size(), "Sigmas is empty");
     for (uint i = 0; i < _sigmas.size(); i++)
 	ASSERT(_sigmas[i] > 1, "Wrong sigmas[" << i << "]: " << _sigmas[i]);
@@ -26,88 +30,114 @@ RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma,
     construct_level(0, A);
 }
 
+struct Link {
+    double val;
+    uint i0, i1;
+
+    Link(double v, uint i, uint j) : val(v), i0(i), i1(j) { }
+    friend bool operator<(const Link& l0, const Link& l1) {
+	return l0.val < l1.val;
+    }
+};
+
 void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     ASSERT(level < nlevels, "Incorrect level: " << level << " (" << nlevels << ")");
     Level& li = levels[level];
 
     // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
+    TIME_INIT();
 
     li.N   = A.size();
     li.nnz = A.ja.size();
 
     uint N = li.N;
-    std::vector<double>& aux = li.aux;
+    Vector& aux = li.aux;
     aux.resize(N);
 
+    // ! nlinks must be <int>
     std::vector<int> nlinks(N);
+    std::vector<Link> links;
+    links.reserve(N);
     LinkType ltype(N);
 
-    // ===============  STEP 1 : link removing : using c  ===============
-    // calculate c
-    for (uint i = 0; i < N; i++) 
-	aux[i] = std::accumulate(A.a.begin() + A.ia[i], A.a.begin() + A.ia[i+1], 0.);
-
-    typedef std::multimap<double,uint> map_type;
-    map_type rmap;
+    // ===============  STEP 1 : construct links  ===============
+    TIME_START();
+    std::vector<uint>::const_iterator start, end, it;
     for (uint i = 0; i < N; i++) {
-	// rmap contains links in ascending order
-	rmap.clear();
-	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) 
-	    rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
 	nlinks[i] = A.ia[i+1] - A.ia[i] - 1;
+	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
+	    aux[i] += A.a[j];
 
-	double c = aux[i];
+	start = A.ja.begin() + A.ia[i]+1;
+	end   = A.ja.begin() + A.ia[i+1];
+	it    = std::lower_bound(start, end, i);
 
-	// s corresponds to already used part of c in this node
-	double s = 0., beta;
-	map_type::const_iterator it;
-	for (it = rmap.begin(); it != rmap.end(); it++) {
-	    // calculate what would be the minimum sigma so that corresponding beta is less than 1-s
-	    // s + 2a/(c(sigma-1)) <= 1
-	    std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(), 
-								      1 + 2*it->first / (c*(1-s)));
-	    if (lb != sigmas.end()) {
-		// there exists sigma so that we can throw this link from this side
-		double sigma = *lb;
-		beta = 2*it->first / (c*(sigma-1));
-		s += beta;
-		uint i0, i1;
-
-		if (i < it->second) {
-		    // scale this part by gamma in case 
-		    // link won't be removed later
-		    aux[i] += (gamma-1)*beta*c;
-		    ltype(i,it->second)++;
-		}
-		if (i > it->second) {
-		    if (ltype(i,it->second) == 1) {
-			// remove link
-			ltype(i,it->second) = 2;
-
-			nlinks[i]--;
-			nlinks[it->second]--;
-			aux[i]          += (sigma - 1)*beta*c;
-			// fix erroneous earlier assumption, multiply by proper sigma
-			aux[it->second] += (sigma - gamma)*beta*c;
-		    } else {
-			// we don't delete link thus multiply the corresponding
-			// part by gamma
-			aux[i] += (gamma-1)*beta*c;
-		    }
-		}
-	    } else {
-		// multiply remaining part by gamma
-		aux[i] += (gamma - 1)*(1-s)*c;
-		break;
-	    }
-	}
+	uint jstart = std::distance(A.ja.begin(), it);
+	for (uint j = jstart; j < A.ia[i+1]; j++) 
+	    links.push_back(Link(-A.a[j], i, A.ja[j]));
     }
-    
+    std::sort(links.begin(), links.end());
+    LOG_DEBUG(TIME_INFO("# " << level << ": constructing links array"));
+
+    Vector remc = aux;
+
+    // ===============  STEP 2 : remove links : using c  ===============
+    uint i0 = -1, i1 = -1;
+    TIME_START();
+    for (std::vector<Link>::const_iterator it = links.begin(); it != links.end(); it++) {
+	i0 = it->i0;
+	i1 = it->i1;
+	double c1 = remc[i0]; 
+	double c2 = remc[i1];
+	if (is_equal(c1, 0.) || is_equal(c2, 0.))
+	    continue;
+	// calculate what would be the minimum sigma to remove the link
+	std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(), 
+								  1 + (c1 + c2)/(c1*c2)*it->val);
+
+	if (lb == sigmas.end()) 
+	    continue;
+
+	// remove link with sigma = *lb
+	double sigma = *lb;
+
+	// remove link meta data
+	nlinks[i0]--;
+	nlinks[i1]--;
+	ltype(i0, i1) = 2;
+
+	double pc = 2*it->val/(sigma-1), pc1, pc2;
+	if (c1 < pc) {
+	    pc1 = c1;
+	    pc2 = 1/(2/pc - 1/pc1);
+	} else if (c2 < pc) {
+	    pc2 = c2;
+	    pc1 = 1/(2/pc - 1/pc2);
+	} else {
+	    // note: here we can play some games with
+	    // distributions of pc1 and pc2 between 
+	    // c1 and c2
+	    pc1 = pc2 = pc;
+	}
+
+	// subtract c part corresponding to link
+	remc[i0] -= pc1;
+	remc[i1] -= pc2;
+
+	// update aux array
+	aux[i0] += (sigma-1)*pc1;
+	aux[i1] += (sigma-1)*pc2;
+    }
+    LOG_DEBUG(TIME_INFO("# " << level << ": removing links"));
+
+    // multiply the rest of c by gamma
+    daxpy(gamma-1, remc, aux); 
+
     // ===============  STEP 2 : tail removing ===============
+    TIME_START();
     std::vector<Tail>& tails = li.tails;
     tails.clear(); // just in case
 
-    uint i0 = -1, i1 = -1;
     double v = 0;
 #if 1
     for (uint i = 0; i < N; i++) 
@@ -166,6 +196,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    tails.push_back(tail);
 	}
 #endif
+    LOG_DEBUG(TIME_INFO("# " << level << ": removing tails"));
 
     std::vector<uint>& tr  = li.tr;
     std::vector<uint>& dtr = li.dtr;
@@ -174,6 +205,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     std::vector<uint> revtr(N, -1);
 
     // ===============  STEP 3 : construct matrix  ===============
+    TIME_START();
     SkylineMatrix& nA = levels[level+1].A;
     nA.ia.push_back(0);
     for (uint i = 0; i < N; i++) 
@@ -213,6 +245,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	nA.ja[j] = revtr[nA.ja[j]];
     }
+    LOG_DEBUG(TIME_INFO("# " << level << ": constructing matrix"));
 
     // check whether the ends are really local
     for (uint i = 0; i < tails.size(); i++) {

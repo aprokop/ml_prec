@@ -6,42 +6,30 @@
 
 #include <fstream>
 #include <algorithm>
-#ifdef HAVE_BOOST
-#include <boost/lambda/lambda.hpp>
-#endif
 
-DEFINE_LOGGER("Mesh");
+DEFINE_LOGGER("SPEMesh");
 
-Mesh::Mesh(double _c) :
-	nx(60),	      ny(220),	    nz(85), N(nx*ny*nz),
-	hx(20),	      hy(10),	    hz(2),
-	size_x(1200), size_y(2200), size_z(170)
+SPEMesh::SPEMesh() {
+    nx = 60;	    ny = 220;	    nz = 85;	    N = nx*ny*nz;
+    hx = 20;	    hy = 10;	    hz = 2;
+    size_x = 1200;  size_y = 2200;  size_z = 170;
 
-{
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
-
-    c = _c;
 
     TIME_INIT();
     TIME_START();
     kx.resize(N);
     ky.resize(N);
     kz.resize(N);
-#ifdef HAVE_BOOST
-    std::for_each(kx.begin(), kx.end(), spe >> boost::lambda::_1);
-    std::for_each(ky.begin(), ky.end(), spe >> boost::lambda::_1);
-    std::for_each(kz.begin(), kz.end(), spe >> boost::lambda::_1);
-#else
     for (uint i = 0; i < N; i++)
 	spe >> kx[i];
     for (uint i = 0; i < N; i++)
 	spe >> ky[i];
     for (uint i = 0; i < N; i++)
 	spe >> kz[i];
-#endif
     LOG_DEBUG(TIME_INFO("Reading SPE file"));
-    LEAVE_MESSAGE("Mesh read");
+    LEAVE_MESSAGE("SPEMesh read");
 
     // nodes
     nodes.resize(N);
@@ -56,7 +44,7 @@ Mesh::Mesh(double _c) :
     LEAVE_MESSAGE("Nodes constructed");
 }
 
-void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
+void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     uint i0, i1;
     double v;
 
@@ -121,6 +109,7 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
     LEAVE_MESSAGE("Matrix constructed");
 
+#if 0
     // Wells
     TIME_START();
     uint nwp = 5;
@@ -148,4 +137,5 @@ void Mesh::construct_matrix(SkylineMatrix& A, uint nwells) const {
 	}
     }
     LOG_DEBUG(TIME_INFO("Adding wells"));
+#endif
 }

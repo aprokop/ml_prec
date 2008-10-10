@@ -20,8 +20,8 @@ DEFINE_LOGGER("Main");
 #define RELX_PREC
 
 int main (int argc, char * argv[]) {
-    // Initialize logger
 #ifndef NO_LOGGER
+    // Initialize logger
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
@@ -50,24 +50,24 @@ int main (int argc, char * argv[]) {
 
     SkylineMatrix A;
 
-    Mesh mesh(c);
-    mesh.construct_matrix(A, nwells);
+    SPEMesh mesh;
+    mesh.construct_matrix(A, c);
 
     TIME_INIT();
-#if   defined CHEB_PREC
+#if defined CHEB_PREC || defined RELX_PREC
     TIME_START();
+
+#if defined CHEB_PREC
     Prec B(sigma, niter, A, mesh);
-    std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
-    LOG_INFO(B);
-    // B.graph_planes("l1.ps", 1, 'z');
-    // exit(1);
-#elif defined RELX_PREC
-    TIME_START();
+#else
     RelPrec B(A, niter, sigma, sigmas, mesh);
+#endif
+
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
     // B.graph_planes("grid.ps", 1, 'z');
-    // return 0;
+    // exit(1);
+
 #elif defined AMG_PREC
     AMGPrec B(A);
 #endif

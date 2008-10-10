@@ -25,6 +25,7 @@ public:
 	ASSERT(i < data.size(), "Index is out of bundaries: i = " << i << ", n = " << data.size());
 	return data[i];
     }
+    bool operator>=(double v) const;
 
     uint size() const {
 	return data.size();
@@ -35,6 +36,7 @@ public:
     void swap(Vector& v) {
 	data.swap(v.data);
     }
+    bool is_nan() const;
 
     const Vector& operator+=(const Vector& v) THROW;
     const Vector& operator-=(const Vector& v) THROW;

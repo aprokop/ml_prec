@@ -53,7 +53,7 @@ public:
     virtual bool is_symmetric() const;
 
     // Friend classes
-    friend class Mesh;
+    friend class SPEMesh;
     friend class Prec;
     friend class RelPrec;
     friend class AMGPrec;

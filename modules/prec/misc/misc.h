@@ -12,7 +12,7 @@
 
 double cheb(double x, uint k);
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
-		  char plane, bool map_identity, const Mesh& mesh);
+		  char plane, bool map_identity, const MeshBase& mesh);
 
 struct TailNode {
     uint index;

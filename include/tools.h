@@ -29,6 +29,11 @@ inline uint random(uint i0, uint i1) {
     return i0 + uint((i1-i0)*double(random())/RAND_MAX);
 }
 
+template<typename T>
+inline bool is_nan(const T& x) {
+    return (((x) != (x)) || (((x) < (x))));
+}
+
 #if 0
 #define LEAVE_MESSAGE(msg) { \
     pid_t ppid = getppid(); \

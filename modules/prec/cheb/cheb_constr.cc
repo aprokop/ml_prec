@@ -5,7 +5,7 @@
 
 DEFINE_LOGGER("Prec");
 
-Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const Mesh& _mesh) : mesh(_mesh) {
+Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const MeshBase& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
 
     galpha = 1.;
