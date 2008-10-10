@@ -53,6 +53,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     uint N = li.N;
     Vector& aux = li.aux;
     aux.resize(N);
+    Vector remc(N);
 
     // ! nlinks must be <int>
     std::vector<int> nlinks(N);
@@ -66,7 +67,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     for (uint i = 0; i < N; i++) {
 	nlinks[i] = A.ia[i+1] - A.ia[i] - 1;
 	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
-	    aux[i] += A.a[j];
+	    remc[i] += A.a[j];
 
 	start = A.ja.begin() + A.ia[i]+1;
 	end   = A.ja.begin() + A.ia[i+1];
@@ -78,8 +79,6 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     }
     std::sort(links.begin(), links.end());
     LOG_DEBUG(TIME_INFO("# " << level << ": constructing links array"));
-
-    Vector remc = aux;
 
     // ===============  STEP 2 : remove links : using c  ===============
     uint i0 = -1, i1 = -1;
@@ -107,6 +106,9 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	ltype(i0, i1) = 2;
 
 	double pc = 2*it->val/(sigma-1), pc1, pc2;
+	// note: here we can play some games with
+	// distributions of pc1 and pc2 between 
+	// c1 and c2
 	if (c1 < pc) {
 	    pc1 = c1;
 	    pc2 = 1/(2/pc - 1/pc1);
@@ -114,9 +116,6 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    pc2 = c2;
 	    pc1 = 1/(2/pc - 1/pc2);
 	} else {
-	    // note: here we can play some games with
-	    // distributions of pc1 and pc2 between 
-	    // c1 and c2
 	    pc1 = pc2 = pc;
 	}
 
@@ -125,13 +124,13 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	remc[i1] -= pc2;
 
 	// update aux array
-	aux[i0] += (sigma-1)*pc1;
-	aux[i1] += (sigma-1)*pc2;
+	aux[i0] += sigma*pc1;
+	aux[i1] += sigma*pc2;
     }
     LOG_DEBUG(TIME_INFO("# " << level << ": removing links"));
 
     // multiply the rest of c by gamma
-    daxpy(gamma-1, remc, aux); 
+    daxpy(gamma, remc, aux); 
 
     // ===============  STEP 2 : tail removing ===============
     TIME_START();
