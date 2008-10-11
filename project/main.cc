@@ -15,9 +15,9 @@
 
 DEFINE_LOGGER("Main");
 
-// #define CHEB_PREC
+#define CHEB_PREC
 // #define AMG_PREC
-#define RELX_PREC
+// #define RELX_PREC
 
 int main (int argc, char * argv[]) {
 #ifndef NO_LOGGER
@@ -73,7 +73,11 @@ int main (int argc, char * argv[]) {
 #endif
 
     TIME_START();
-    PCG(A, Vector(A.size()), B, 1e-6);
+#if 0
+    PCGSolver(A, Vector(A.size()), B, 1e-6);
+#else
+    ChebSolver(A, B.lmin(), B.lmax(), Vector(A.size()), B, 1e-6);
+#endif
     std::cout << std::endl << TIME_INFO("Solution time") << std::endl;
 
     return 0;

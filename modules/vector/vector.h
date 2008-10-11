@@ -1,11 +1,10 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
+#include "include/define.h"
 #include "include/exception.h"
 
 #include <vector>
-
-typedef unsigned int uint;
 
 class Vector {
 private:

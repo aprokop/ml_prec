@@ -6,8 +6,6 @@
 #include "modules/mesh/mesh.h"
 #include <iostream>
 
-typedef unsigned int uint;
-
 class Prec : public PrecBase {
 private:
     const MeshBase& mesh;
@@ -40,6 +38,9 @@ public:
 
     void solve(Vector& f, Vector& x) THROW;
     void graph_planes(const std::string& filename, uint level, char plane) const;
+
+    double lmin() const { return levels[0].lmin; }
+    double lmax() const { return levels[0].lmax; }
 
     friend std::ostream& operator<<(std::ostream& os, const Prec& p);
 };

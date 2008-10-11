@@ -1,6 +1,8 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
+#include "include/define.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -9,8 +11,6 @@
 #include <limits>
 #include <sys/types.h>
 #include <signal.h>
-
-typedef unsigned int uint;
 
 #define FORTRAN(f) f ## _
 

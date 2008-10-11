@@ -5,8 +5,6 @@
 #include "include/exception.h"
 #include "modules/vector/vector.h"
 
-typedef unsigned int uint;
-
 // We always assume that each row of CSRMatrix contains at least one element
 class CSRMatrix {
 protected:

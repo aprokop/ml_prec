@@ -9,6 +9,8 @@ libmodules_a_SOURCES = \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
+		       common/common.cc \
+		       common/common.h \
 		       prec/cheb/cheb_constr.cc \
 		       prec/cheb/cheb_misc.cc \
 		       prec/cheb/cheb_solve.cc \
@@ -23,5 +25,6 @@ libmodules_a_SOURCES = \
 		       prec/misc/misc.h \
 		       prec/prec_base.h \
 		       solvers/pcg.cc \
+		       solvers/cheb.cc \
 		       solvers/amg1r6.f \
 		       solvers/solvers.h

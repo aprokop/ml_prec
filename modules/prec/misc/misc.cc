@@ -1,22 +1,8 @@
 #include "include/exception.h"
 #include "misc.h"
 
-#include <cmath>
 #include <fstream>
 #include <iomanip>
-
-double cheb(double x, uint k) {
-   ASSERT(x >= 1, "");
-   // return cosh(k*acosh(x));
-
-   switch(k) {
-       case 0:	return 1;
-       case 1:	return x;
-       case 2:	return 2*x*x-1;
-       case 3:	return x*(4*x*x - 3);
-       default: return cosh(k*acosh(x));
-   }
-}
 
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
 		  char plane, bool map_identity, const MeshBase& mesh) {

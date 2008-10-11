@@ -7,7 +7,7 @@
 
 DEFINE_LOGGER("PCG");
 
-Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
+Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     ASSERT(A.rows() == A.cols() && A.cols() == b.size(), "Wrong dimesions: " << 
 	   "A:" << A.rows() << " x " << A.cols() << ", b: " << b.size());
 
@@ -21,7 +21,7 @@ Vector PCG(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
     clock_t  mult = 0,  inv = 0,  cstr = 0, delta;
     int	    nmult = 0, ninv = 0;
 
-    LOG_DEBUG("Generating random initial approximation");
+    LOG_DEBUG("Generating initial approximation");
 #if 0
     srandom(time(NULL)); 
 #else

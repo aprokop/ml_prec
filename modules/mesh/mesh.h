@@ -1,10 +1,9 @@
 #ifndef __MESH_H__
 #define __MESH_H__
 
+#include "include/define.h"
 #include "modules/matrix/matrix.h"
 #include <map>
-
-typedef unsigned int uint;
 
 struct Point {
     double x, y, z;

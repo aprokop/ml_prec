@@ -2,6 +2,7 @@
 #define __MISC_H__
 
 #include "include/exception.h"
+#include "include/tools.h"
 #include "modules/matrix/matrix.h"
 #include "modules/mesh/mesh.h"
 
@@ -10,7 +11,6 @@
 #include <vector>
 #include <map>
 
-double cheb(double x, uint k);
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
 		  char plane, bool map_identity, const MeshBase& mesh);
 

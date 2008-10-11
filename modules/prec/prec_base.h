@@ -1,11 +1,9 @@
 #ifndef __PREC_BASE_H__
 #define __PREC_BASE_H__
 
-#include "include/tools.h"
+#include "include/define.h"
 #include "modules/vector/vector.h"
 #include "modules/matrix/matrix.h"
-
-typedef unsigned int uint;
 
 class PrecBase {
 public:
