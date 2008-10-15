@@ -34,6 +34,8 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
 	x[i] = 1;
     }
     residual(A, b, x, r);
+    norm = init_norm = r.norm_2();
+
 #if 0
     // w-Jacobi relaxation (w = 0.5)
     double w = 0.5;
@@ -51,9 +53,8 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
 
     p = z;
     rz0 = ddot(r, z);
-    norm = init_norm = r.norm_2();
 
-    int niter = 1;
+    int niter = 0;
 #ifdef ABSOLUTE_NORM
     init_norm = 1;
 #endif

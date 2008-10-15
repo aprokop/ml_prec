@@ -46,7 +46,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 #endif
 
     // ===============    STEP 1    ===============
-    LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+    LOG_INFO("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
     alpha = 2/(lmax + lmin);
 
     u1 = x;
@@ -61,7 +61,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 
     // ===============    STEPS 2+    ===============
     while (norm/init_norm > eps) {
-	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+	LOG_INFO("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
 	// hack to avoid copying and allocating new memory
 	u0.swap(x);
@@ -89,6 +89,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 	niter++;
     }
 
+    niter--;
     LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
     std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
