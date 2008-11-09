@@ -1,0 +1,2 @@
+*.eps -diff -merge
+*.ps -diff -merge
