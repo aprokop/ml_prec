@@ -3,8 +3,6 @@
 #include "include/tools.h"
 #include "include/time.h"
 
-#include <cstdlib>
-
 DEFINE_LOGGER("PCG");
 
 Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
@@ -22,17 +20,7 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
     int	    nmult = 0, ninv = 0;
 
     LOG_DEBUG("Generating initial approximation");
-#if 0
-    srandom(time(NULL)); 
-#else
-    // we don't want it to change from run to run
-    srandom(3);
-#endif
-    for (uint i = 0; i < n; i++) {
-	// x[i] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
-	// x[i] = 1 - (i&1)*2;
-	x[i] = 1;
-    }
+    generate_x0(x);
     residual(A, b, x, r);
     norm = init_norm = r.norm_2();
 

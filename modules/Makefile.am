@@ -27,4 +27,5 @@ libmodules_a_SOURCES = \
 		       solvers/pcg.cc \
 		       solvers/cheb.cc \
 		       solvers/amg1r6.f \
+		       solvers/solvers.cc \
 		       solvers/solvers.h
