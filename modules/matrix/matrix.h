@@ -49,6 +49,7 @@ public:
     virtual void   add(uint i, uint j, double x) THROW;
 
     virtual bool is_symmetric() const;
+    virtual void stat() const;
 
     // Friend classes
     friend class SPEMesh;

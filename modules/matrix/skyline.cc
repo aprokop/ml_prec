@@ -62,3 +62,4 @@ void SkylineMatrix::add(uint i, uint j, double v) THROW {
 	a[it - ja.begin()] += v;
     }
 }
+

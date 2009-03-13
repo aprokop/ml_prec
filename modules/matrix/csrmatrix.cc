@@ -123,6 +123,27 @@ bool CSRMatrix::is_symmetric() const {
     return true;
 }
 
+void CSRMatrix::stat() const {
+    double s;
+    for (uint i = 0; i < nrow; i++) {
+	s = 0;
+	for (uint j = ia[i]; j < ia[i+1]; j++) {
+	    if (ja[j] != i) {
+		// non-diagonal element
+		if (a[j] > 0)
+		    LOG_DEBUG("Positive element: (" << i << "," << ja[j] << ") : " << a[j]);
+		s += a[j];
+	    } else {
+		if (a[j] < 0)
+		    LOG_DEBUG("Negative diagonal element: " << i << " : " << a[j]);
+		s += a[j];
+	    }
+	}
+	if (s < -1e-8)
+	    LOG_DEBUG("Negative row sum: " << i << " : " << s);
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
     os << "Size: " << sm.nrow << "x" << sm.ncol << std::endl;
     for (uint i = 0; i < sm.nrow; i++) {
