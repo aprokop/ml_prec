@@ -2,6 +2,7 @@
 #include "cheb_prec.h"
 #include "modules/common/common.h"
 
+#include <numeric>
 #include <map>
 
 DEFINE_LOGGER("Prec");
@@ -9,8 +10,16 @@ DEFINE_LOGGER("Prec");
 Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const MeshBase& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
 
-    galpha = 1.;
-    gbeta  = eps;
+    switch (2) {
+	case 1:
+	    galpha = 1;
+	    gbeta  = eps;
+	    break;
+	case 2:
+	    gbeta = .8*eps;
+	    galpha = gbeta/eps;
+	    break;
+    }
     ncheb = _ncheb;
 
     // reserve
@@ -18,6 +27,24 @@ Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const MeshBase& _mes
     levels.resize(nlevels);
     levels[0].A = A;
     construct_level(0, A);
+}
+
+// insertion sort of sorted wrt to abs values of a
+static void psort(const double * a, uint n, std::vector<uint>& sorted) {
+    uint i;
+    int j;
+    for (uint i = 0; i < n; i++)
+	sorted[i] = i;
+
+    uint c;
+    double v;
+    for (i = 1; i < n; i++) {
+	v = a[sorted[i]];
+	c = sorted[i];
+	for (j = i-1; j >= 0 && a[sorted[j]] > v; j--)
+	    sorted[j+1] = sorted[j];
+	sorted[j+1] = c;
+    }
 }
 
 void Prec::construct_level(uint level, const SkylineMatrix& A) {
@@ -37,29 +64,43 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     LinkType ltype(N);
 
     // ===============  STEP 1 : link removing : using c  ===============
-    std::multimap<double,uint> rmap;
+    int rstart, rend;
+    std::vector<uint> sorted;
     for (uint i = 0; i < N; i++) {
-	rmap.clear();
+	rstart = A.ia[i];   // row start
+	rend   = A.ia[i+1]; // row end
 
 	// aux[i] == c[i]
-	aux[i] = A.a[A.ia[i]];
-	for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
-	    rmap.insert(std::pair<double,uint>(-A.a[j], A.ja[j]));
+	aux[i] = 0;
+	for (int j = rstart; j < rend; j++)
 	    aux[i] += A.a[j];
-	}
+	nlinks[i] = rend - rstart - 1;
+	sorted.resize(nlinks[i]);
 
-	nlinks[i] = A.ia[i+1] - A.ia[i] - 1;
+	// sort off-diagonal elements wrt to their abs values
+	psort(&A.a[rstart+1], nlinks[i], sorted);
 
 	double s = 0.;
-	for (std::multimap<double,uint>::const_iterator it = rmap.begin(); it != rmap.end(); it++) {
-	    s += 2*it->first / (aux[i]*(gbeta-1));
-	    if (s <= 1) {
-		uint i0, i1;
-		ltype(i,it->second)++;
+	for (int j = 0; j < nlinks[i]; j++) {
+	    double a = A.a[rstart+1 + sorted[j]];
+	    if (a < 0) {
+		// for now we always try to eliminate negative components
+		s += -2*a / (aux[i]*(gbeta-1));
+	    } else if (galpha != 1) {
+		// if we are allowed to change offdiagonal positive
+		s +=  2*a / (aux[i]*(1-galpha));
+	    } else {
+		// offdiagonal element is positive but we are not allowed to change it
+		continue;
+	    }
 
-		if (i > it->second && ltype(i,it->second) == 2) {
-		    nlinks[i]--;
-		    nlinks[it->second]--;
+	    if (s <= 1) {
+		uint i0 = i, i1 = A.ja[rstart+1 + sorted[j]];
+		ltype(i0, i1)++;
+
+		if (i0 > i1 && ltype(i0,i1) == 2) {
+		    nlinks[i0]--;
+		    nlinks[i1]--;
 		}
 	    } else {
 		break;
@@ -202,7 +243,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	levels.resize(nlevels);
 
 	Level& lc = levels[nlevels-1];
-	lc.lmin = 1;
+	lc.lmin = galpha;
 	lc.lmax = gbeta;
 
 	// chebyshev info
