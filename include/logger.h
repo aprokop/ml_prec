@@ -161,7 +161,7 @@ namespace log4cxx {
 
 #else // #ifndef NO_LOGGER
 
-#define DEFINE_LOGGER(l) 
+#define DEFINE_LOGGER(l) static int ____logger____
 #define LOG_DEBUG(v)	 std::cout << "DEBUG : " << __func__ << " : " << v << std::endl 
 #define LOG_INFO(v)      std::cout << "INFO  : " << __func__ << " : " << v << std::endl
 #define LOG_WARN(v)      std::cout << "WARN  : " << __func__ << " : " << v << std::endl
