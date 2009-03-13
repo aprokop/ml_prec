@@ -90,10 +90,12 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
     double out = double(mult)/CLOCKS_PER_SEC;
     LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
     out = double(inv)/CLOCKS_PER_SEC;
-    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
-    LLL_DEBUG(std::fixed << std::setprecision(3) << 
-	      "Time of (possible construction) [time of first inversion - avg] = " << 
-	      double(cstr - inv/ninv)/CLOCKS_PER_SEC);
+    if (ninv) {
+	LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
+	LLL_DEBUG(std::fixed << std::setprecision(3) << 
+		  "Time of (possible construction) [time of first inversion - avg] = " << 
+		  double(cstr - inv/ninv)/CLOCKS_PER_SEC);
+    }
 #undef LLL_DEBUG
 #endif
 
