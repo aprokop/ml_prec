@@ -1,4 +1,3 @@
-#include "config/config.h"
 #include "include/logger.h"
 #include "include/time.h"
 #include "include/tools.h"
@@ -65,27 +64,6 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     A.a[dind] += v; \
 }
 
-#if defined ORDER_ZXY
-    for (uint j = 0; j < ny; j++)
-	for (uint i = 0; i < nx; i++)
-	    for (uint k = 0; k < nz; k++) {
-		i0 = index(i, j, k);
-		A.ja.push_back(i0);
-		A.a.push_back(c);
-
-		uint dind = A.a.size() - 1;
-		double v;
-
-		if (j)	      ADD( 0, -1,  0, y);
-		if (i)	      ADD(-1,  0,  0, x);
-		if (k)	      ADD( 0,  0, -1, z);
-		if (k < nz-1) ADD( 0,  0, +1, z);
-		if (i < nx-1) ADD(+1,  0,  0, x);
-		if (j < ny-1) ADD( 0, +1,  0, y);
-
-		A.ia.push_back(A.ja.size());
-	    }
-#elif defined ORDER_XYZ
     for (uint k = 0; k < nz; k++) 
 	for (uint j = 0; j < ny; j++)
 	    for (uint i = 0; i < nx; i++) {
@@ -105,37 +83,7 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
 
 		A.ia.push_back(A.ja.size());
 	    }
-#endif
+
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
     LEAVE_MESSAGE("Matrix constructed");
-
-#if 0
-    // Wells
-    TIME_START();
-    uint nwp = 5;
-    v = 100;
-    std::vector<uint> ind(nwp);
-    for (uint i = 0; i < nwells; i++) {
-	LOG_DEBUG("== WELL " << i << " ==");
-	uint ix = random(0,nx-1);
-	uint iy = random(0,ny-1);
-	uint iz = random(0,20);
-	ind[0] = index(ix, iy, iz);
-	LOG_DEBUG(" (0): " << ix << " " << iy << " " << iz);
-	for (uint j = 1; j < nwp; j++) {
-	    ix = random(0,nx-1);
-	    iy = random(0,ny-1);
-	    iz = random(iz, nz-nwp+j);
-	    ind[j] = index(ix, iy, iz);
-	    LOG_DEBUG(" (" << j << "): " << ix << " " << iy << " " << iz);
-	}
-	for (uint j = 0; j < nwp-1; j++) {
-	    A.add(ind[j], ind[j], v);
-	    A.add(ind[j], ind[j+1], -v);
-	    A.add(ind[j+1], ind[j], -v);
-	    A.add(ind[j+1], ind[j+1], v);
-	}
-    }
-    LOG_DEBUG(TIME_INFO("Adding wells"));
-#endif
 }
