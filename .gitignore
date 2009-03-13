@@ -2,7 +2,6 @@
 Makefile.in
 Makefile
 *.[oa]
-*.m4
 config.*
 libtool
 configure
@@ -10,7 +9,6 @@ tags
 config/*
 !config/config.h.in
 autom4te.cache
-m4/
 .deps/
 .libs/
 *.bak
@@ -19,5 +17,6 @@ m4/
 *.aux
 *.dvi
 *.bbl
+*.blg
 *.toc
 *.swp
