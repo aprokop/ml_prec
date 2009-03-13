@@ -3,7 +3,7 @@
 #include "include/tools.h"
 
 #include "config/config.h"
-#ifdef HAVE_LIBBLAS
+#ifdef HAVE_BLAS
 #include "include/blas.h"
 #endif
 
@@ -73,7 +73,7 @@ bool Vector::is_nan() const {
 
 
 // ===========================  BLAS PROCEDURES WRAPPERS  ===========================
-#ifdef HAVE_LIBBLAS
+#ifdef HAVE_BLAS
 void daxpy(double alpha, const Vector& x, Vector& y) {
     int n = x.size();
     ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
