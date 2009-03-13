@@ -5,7 +5,23 @@
 #include <iostream>
 #include <vector>
 
-int set_params(int argc, char * argv[], double& c, double& sigma, 
-	       std::vector<double>& sigmas, uint& niter, uint& nwells);
+#define CHEB_PREC
+// #define AMG_PREC
+// #define RELX_PREC
+
+struct Config {
+    uint   niter; 
+    uint   nthreads;
+    uint   nwells;
+    uint   nx, ny, nz;
+    double c; 
+    double sigma; 
+    double gamma;
+    std::vector<double> sigmas;
+
+    friend std::ostream& operator<<(std::ostream& os, const Config& config);
+};
+
+int set_params(int argc, char * argv[], Config& config);
 
 #endif // __MAIN_H__
