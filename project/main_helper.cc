@@ -83,14 +83,13 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	LOG_WARN("Requested number of threads exceeds max value (16)");
 	cfg.nthreads = 16;
     }
-    LOG_INFO("Number of threads " << cfg.nthreads);
 
     return 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     os << "mesh    = " << cfg.nx << " x " << cfg.ny << " x " << cfg.nz << std::endl;
-    os << "nthread = " << cfg.nthreads << std::endl;
+    // os << "nthread = " << cfg.nthreads << std::endl;
     os << "c       = " << cfg.c << std::endl;
 #ifdef CHEB_PREC
     os << "ncheb   = " << cfg.niter << std::endl;

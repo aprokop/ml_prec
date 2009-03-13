@@ -32,8 +32,10 @@ int main (int argc, char * argv[]) {
 
     SPEMesh mesh;
     mesh.construct_matrix(A, cfg.c);
+    A.stat(true);
 
     std::cout << cfg << std::endl;
+    LOG_DEBUG("Config parameters: " << cfg);
 
     TIME_INIT();
 #if defined CHEB_PREC || defined RELX_PREC
@@ -47,8 +49,6 @@ int main (int argc, char * argv[]) {
 
     std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
     LOG_INFO(B);
-    B.graph_planes("grid.ps", 1, 'z');
-    exit(1);
 
 #elif defined AMG_PREC
     AMGPrec B(A);
