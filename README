@@ -1,0 +1,9 @@
+To compile the program:
+1) ./preconf
+2) ./configure
+   If full optimization is needed one can run ./configure --with-debug=no
+3) cd project/
+4) ./spe_prec
+   One should have a file named spe_perm.dat in project/ directory with data:
+   * wget http://www.spe.org/web/csp//datasets/por_perm_case2a.zip
+   * unzip por_perm_case2a.zip
