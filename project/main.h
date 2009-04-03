@@ -5,8 +5,9 @@
 #include <iostream>
 #include <vector>
 
-#define CHEB_PREC
-// #define AMG_PREC
+// #define DIAG_PREC
+#define AMG_PREC
+// #define CHEB_PREC
 // #define RELX_PREC
 
 struct Config {

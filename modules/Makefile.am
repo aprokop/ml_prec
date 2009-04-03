@@ -21,6 +21,8 @@ libmodules_a_SOURCES = \
 		       prec/relax/rel_misc.cc \
 		       prec/relax/rel_solve.cc \
 		       prec/relax/rel_prec.h \
+		       prec/diag/diag.cc \
+		       prec/diag/diag.h \
 		       prec/misc/misc.cc \
 		       prec/misc/misc.h \
 		       prec/prec_base.h \

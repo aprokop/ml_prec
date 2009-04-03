@@ -2,8 +2,9 @@
 #include "config/config.h"
 #include "include/time.h"
 #include "modules/mesh/mesh.h"
-#include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/amg/amg_prec.h"
+#include "modules/prec/diag/diag.h"
+#include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
 #include "modules/solvers/solvers.h"
 
@@ -21,6 +22,8 @@ int main (int argc, char * argv[]) {
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
+    // logger.logf(log4cxx::Level::DEBUG, "Some forma: %d %%\n", 15);
+
     Config cfg;
     if (set_params(argc, argv, cfg)) {
 	LOG_INFO("Error while setting parameters, exiting...");
@@ -34,8 +37,8 @@ int main (int argc, char * argv[]) {
     mesh.construct_matrix(A, cfg.c);
     A.stat(true);
 
-    std::cout << cfg << std::endl;
-    LOG_DEBUG("Config parameters: " << cfg);
+    // std::cout << cfg << std::endl;
+    // LOG_DEBUG("Config parameters: " << cfg);
 
     TIME_INIT();
 #if defined CHEB_PREC || defined RELX_PREC
@@ -52,6 +55,8 @@ int main (int argc, char * argv[]) {
 
 #elif defined AMG_PREC
     AMGPrec B(A);
+#elif defined DIAG_PREC
+    DiagPrec B(A);
 #endif
 
     TIME_START();
