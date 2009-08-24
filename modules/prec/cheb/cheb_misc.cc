@@ -6,35 +6,11 @@
 
 DEFINE_LOGGER("Prec");
 
-std::ostream& operator<<(std::ostream& os, const Prec& p) {
-    os << "nlevels = " << p.nlevels << std::endl;
-    os << "alpha = " << p.galpha << ", beta = " << p.gbeta << std::endl;
-    os << "Ncheb = " << p.ncheb;
-    for (uint level = 0; level < p.nlevels; level++) {
-	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
-	const Prec::Level& li = p.levels[level];
-	os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
-	os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
-	os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "], cond = " << li.lmax/li.lmin << std::endl;
-#if 0
-	if (level < p.nlevels-1) {
-	    os << "tr: " << li.tr;
-	    os << "dtr: " << li.dtr;
-	}
-#endif
-#if 0
-	if (level) 
-	    os << "A: " << li.A;
-#endif
-    }
-    return os;
-} 
-
 void Prec::graph_planes(const std::string& filename, uint level, char plane) const {
     // construct reverse map
     std::map<uint,uint> rev_map;
     if (level) {
-	std::vector<uint> gtr = levels[level-1].tr;
+	uvector<uint> gtr = levels[level-1].tr;
 	uint n = gtr.size();
 	for (int l = level-2; l >= 0; l--)
 	    for (uint i = 0; i < n; i++)
@@ -44,5 +20,27 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane) con
 	gtr.clear();
     } 
 
-    ::graph_planes(filename, levels[level].A, rev_map, plane, level, mesh);
+    // ::graph_planes(filename, levels[level].A, rev_map, plane, level, mesh);
+}
+
+std::ostream& operator<<(std::ostream& os, const Prec& p) {
+    os << "nlevels = " << p.nlevels << std::endl;
+    for (uint level = 0; level < p.nlevels; level++) {
+	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
+	os << p.levels[level];
+    }
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Prec::Level& li) {
+    os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
+    os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
+    os << "ncheb = " << li.ncheb << std::endl;
+    os << "alpha = " << li.alpha << ", beta = " << li.beta << std::endl;
+    os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "], cond = " << li.lmax/li.lmin << std::endl;
+    os << std::endl;
+#if 0
+    os << "A: " << li.A;
+#endif
+    return os;
 }

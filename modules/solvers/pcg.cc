@@ -22,7 +22,7 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
     LOG_DEBUG("Generating initial approximation");
     generate_x0(x);
     residual(A, b, x, r);
-    norm = init_norm = r.norm_2();
+    norm = init_norm = dnrm2(r);
 
 #if 0
     // w-Jacobi relaxation (w = 0.5)
@@ -65,7 +65,7 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
 	daxpy(alpha, p, x);
 	daxpy(-alpha, Ap, r);
 
-	norm = r.norm_2();
+	norm = dnrm2(r);
 
 	delta = clock();
 	B.solve(r, z);

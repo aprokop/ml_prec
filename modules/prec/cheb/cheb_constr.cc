@@ -1,259 +1,322 @@
-#include "include/logger.h"
 #include "cheb_prec.h"
-#include "modules/common/common.h"
 
-#include <numeric>
-#include <map>
+#include "include/time.h"
+#include "include/tools.h"
+#include "include/uvector.h"
+#include "include/logger.h"
+
+#include <algorithm>
+#include <cmath>
+#include <ostream>
 
 DEFINE_LOGGER("Prec");
 
-Prec::Prec(double eps, uint _ncheb, const SkylineMatrix& A, const MeshBase& _mesh) : mesh(_mesh) {
-    ASSERT(A.size(), "Matrix has size 0");
-
-    switch (2) {
-	case 1:
-	    galpha = 1;
-	    gbeta  = eps;
-	    break;
-	case 2:
-	    gbeta = .8*eps;
-	    galpha = gbeta/eps;
-	    break;
-    }
-    ncheb = _ncheb;
-
-    // reserve
-    nlevels = 20;
-    levels.resize(nlevels);
-    levels[0].A = A;
-    construct_level(0, A);
-}
-
-// insertion sort of sorted wrt to abs values of a
-static void psort(const double * a, uint n, std::vector<uint>& sorted) {
-    uint i;
-    int j;
-    for (uint i = 0; i < n; i++)
-	sorted[i] = i;
-
-    uint c;
+/* 
+ * Insertion sort of vector sorted with respect to absolute values in vector a 
+ * NOTE: later if for some matrices we would get many elements in a row we could
+ * replace this sort with a faster one (think heapsort)
+ * T must support fabs and < operators
+ */
+static void psort(const double *a, uint n, uvector<uint>& sorted) {
+    sorted[0] = 0;
     double v;
-    for (i = 1; i < n; i++) {
-	v = a[sorted[i]];
-	c = sorted[i];
-	for (j = i-1; j >= 0 && a[sorted[j]] > v; j--)
+    int j;
+    for (uint i = 1; i < n; i++) {
+	v = fabs(a[i]);
+	for (j = i-1; j >= 0 && fabs(a[sorted[j]]) > v; j--)
 	    sorted[j+1] = sorted[j];
-	sorted[j+1] = c;
+	sorted[j+1] = i;
     }
 }
 
 void Prec::construct_level(uint level, const SkylineMatrix& A) {
-    ASSERT(level < nlevels, "Incorrect level: " << level << " (" << nlevels << ")");
     Level& li = levels[level];
+    Level& ln = levels[level+1];
 
-    // ASSERT(A.is_symmetric(), "Level: " << level << ", A is not symmetric");
+    uvector<double>& aux	     = li.aux;
+    uvector<uint>& tr		     = li.tr;
+    uvector<uint>& dtr		     = li.dtr;
 
     li.N   = A.size();
     li.nnz = A.ja.size();
 
+    /* Number of nodes in the subdomain */
     uint N = li.N;
-    std::vector<double>& aux = li.aux;
-    aux.resize(N);
 
     std::vector<int> nlinks(N);
-    LinkType ltype(N);
+    LinkType ltype(A);
 
-    // ===============  STEP 1 : link removing : using c  ===============
-    int rstart, rend;
-    std::vector<uint> sorted;
+    /* Mark */
+    uint MAX_NUM = 1000; /* Maximum number of elements in a row */
+    uvector<uint> sorted(MAX_NUM);
+    const double* adata = A.a.data();
     for (uint i = 0; i < N; i++) {
-	rstart = A.ia[i];   // row start
-	rend   = A.ia[i+1]; // row end
+	uint rstart = A.ia[i];		    /* Row start */
+	uint rend   = A.ia[i+1];	    /* Row end */
+	uint nrz    = rend - rstart - 1;    /* Number of links */
 
-	// aux[i] == c[i]
-	aux[i] = 0;
-	for (int j = rstart; j < rend; j++)
-	    aux[i] += A.a[j];
-	nlinks[i] = rend - rstart - 1;
-	sorted.resize(nlinks[i]);
+	nlinks[i] += nrz;
 
-	// sort off-diagonal elements wrt to their abs values
-	psort(&A.a[rstart+1], nlinks[i], sorted);
+	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
+
+	/* Sort off-diagonal elements wrt their abs values */
+	psort(adata + rstart+1, nrz, sorted);
 
 	double s = 0.;
-	for (int j = 0; j < nlinks[i]; j++) {
-	    double a = A.a[rstart+1 + sorted[j]];
-	    if (a < 0) {
-		// for now we always try to eliminate negative components
-		s += -2*a / (aux[i]*(gbeta-1));
-	    } else if (galpha != 1) {
-		// if we are allowed to change offdiagonal positive
-		s +=  2*a / (aux[i]*(1-galpha));
-	    } else {
-		// offdiagonal element is positive but we are not allowed to change it
-		continue;
-	    }
+	for (uint _j = 0; _j < nrz; _j++) {
+	    double v = A.a[rstart+1 + sorted[_j]];
 
-	    if (s <= 1) {
-		uint i0 = i, i1 = A.ja[rstart+1 + sorted[j]];
-		ltype(i0, i1)++;
+	    if (to_remove(aux[i], v, li.beta, s)) {
+		/* The link is marked as free to remove from i-th end */
+		uint j = A.ja[rstart+1 + sorted[_j]];
 
-		if (i0 > i1 && ltype(i0,i1) == 2) {
-		    nlinks[i0]--;
-		    nlinks[i1]--;
+		if (ltype.mark(i,j)) {
+		    /* This link is marked as removable from both ends so it is removed */
+		    nlinks[i]--;
+		    nlinks[j]--;
 		}
 	    } else {
+		/* We exhausted available value of c. No other adjoint links can be removed */
 		break;
 	    }
 	}
     }
 
-    // ===============  STEP 3 : tail removing ===============
     std::vector<Tail>& tails = li.tails;
-    tails.clear(); // just in case
+    if (use_tails) {
+	uint tnn = 0;
+	for (uint i = 0; i < N; i++)
+	    if (nlinks[i] == 1)
+		tnn++;
 
-    uint i0 = -1, i1 = -1;
-    double v = 0;
-#if 1
-    for (uint i = 0; i < N; i++) 
-	if (nlinks[i] == 1) {
-	    Tail tail;
+	/* Remove tails inside the subdomain */
+	tails.resize(tnn+1);
+	tnn = 0;
 
-	    i0 = i;
-	    do {
+	uint i0 = uint(-1), i1 = uint(-1);
+	double v = 0;
+	for (uint i = 0; i < N; i++)
+	    if (nlinks[i] == 1) {
+		Tail& tail = tails[tnn];
+		tail.reserve(5);
 		TailNode tn;
-		tn.index = i0;
-		tn.a3 = -v; // old v
 
-		// find the remaining link
-		uint j;
-		for (j = A.ia[i0]+1; j < A.ia[i0+1]; j++) {
-		    uint jj = A.ja[j];
-		    if (ltype(i0,jj) != 2) {
-			i1 = jj;
-			v = A.a[j] / gbeta;
+		i0 = i;
+		do {
+		    tn.index = i0;
+		    tn.a3 = -v; /* old v */
+
+		    /* Find the remaining link */
+		    uint _j;
+		    if (!ltype.remove_remaining_link(i0, _j)) {
+			/* We haven't found the links in the matrix => it is a boundary link. Skip it */
+			THROW_EXCEPTION("Huh??");
 			break;
 		    }
+
+		    i1 = A.ja[_j];
+		    /* The link actually belongs to the next level so it is scaled */
+		    v = A.a[_j] / li.beta;
+
+		    tn.a2  = 1/(aux[i0] - v);
+		    tn.a1  = -v*tn.a2;
+		    tn.a3 *= tn.a2;
+
+		    nlinks[i0] = -1;
+		    nlinks[i1]--;
+
+		    aux[i1] += aux[i0]*(-v) / (aux[i0] - v);
+
+		    i0 = i1;
+
+		    tail.push_back(tn);
+		} while (nlinks[i0] == 1);
+
+		if (!tail.size()) 
+		    continue;
+
+		tn.index = i0;
+
+		if (nlinks[i0] == 0) {
+		    /* i0 is the end node in fully tridiagonal matrix */
+		    tn.a2 = 1/aux[i0];
+		    nlinks[i0] = -1;
+		    tail.end_type = 'f';
+		} else {
+		    tn.a2 = 1.;
+		    tail.end_type = 'l';
 		}
-		ASSERT(j < A.ia[i0+1], "??");
-
-		tn.a2  = 1/(aux[i0] - v);
-		tn.a1  = -v*tn.a2; // new v
-		tn.a3 *= tn.a2;
-
-		nlinks[i0] = -1;
-		nlinks[i1]--;
-
-		aux[i1] += aux[i0]*(-v) / (aux[i0] - v);
-
-		ltype(i0,i1) = 2;
-		i0 = i1;
+		tn.a3 = -v*tn.a2;
 
 		tail.push_back(tn);
-	    } while (nlinks[i0] == 1);
 
-	    TailNode tn;
-	    tn.index = i0;
-
-	    if (nlinks[i0] == 0) {
-		// end node in fully tridiagonal matrix
-		tn.a2 = 1/aux[i0];
-		nlinks[i0] = -1;
-		tail.end_type = 'f';
-	    } else {
-		tn.a2 = 1.;
-		tail.end_type = 'l';
+		tnn++;
 	    }
-	    tn.a3 = -v*tn.a2;
+	tails.resize(tnn);
+    }
 
-	    tail.push_back(tn);
-
-	    tails.push_back(tail);
-	}
-#endif
-
-    std::vector<uint>& tr  = li.tr;
-    std::vector<uint>& dtr = li.dtr;
-
-    // reverse translation
-    std::vector<uint> revtr(N, -1);
-
-    SkylineMatrix& nA = levels[level+1].A;
-    nA.ia.push_back(0);
-    for (uint i = 0; i < N; i++) 
+    /* Compute n & nnz. Small problem: nnz might include bnd links */
+    uint n = 0, nnz = 0;
+    for (uint i = 0; i < N; i++)
 	if (nlinks[i] > 0) {
-	    // the node goes to the next level
+	    n++;
+	    nnz += nlinks[i];
+	}
+    nnz += n;
 
-	    // dind corresponds to the position of diagonal
-	    uint dind = nA.a.size(); 
+    /* 
+     * Construct next level local matrix
+     * For simplicity during the construction we use indices from this level and not the next one yet 
+     */
+    SkylineMatrix& nA = ln.A;
 
-	    nA.ja.push_back(i);
-	    nA.a.push_back(aux[i]);
+    nA.ia.resize(n+1);
+    nA.ja.resize(nnz);
+    nA.a.resize(nnz);
+    tr.resize(n);
+    dtr.reserve(N-n);
+    ln.aux.resize(n);
 
-	    for (uint j = A.ia[i]+1; j < A.ia[i+1]; j++) {
-		uint jj = A.ja[j];
-		// dynamic c
-		if (ltype(i,jj) != 2) {
-		    // link stays, scale it
-		    nA.ja.push_back(A.ja[j]);
-		    double v = A.a[j] / gbeta;
-		    nA.a.push_back(v);
+    /*
+     * Reverse translation vector: indices of level l -> indices of level l+1
+     * NOTE: it is a local vector
+     */
+    uvector<int> lrevtr(N);
+
+    nA.ia[0] = 0;
+    uint ind = 0, iaind = 0;
+    for (uint i = 0; i < N; i++) {
+	if (nlinks[i] > 0) {
+	    /* The node goes to the next level */
+
+	    /* Calculate the position of the diagonal element */
+	    uint dind = ind;
+
+	    nA.ja[ind] = i;
+	    nA.a[ind] = aux[i];
+	    ind++;
+
+	    for (uint _j = A.ia[i]+1; _j < A.ia[i+1]; _j++) {
+		uint j = A.ja[_j];
+		if (!ltype.is_removed(i,j)) {
+		    /* Link goes to coarse level */
+		    /* Scale the link */
+		    double v = A.a[_j] / li.beta;
+
+		    nA.ja[ind]  = j;
+		    nA.a[ind]   = v;
 		    nA.a[dind] += -v;
+
+		    ind++;
 		}
 	    }
 
-	    nA.ia.push_back(nA.a.size());
+	    nA.ia[iaind+1] = ind;
+	    tr[iaind] = i;
+	    lrevtr[i] = iaind;
 
-	    tr.push_back(i);
-	    revtr[i] = nA.ia.size()-2;
-	} else if (nlinks[i] != -1) {
-	    // all links for this point are gone
-	    // add point to the diagonal vector
-	    dtr.push_back(i);
+	    /* Calculate next level aux array */
+	    ln.aux[iaind] = aux[i];
+
+	    iaind++;
+
+	} else {
+	    lrevtr[i] = -1;
+	    if (nlinks[i] != -1) {
+		/* 
+		 * All links for this point are gone and the point does not belong to a tail. 
+		 * Add it to the diagonal vector 
+		 */
+		dtr.push_back(i);
+	    } 
 	}
+    }
+    nA.nrow = nA.ncol = n;
 
-    // change nA.ja to use local indices
-    for (uint j = 0; j < nA.ja.size(); j++) {
-	ASSERT(revtr[nA.ja[j]] != uint(-1), 
-	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
-	nA.ja[j] = revtr[nA.ja[j]];
+    /* Change matrix to use next level indices */
+    for (uint k = 0; k < nA.ja.size(); k++) {
+	ASSERT(lrevtr[nA.ja[k]] != -1, "Trying to invert wrong index: k = " << k << ", nA.ja[k] = " << nA.ja[k]);
+	nA.ja[k] = lrevtr[nA.ja[k]];
     }
 
-    // check whether the ends are really local
-    for (uint i = 0; i < tails.size(); i++) {
-	Tail& tail = tails[i];
-	if (tail.end_type == 'l' && revtr[tail.back().index] == uint(-1))
-	    tail.end_type = 't';
+    if (use_tails) {
+	/* Check whether the ends are really local (or belong to a T intersection */
+	for (uint i = 0; i < tails.size(); i++) {
+	    Tail& tail = tails[i];
+	    if (tail.end_type == 'l' && lrevtr[tail.back().index] == -1)
+		tail.end_type = 't';
+	}
     }
 
-    uint n = tr.size();
     if (n) {
-	nA.nrow = nA.ncol = n;
-	revtr.clear();
-
+	/* Allocate space for Chebyshev vectors */
 	li.x1.resize(n);
 	li.f1.resize(n);
 	li.u0.resize(n);
 	li.u1.resize(n);
+	li.tmp.resize(n);
 
+	ASSERT(level+1 < nlevels, "Too many levels: " << level+1);
 	construct_level(level+1, nA);
     } else {
-	LOG_INFO("Decreasing number of levels: " << nlevels << " -> " << level+1);
-	nlevels = level+1;
-	levels.resize(nlevels);
-
-	Level& lc = levels[nlevels-1];
-	lc.lmin = galpha;
-	lc.lmax = gbeta;
-
-	// chebyshev info
-	for (int l = nlevels-2; l >= 0; l--) {
-	    Level& li = levels[l];
-	    Level& ln = levels[l+1];
-
-	    double cs = cheb((ln.lmax + ln.lmin)/(ln.lmax - ln.lmin), ncheb);
-	    li.lmin = galpha*(1 - 1/cs);
-	    li.lmax = gbeta *(1 + 1/cs);
-	}
+	LOG_DEBUG("Reducing number of levels: " << nlevels << " -> " << level+1);
+	nlevels = level + 1;
     }
+}
+
+Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
+    use_tails = cfg.use_tails;
+
+    nlevels = 30;
+    levels.resize(nlevels);
+    Level& li = levels[0];
+
+    /* Fill in alpha, beta parameters for each level */
+    for (uint l = 0; l < nlevels && l < cfg.sigmas.size(); l++) {
+	levels[l].alpha = 1.0;
+	levels[l].beta  = cfg.sigmas[l];
+    }
+    for (uint l = cfg.sigmas.size(); l < nlevels; l++) {
+	levels[l].alpha = 1.0;
+	levels[l].beta = cfg.sigmas.back();
+    }
+
+    uint N = A.size();
+    li.aux.resize(N);
+    for (uint i = 0; i < N; i++) {
+	li.aux[i] = 0;
+	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
+	    li.aux[i] += A.a[j];
+    }
+    construct_level(0, A);
+
+    /* Set number of Chebyshev iterations per level */
+    for (uint l = 0; l < nlevels; l++)
+	levels[l].ncheb = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
+
+    /* Calculate constants of spectral equivalence */
+    levels[nlevels-1].lmin = levels[nlevels-1].alpha;
+    levels[nlevels-1].lmax = levels[nlevels-1].beta;
+    for (int l = nlevels-2; l >= 0; l--) {
+	Level& li = levels[l];
+	Level& ln = levels[l+1];
+
+	double cs = cheb((ln.lmax + ln.lmin)/(ln.lmax - ln.lmin), li.ncheb);
+	li.lmin = li.alpha * (1 - 1/cs);
+	li.lmax = li.beta  * (1 + 1/cs);
+    }
+
+    levels.resize(nlevels);
+    if (cfg.optimize_storage) {
+	TIME_INIT();
+	TIME_START();
+	this->optimize_storage();
+	LOG_DEBUG(TIME_INFO("Storage optimization"));
+    }
+}
+
+/* Optimize level matrices for symmetricity */
+void Prec::optimize_storage() {
+    for (uint l = 1; l < nlevels; l++)
+	levels[l].A.optimize_storage();
 }

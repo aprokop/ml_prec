@@ -30,16 +30,6 @@ RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma,
     construct_level(0, A);
 }
 
-struct Link {
-    double val;
-    uint i0, i1;
-
-    Link(double v, uint i, uint j) : val(v), i0(i), i1(j) { }
-    friend bool operator<(const Link& l0, const Link& l1) {
-	return l0.val < l1.val;
-    }
-};
-
 void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     ASSERT(level < nlevels, "Incorrect level: " << level << " (" << nlevels << ")");
     Level& li = levels[level];

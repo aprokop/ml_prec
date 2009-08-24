@@ -34,6 +34,9 @@ inline bool is_nan(const T& x) {
     return (((x) != (x)) || (((x) < (x))));
 }
 
+#define unlikely(expr) __builtin_expect(!!(expr), 0)
+#define likely(expr)   __buildin_expect(!!(expr), 1)
+
 #if 0
 #define LEAVE_MESSAGE(msg) { \
     pid_t ppid = getppid(); \

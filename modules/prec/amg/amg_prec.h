@@ -2,6 +2,7 @@
 #define __AMG_PREC_H__
 
 #include "modules/prec/prec_base.h"
+#include "include/uvector.h"
 
 class AMGPrec: public PrecBase {
 private:
@@ -32,9 +33,9 @@ private:
     // Note: we use FORTRAN index enumeration
     // Matrix is stored in skyline format (CSR with diagonal first)
     // ***************************************************************
-    std::vector<int> ia, ja;
-    std::vector<int> ig;
-    std::vector<double> a;
+    uvector<int> ia, ja;
+    uvector<int> ig;
+    uvector<double> a;
 
     int n, nnz;
 

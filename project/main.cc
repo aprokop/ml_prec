@@ -37,15 +37,15 @@ int main (int argc, char * argv[]) {
     mesh.construct_matrix(A, cfg.c);
     A.stat(true);
 
-    // std::cout << cfg << std::endl;
-    // LOG_DEBUG("Config parameters: " << cfg);
+    std::cout << cfg << std::endl;
+    LOG_DEBUG("Config parameters: " << cfg);
 
     TIME_INIT();
 #if defined CHEB_PREC || defined RELX_PREC
     TIME_START();
 
 #if defined CHEB_PREC
-    Prec B(cfg.sigma, cfg.niter, A, mesh);
+    Prec B(A, cfg);
 #else
     RelPrec B(A, cfg.niter, cfg.sigma, cfg.sigmas, cfg.mesh);
 #endif

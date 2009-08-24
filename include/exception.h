@@ -3,6 +3,8 @@
 
 #include "config/config.h"
 
+#include "include/tools.h"
+
 #include <string>
 #include <exception>
 #include <iostream>

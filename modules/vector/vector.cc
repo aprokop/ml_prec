@@ -10,132 +10,46 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 
 DEFINE_LOGGER("Vector");
 
-const Vector& Vector::operator=(const Vector& v) {
-    // check for self-assignment
-    if (this == &v)
-	return *this;
-    const int n = v.size();
-    data.resize(n, 0.);
+void dump(const Vector& v, const std::string& filename, bool ascii) {
+    if (ascii == false) {
+	THROW_EXCEPTION("Not implemented");
+    } else {
+	std::ofstream os(filename.c_str());
+	const uint n = v.size();
 
-    if (n)
-	memcpy(&data[0], &v[0], n*sizeof(double));
-
-    return *this;
+	os << "# Vector size" << std::endl;
+	os << n << std::endl;
+	os << "# Vector values" << std::endl;
+	os << std::setprecision(std::numeric_limits<double>::digits10 + 1) << std::scientific;
+	for (uint i = 0; i < n; i++)
+	    os << v[i] << std::endl;
+    }
 }
 
-Vector::Vector(const Vector& v) {
-    *this = v;
+void load(Vector& v, const std::string& filename, bool ascii) {
+    uint n;
+    if (ascii == false) {
+	THROW_EXCEPTION("Not implemented");
+    } else {
+	std::ifstream is(filename.c_str());
+	ASSERT(is.good(), "Problem reading file \"" << filename  << "\"");
+
+	const int SN = 2009;
+	char str[SN];
+
+	is.getline(str, SN); /* "# Vector size" */
+	is >> n;
+	v.resize(n);
+
+	is.getline(str, SN);
+	is.getline(str, SN); /* "# Vector values" */
+	for (uint i = 0; i < n; i++)
+	    is >> v[i];
+    }
+    LOG_INFO("Loaded vector: size = " << n);
 }
-
-const Vector& Vector::operator+=(const Vector& v) THROW {
-    daxpy(1, v, *this);
-    return *this;
-}
-
-const Vector& Vector::operator-=(const Vector& v) THROW {
-    daxpy(-1, v, *this);
-    return *this;
-}
-
-const Vector& Vector::operator*=(double f) {
-    dscal(f, *this);
-    return *this;
-}
-
-const Vector& Vector::operator/=(double f) THROW {
-    ASSERT(f, "Division by zero");
-    dscal(1./f, *this);
-    return *this;
-}
-
-bool Vector::operator>=(double v) const {
-    const uint n = data.size();
-    for (uint i = 0; i < n; i++)
-	if (data[i] < v)
-	    return false;
-    return true;
-}
-
-double Vector::norm_2() const {
-    return dnrm2(*this);
-}
-
-bool Vector::is_nan() const {
-    const uint n = data.size();
-    for (uint i = 0; i < n; i++)
-	if (::is_nan(data[i]))
-	    return true;
-    return false;
-}
-
-
-// ===========================  BLAS PROCEDURES WRAPPERS  ===========================
-#ifdef HAVE_BLAS
-void daxpy(double alpha, const Vector& x, Vector& y) {
-    int n = x.size();
-    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
-
-    int one = 1;
-    FORTRAN(daxpy)(&n, &alpha, &x[0], &one, &y[0], &one);
-}
-
-void dscal(double alpha, Vector& x) {
-    int n = x.size();
-
-    int one = 1;
-    FORTRAN(dscal)(&n, &alpha, &x[0], &one);
-}
-
-double ddot(const Vector& x, const Vector& y) {
-    int n = x.size();
-    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
-
-    int one = 1;
-    return FORTRAN(ddot)(&n, &x[0], &one, &y[0], &one);
-}
-
-double dnrm2(const Vector& x) {
-    int n = x.size();
-
-    int one = 1;
-    return FORTRAN(dnrm2)(&n, &x[0], &one);
-}
-#else
-void daxpy(double alpha, const Vector& x, Vector& y) {
-    int n = x.size();
-    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
-
-    if (!is_equal(alpha, 1.))
-	for (int i = 0; i < n; i++)
-	    y[i] += alpha*x[i];
-    else
-	for (int i = 0; i < n; i++)
-	    y[i] += x[i];
-}
-
-void dscal(double alpha, Vector& x) {
-    int n = x.size();
-
-    if (is_equal(alpha, 1.))
-	return;
-    for (int i = 0; i < n; i++)
-	x[i] *= alpha;
-}
-
-double ddot(const Vector& x, const Vector& y) {
-    int n = x.size();
-    ASSERT((int)y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
-
-    double s = 0.;
-    for (int i = 0; i < n; i++)
-	s += x[i] * y[i];
-    return s;
-}
-
-double dnrm2(const Vector& x) {
-    return sqrt(ddot(x,x));
-}
-#endif

@@ -2,6 +2,7 @@
 #define __LOGGER_H__
 
 #include "config/config.h"
+#include "include/uvector.h"
 
 #include <vector>
 #include <iostream>
@@ -18,6 +19,7 @@
 #undef PACKAGE_STRING
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
 #undef VERSION
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/logger.h>
@@ -26,6 +28,7 @@
 #undef PACKAGE_STRING
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
 #undef VERSION
 
 
@@ -152,25 +155,34 @@ namespace log4cxx {
 } // namespace log4cxx
 
 // Some useful macro for the case we have one instance of logger for the module
-#define DEFINE_LOGGER(l) static log4cxx::SysLogger logger = log4cxx::Logger::getLogger(l)
-#define LOG_DEBUG(v)     logger << log4cxx::Level::DEBUG << __func__ << " " << v
-#define LOG_INFO(v)      logger << log4cxx::Level::INFO << __func__ << " " << v
-#define LOG_WARN(v)      logger << log4cxx::Level::WARN << __func__ << " " << v
-#define LOG_ERROR(v)     logger << log4cxx::Level::ERROR << __func__ << " " << v
-#define LOG_FATAL(v)     logger << log4cxx::Level::FATAL << __func__ << " " << v
+#define DEFINE_LOGGER(l)	static log4cxx::SysLogger logger = log4cxx::Logger::getLogger(l)
+#define _LOG(lvl,v)		logger << log4cxx::Level::lvl << __func__ << " " << v
+#define _LOG_P(lvl,fmt,v)	logger.logf(log4cxx::Level::lvl, fmt, v)
 
 #else // #ifndef NO_LOGGER
 
-#define DEFINE_LOGGER(l) static int ____logger____
-#define LOG_DEBUG(v)	 std::cout << "DEBUG : " << __func__ << " : " << v << std::endl 
-#define LOG_INFO(v)      std::cout << "INFO  : " << __func__ << " : " << v << std::endl
-#define LOG_WARN(v)      std::cout << "WARN  : " << __func__ << " : " << v << std::endl
-#define LOG_ERROR(v)     std::cout << "ERROR : " << __func__ << " : " << v << std::endl
-#define LOG_FATAL(v)     std::cout << "FATAL : " << __func__ << " : " << v << std::endl
+#define DEFINE_LOGGER(l)	static int ____logger____
+#define _LOG(lvl,v)		std::cout << #lvl " : " << __func__ << " : " << v << std::endl
+#define _LOG_P(fmt,v)		printf("DEBUG : " fmt, v)
 
 #endif // #ifndef NO_LOGGER
 
+#define LOG_DEBUG(v)		_LOG(DEBUG,v)
+#define LOG_INFO(v)		_LOG(INFO,v)
+#define LOG_WARN(v)		_LOG(WARN,v)
+#define LOG_ERROR(v)		_LOG(ERROR,v)
+#define LOG_FATAL(v)		_LOG(FATAL,v)
+
+#define LOG_DEBUG_P(fmt,v)	_LOG_P(DEBUG, fmt, v)
+
 #define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << v)
+#define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << v)
+
+#ifndef NO_LOGGER
+#define LLL_INFO(v)  LOG_INFO(v), std::cout << "INFO : " << __func__ << " : " << v << std::endl
+#else
+#define LLL_INFO(v)  LOG_INFO(v)
+#endif
 
 // Some other staff
 template<typename T>
@@ -180,5 +192,19 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 	os << " " << it - v.begin() << ": " << *it << std::endl;
     return os;
 }
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
+    os << " size = " << v.size() << std::endl;;
+    for (typename uvector<T>::const_iterator it = v.begin(); it != v.end(); it++)
+	os << " " << it - v.begin() << ": " << *it << std::endl;
+    return os;
+}
+
+template<typename T1,typename T2>
+std::ostream& operator<<(std::ostream& os, const std::pair<T1,T2>& p) {
+    return os << "(" << p.first << "," << p.second << ")";
+}
+
 
 #endif // __LOGGER_H__

@@ -5,22 +5,21 @@ libmodules_a_SOURCES = \
 		       matrix/csrmatrix.cc \
 		       matrix/skyline.cc \
 		       matrix/matrix.h \
+		       vector/blas.cc \
 		       vector/vector.cc \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
 		       common/common.cc \
+		       common/config.cc \
 		       common/common.h \
 		       prec/cheb/cheb_constr.cc \
 		       prec/cheb/cheb_misc.cc \
 		       prec/cheb/cheb_solve.cc \
+		       prec/cheb/cheb_misc.h \
 		       prec/cheb/cheb_prec.h \
 		       prec/amg/amg.cc \
 		       prec/amg/amg_prec.h \
-		       prec/relax/rel_constr.cc \
-		       prec/relax/rel_misc.cc \
-		       prec/relax/rel_solve.cc \
-		       prec/relax/rel_prec.h \
 		       prec/diag/diag.cc \
 		       prec/diag/diag.h \
 		       prec/misc/misc.cc \

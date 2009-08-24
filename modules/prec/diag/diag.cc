@@ -19,7 +19,7 @@ DiagPrec::DiagPrec(const SkylineMatrix& A) {
     d.resize(n);
     double v;
     for (uint i = 0; i < n; i++) {
-	v = A.get(i,i);
+	v = A(i,i);
 	ASSERT(v > 0, "Something is very strange: (" << i << ") has " << v << " on diagonal, aborting...");
 	d[i] = v;
     }

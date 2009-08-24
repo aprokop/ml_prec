@@ -2,12 +2,16 @@
 #include "include/logger.h"
 #include "include/exception.h"
 #include "include/tools.h"
+#include "include/time.h"
 
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <numeric>
 #include <algorithm>
+#include <limits>
 
 DEFINE_LOGGER("CSRMatrix");
 
@@ -18,7 +22,6 @@ CSRMatrix::CSRMatrix() {
 const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
     nrow = A.nrow;
     ncol = A.ncol;
-    mode = A.mode;
 
     if (nrow) {
 	uint n = A.ia.size();
@@ -26,10 +29,9 @@ const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
 	ia.resize(n);
 	ja.resize(nnz);
 	a.resize(nnz);
-	memcpy(&ia[0], &A.ia[0], n*sizeof(int));
-	memcpy(&ja[0], &A.ja[0], nnz*sizeof(int));
-	memcpy(&a[0],  &A.a[0],  nnz*sizeof(double));
-
+	memcpy(ia.data(), A.ia.data(), n*sizeof(int));
+	memcpy(ja.data(), A.ja.data(), nnz*sizeof(int));
+	memcpy(a.data(),  A.a.data(),  nnz*sizeof(double));
     } else {
 	ia.clear();
 	ja.clear();
@@ -39,38 +41,36 @@ const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
     return *this;
 }
 
-double CSRMatrix::get(uint i, uint j) const THROW {
-    // LOG_DEBUG("i = " << i << ", j = " << j);
-    check_indices(i, j);
+uint CSRMatrix::index(uint i, uint j) const {
+    check_indices(i,j);
 
-    std::vector<uint>::const_iterator start = ja.begin() + ia[i]; 
-    std::vector<uint>::const_iterator   end = ja.begin() + ia[i+1];
-    std::vector<uint>::const_iterator it = std::lower_bound(start, end, j);
+    uvector<uint>::const_iterator start = ja.begin() + ia[i]; 
+    uvector<uint>::const_iterator   end = ja.begin() + ia[i+1];
+    uvector<uint>::const_iterator it = std::lower_bound(start, end, j);
     if (it != end && !(j < *it)) 
-	return a[it-ja.begin()];
+	return it-ja.begin();
 
-    LOG_WARN("Returning zero element for i = " << i << ", j = " << j);
+    return uint(-1);
+}
+
+bool CSRMatrix::exist(uint i, uint j) const THROW {
+    return index(i,j) != uint(-1);
+}
+
+double CSRMatrix::operator()(uint i, uint j) const THROW {
+    uint ind = index(i,j);
+    if (ind != uint(-1)) 
+	return a[ia[i]];
+
+    // LOG_WARN("(" << i << "," << j << ") is not in stencil");
     return 0;
 }
 
-void CSRMatrix::add(uint i, uint j, double v) THROW {
-    check_indices(i, j);
+double& CSRMatrix::operator()(uint i, uint j) THROW {
+    uint ind = index(i,j);
+    ASSERT(ind != uint(-1), "(" << i << "," << j << ") is not in stencil");
 
-    // in case matrix is in skyline form
-    std::vector<uint>::iterator start = ja.begin() + ia[i]; 
-    std::vector<uint>::iterator   end = ja.begin() + ia[i+1];
-    std::vector<uint>::iterator it = std::lower_bound(start, end, j);
-    if (it == end || j < *it) {
-	// creating new element
-	uint pos = it - ja.begin();
-	ja.insert(it, j);
-	a.insert (a.begin() + pos, v);
-	for (uint k = i+1; k <= nrow; k++)
-	    ia[k]++;
-    } else {
-	// adding to existing element
-	a[it - ja.begin()] += v;
-    }
+    return a[ia[i]];
 }
 
 void transpose(const CSRMatrix& A, CSRMatrix& B) {
@@ -115,33 +115,142 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 }
 
 bool CSRMatrix::is_symmetric() const {
-    ASSERT(nrow == ncol, "Can not call is_symmetric() for non square matrices");
+    ASSERT(nrow == ncol, "Matrix is not square: " << sizes());
     for (uint i = 0; i < nrow; i++)
 	for (uint j = ia[i]; j < ia[i+1]; j++)
-	    if (a[j] != get(ja[j], i))
+	    if (a[j] != (*this)(ja[j], i))
 		return false;
     return true;
 }
 
-void CSRMatrix::stat() const {
-    double s;
+std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
+    const int N = 16;
+    double ticks[N] = {-10e6,-10e3, -100, -10, -1, -0.1 -0.01, -0.001, 0, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10e6};
+    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    double s, pos = 0, neg = 0;
+    std::ostringstream os;
     for (uint i = 0; i < nrow; i++) {
 	s = 0;
 	for (uint j = ia[i]; j < ia[i+1]; j++) {
 	    if (ja[j] != i) {
-		// non-diagonal element
-		if (a[j] > 0)
-		    LOG_DEBUG("Positive element: (" << i << "," << ja[j] << ") : " << a[j]);
+		// off-diagonal element
+		bins[std::lower_bound(ticks, ticks+N, a[j]) - ticks]++;
+
+		if (a[j] > 0) {
+		    if (ignore_pos_offdiagonal == false)
+			LOG_DEBUG("Positive element: (" << i << "," << ja[j] << ") : " << a[j]);
+		    pos++;
+		} else if (a[j] < 0) {
+		    neg++;
+		}
 		s += a[j];
 	    } else {
 		if (a[j] < 0)
-		    LOG_DEBUG("Negative diagonal element: " << i << " : " << a[j]);
+		    os << "Negative diagonal element: " << i << " : " << a[j] << std::endl;
 		s += a[j];
 	    }
 	}
 	if (s < -1e-8)
-	    LOG_DEBUG("Negative row sum: " << i << " : " << s);
+	    os << "Negative row sum: " << i << " : " << s << std::endl;
     }
+    os << 100*pos/(pos+neg) << "% off-diagonal are positive" << std::endl;
+    for (int i = 0; i < N-1; i++)
+	os << "[" << ticks[i] << "," << ticks[i+1] << "] : " << bins[i] << std::endl;
+
+    return os.str();
+}
+
+void CSRMatrix::dump(const std::string& filename, bool ascii) const THROW {
+    TIME_INIT();
+    TIME_START();
+    if (ascii == false) {
+	std::ofstream os(filename.c_str(), std::ofstream::binary);
+
+	os.write(reinterpret_cast<const char*>(&nrow), sizeof(uint));
+	os.write(reinterpret_cast<const char*>(&ncol), sizeof(uint));
+	os.write(reinterpret_cast<const char*>(ia.data()), (nrow+1)*sizeof(uint));
+
+	uint nnz = ia[nrow];
+	os.write(reinterpret_cast<const char*>(ja.data()), nnz*sizeof(uint));
+	os.write(reinterpret_cast<const char*>(a.data()),  nnz*sizeof(double));
+    } else {
+	std::ofstream os(filename.c_str());
+
+	if (!os.good())
+	    THROW_EXCEPTION("Could not open \"" << filename << "\" for write");
+
+	if (!nrow)
+	    THROW_EXCEPTION("Trying to dump not initialized matrix");
+	uint nnz = ia[nrow];
+
+	os << "# rows cols nonzeros" << std::endl;
+	os << nrow << " " << ncol << " " << nnz << std::endl;
+	os << "# row_ptr" << std::endl;
+	for (uint i = 0; i <= nrow; i++)
+	    os << ia[i] << std::endl;
+	os << "# col_ind" << std::endl;
+	for (uint j = 0; j < nnz; j++)
+	    os << ja[j] << std::endl;
+	os << "# value" << std::endl;
+	os << std::setprecision(std::numeric_limits<double>::digits10 + 1) << std::scientific;
+	for (uint j = 0; j < nnz; j++)
+	    os << a[j] << std::endl;
+    }
+    LOG_DEBUG(TIME_INFO("Dump time"));
+}
+
+void CSRMatrix::load(const std::string& filename, bool ascii) THROW {
+    uint nnz;
+    TIME_INIT();
+    TIME_START();
+    if (ascii == false) {
+	std::ifstream is(filename.c_str(), std::ifstream::binary);
+
+	if (!is.good())
+	    THROW_EXCEPTION("Problem reading file \"" << filename  << "\"");
+
+	is.read(reinterpret_cast<char*>(&nrow), sizeof(uint));
+	is.read(reinterpret_cast<char*>(&ncol), sizeof(uint));
+
+	ia.resize(nrow+1);
+	is.read(reinterpret_cast<char*>(&ia[0]), (nrow+1)*sizeof(uint));
+
+	nnz = ia[nrow];
+	ja.resize(nnz);
+	a.resize(nnz);
+	is.read(reinterpret_cast<char*>(&ja[0]), nnz*sizeof(uint));
+	is.read(reinterpret_cast<char*>(&a[0]),  nnz*sizeof(double));
+    } else {
+	std::ifstream is(filename.c_str());
+	ASSERT(is.good(), "Problem reading file \"" << filename  << "\"");
+
+	const int N = 2009;
+	char str[N];
+
+	is.getline(str, N); /* "# rows cols nonzeros" */
+	is >> nrow >> ncol >> nnz;
+
+	is.getline(str, N);
+	is.getline(str, N); /* "# row_ptr" */
+	ia.resize(nrow+1);
+	for (uint i = 0; i <= nrow; i++)
+	    is >> ia[i];
+
+	is.getline(str, N);
+	is.getline(str, N); /* "# col_ind" */
+	ja.resize(nnz);
+	for (uint i = 0; i < nnz; i++)
+	    is >> ja[i];
+
+	is.getline(str, N);
+	is.getline(str, N); /* "# value" */
+	a.resize(nnz);
+	for (uint i  = 0; i < nnz; i++)
+	    is >> a[i];
+    }
+
+    LOG_INFO("Loaded matrix: sizes = " << sizes() << ", nnz = " << nnz);
+    LOG_DEBUG(TIME_INFO("Loading time"));
 }
 
 std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
@@ -157,11 +266,13 @@ std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
 }
 
 void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW {
-    ASSERT(res.size(), "Memory for result must have been already allocated");
+    ASSERT(A.rows() == res.size(), "Different sizes: A is " << A.sizes() << ", res is " << res.size());
+    if (res.size() == 0)
+	return;
 
     memset(&res[0], 0, res.size()*sizeof(double));
     switch (type) {
-	case 'o': // A*v
+	case 'o': /* A*v */
 	    ASSERT(A.ncol == v.size(), "Multiplying sparse matrix and vector with different dimensions");
 	    ASSERT(res.size() == A.nrow, "Not enough space in res vector");
 
@@ -170,13 +281,16 @@ void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW
 		    res[i] += A.a[j] * v[A.ja[j]];
 	    break;
 
-	case 't': // A^T*v
+	case 't': /* A^T*v */
 	    ASSERT(A.nrow == v.size(), "Multiplying sparse matrix and vector with different dimensions");
 	    ASSERT(res.size() == A.ncol, "Not enough space in res vector");
 
 	    for (uint i = 0; i < A.nrow; i++) 
 		for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 		    res[A.ja[j]] += A.a[j] * v[i];
+	    break;
+	case 's': /* A*v with A = A^T */
+	    sym_multiply(dynamic_cast<const SkylineMatrix&>(A), v, res);
 	    break;
 
 	default:

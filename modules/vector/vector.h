@@ -1,53 +1,27 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
+#include "config/config.h"
 #include "include/define.h"
 #include "include/exception.h"
+#include "include/uvector.h"
 
-#include <vector>
+typedef uvector<double> Vector;
 
-class Vector {
-private:
-    std::vector<double> data;
-
-public:
-    Vector(uint n = 0) : data(n) { }
-    Vector(const Vector& v);
-    ~Vector() { }
-    const Vector& operator=(const Vector& v);
-
-    const double& operator[](uint i) const THROW {
-	ASSERT(i < data.size(), "Index is out of bundaries: i = " << i << ", n = " << data.size());
-	return data[i];
-    }
-    double& operator[](uint i) THROW {
-	ASSERT(i < data.size(), "Index is out of bundaries: i = " << i << ", n = " << data.size());
-	return data[i];
-    }
-    bool operator>=(double v) const;
-
-    uint size() const {
-	return data.size();
-    }
-    void resize(uint n) {
-	data.resize(n, 0.);
-    }
-    void swap(Vector& v) {
-	data.swap(v.data);
-    }
-    bool is_nan() const;
-
-    const Vector& operator+=(const Vector& v) THROW;
-    const Vector& operator-=(const Vector& v) THROW;
-    const Vector& operator*=(double f);
-    const Vector& operator/=(double f) THROW;
-
-    double norm_2() const;
-};
+void dump(const std::string& filename, bool ascii = false);
+void load(const std::string& filename, bool ascii = false);
 
 void   daxpy(double alpha, const Vector& x, Vector& y);
 void   dscal(double alpha, Vector& x);
 double ddot(const Vector& x, const Vector& y);
 double dnrm2(const Vector& x);
+
+/* Simple variants */
+void   daxpy(double alpha, const double* x, double* y, uint n);
+void   dscal(double alpha, double* x, uint n);
+double ddot(const double* x, const double* y, uint n);
+
+Vector vector_product(const Vector& v1, const Vector& v2) THROW;
+std::ostream& operator<<(std::ostream& os, const Vector& v);
 
 #endif // #ifndef __VECTOR_H__

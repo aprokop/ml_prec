@@ -22,7 +22,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
     LOG_DEBUG("Generating initial approximation");
     generate_x0(x);
     residual(A, b, x, r);
-    norm = init_norm = r.norm_2();
+    norm = init_norm = dnrm2(r);
 
     int niter = 1;
 #ifdef ABSOLUTE_NORM
@@ -40,7 +40,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
     dscal(alpha, x);
     daxpy(1, u1, x);
     residual(A, b, x, r);
-    norm = r.norm_2();
+    norm = dnrm2(r);
     niter++;
 
     // ===============    STEPS 2+    ===============
@@ -68,7 +68,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 	residual(A, b, x, r);
 	mult += clock() - delta;
 	nmult++;
-	norm = r.norm_2();
+	norm = dnrm2(r);
 
 	niter++;
     }
