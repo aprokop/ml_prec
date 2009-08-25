@@ -80,7 +80,7 @@ public:
     ~Prec() { }
 
     void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
-    void graph_planes(const std::string& filename, uint level, char plane) const;
+    void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     double lmin() const { return levels[0].lmin; }
     double lmax() const { return levels[0].lmax; }

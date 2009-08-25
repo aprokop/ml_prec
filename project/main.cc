@@ -47,7 +47,13 @@ int main (int argc, char * argv[]) {
 	TIME_START();
 	B_ = new Prec(A, cfg);
 	std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
-	LOG_INFO(static_cast<Prec&>(*B_));
+
+	Prec& Bcheb = static_cast<Prec&>(*B_);
+	LOG_INFO(Bcheb);
+#if 1
+	Bcheb.graph_planes("grids.ps", 0, 'z', mesh);
+	return 0;
+#endif
     } else if (cfg.prec == AMG_PREC) {
 	B_ = new AMGPrec(A);
     } else if (cfg.prec == DIAG_PREC) {
