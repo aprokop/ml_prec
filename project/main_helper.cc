@@ -28,6 +28,7 @@ static void usage() {
     std::cout << "  -S|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag}    Preconditioner type" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -43,7 +44,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.matrix           = std::string("matrix.dat");
     cfg.use_tails        = 1;
     cfg.optimize_storage = 1;
-    cfg.solver		 = CHEB_SOLVER;
+    cfg.solver           = PCG_SOLVER;
+    cfg.prec             = UH_CHEB_PREC;
 
     static struct option long_options[] = {
 	{"sigmas",		required_argument,  NULL, 's'},
@@ -62,7 +64,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -114,6 +116,15 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      break;
 	    case 'm': cfg.matrix = std::string(optarg); break;
 	    case 'a': cfg.ntests = uint(atoi(optarg)); break;
+	    case 'p': if (!strcmp(optarg, "uh_cheb"))
+			  cfg.prec = UH_CHEB_PREC;
+		      else if (!strcmp(optarg, "amg"))
+			  cfg.prec = AMG_PREC;
+		      else if (!strcmp(optarg, "diag"))
+			  cfg.prec = DIAG_PREC;
+		      else
+			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
+		      break;
 	    case '?': 
 	    default:
 		      abort();

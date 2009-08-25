@@ -41,34 +41,33 @@ int main (int argc, char * argv[]) {
     LOG_DEBUG("Config parameters: " << cfg);
 
     TIME_INIT();
-#if defined CHEB_PREC || defined RELX_PREC
-    TIME_START();
 
-#if defined CHEB_PREC
-    Prec B(A, cfg);
-#else
-    RelPrec B(A, cfg.niter, cfg.sigma, cfg.sigmas, cfg.mesh);
-#endif
-
-    std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
-    LOG_INFO(B);
-
-#elif defined AMG_PREC
-    AMGPrec B(A);
-#elif defined DIAG_PREC
-    DiagPrec B(A);
-#endif
+    PrecBase * B_ = 0;
+    if (cfg.prec == UH_CHEB_PREC) {
+	TIME_START();
+	B_ = new Prec(A, cfg);
+	std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
+	LOG_INFO(static_cast<Prec&>(*B_));
+    } else if (cfg.prec == AMG_PREC) {
+	B_ = new AMGPrec(A);
+    } else if (cfg.prec == DIAG_PREC) {
+	B_ = new DiagPrec(A);
+    }
+    PrecBase& B = *B_;
 
     TIME_START();
-#if 1
-    PCGSolver(A, Vector(A.size()), B, 1e-6);
-#else
-#ifndef CHEB_PREC
-#  error "CHEB_PREC is not defined"
-#endif
-    ChebSolver(A, B.lmin(), B.lmax(), Vector(A.size()), B, 1e-6);
-#endif
+    if (cfg.solver == PCG_SOLVER)
+	PCGSolver(A, Vector(A.size()), B, 1e-6);
+    else {
+	if (cfg.prec != UH_CHEB_PREC)
+	    THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
+
+	Prec& Bcheb = static_cast<Prec&>(B);
+	ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), Vector(A.size()), Bcheb, 1e-6);
+    }
     std::cout << std::endl << TIME_INFO("Solution time") << std::endl;
+
+    delete B_;
 
     return 0;
 }

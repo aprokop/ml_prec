@@ -12,6 +12,12 @@ enum SolverType {
     CHEB_SOLVER
 };
 
+enum PrecType {
+    UH_CHEB_PREC,
+    AMG_PREC,
+    DIAG_PREC
+};
+
 struct Config {
     /* Chebyshev iterations parameters */
     std::vector<uint>   niters;
@@ -27,6 +33,7 @@ struct Config {
     bool   optimize_storage;
     std::string matrix;
     SolverType solver;
+    PrecType prec;
     
     friend std::ostream& operator<<(std::ostream& os, const Config& config);
 };

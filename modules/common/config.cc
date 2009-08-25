@@ -32,5 +32,14 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     }
     os << std::endl;
 
+    os << "Preconditioner   : ";
+    switch(cfg.prec) {
+	case UH_CHEB_PREC : os << "uh_cheb"; break;
+	case AMG_PREC     : os << "amg"; break;
+	case DIAG_PREC    : os << "diag"; break;
+	default           : THROW_EXCEPTION("Unknown PrecType");
+    }
+    os << std::endl;
+
     return os;
 }
