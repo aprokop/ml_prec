@@ -62,17 +62,6 @@ if test x$enable_blas = xyes; then
 fi
 LIBS="$BLAS_LIBS $LAPACK_LIBS $LIBS"
 
-# Preconditioner
-# AC_MSG_CHECKING([wish for prec])
-# AC_ARG_WITH(prec,
-    # [AC_HELP_STRING([--with-prec@<:@=cheb|amg|diag@:>@],
-		    # [choose parallel preconditioner type(s) @<:@default=cheb@:>@])],
-    # prec=$withval,
-    # prec="chb")
-# AC_MSG_RESULT($prec)
-# AM_CONDITIONAL([MPI_PREC], [test x$prec = xmpi || test x$prec = xall])
-# AM_CONDITIONAL([SMP_PREC], [test x$prec = xsmp || test x$prec = xall])
-
 # Logger
 AC_MSG_CHECKING([wish for logger])
 AC_ARG_ENABLE(logger,

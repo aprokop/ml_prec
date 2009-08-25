@@ -60,6 +60,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"optimize-storage",	required_argument,  NULL, 'S'},
 	{"matrix",		required_argument,  NULL, 'm'},
 	{"ntests",		required_argument,  NULL, 'a'},
+	{"prec",		required_argument,  NULL, 'p'},
 	{0, 0, 0, 0}
     };
     while (1) {
