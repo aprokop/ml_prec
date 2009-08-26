@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 
+#define REGION_ONLY
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
 		  char plane, bool map_identity, const MeshBase& mesh) {
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
@@ -56,10 +57,19 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     std::map<uint,uint>::const_iterator it0, it1;
 
     const std::vector<Point>& nodes = mesh.nodes;
+
+#ifdef REGION_ONLY
+    uint n1min = 44, n1max = 60;
+    uint n2min = 50, n2max = 100;
+#endif
     
     uint left = 0, total = 0;
     uint pages = 0;
+#ifndef REGION_ONLY
     for (uint k = 0; k < n3; k += 7) {
+#else
+    uint k = 63; {
+#endif
 	ofs << "%%Page: " << ++pages << std::endl;
 	ofs << "0 setlinewidth\n";
 	ofs << "30 40 translate\n";
@@ -70,6 +80,12 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 	for (uint l = 0; l < 2; l++) 
 	    for (uint j = 0; j < n2 - l; j++)
 		for (uint i = 0; i < n1 - (1-l); i++) {
+#ifdef REGION_ONLY
+		    if ((l == 0 && (i < n1min || i > n1max || j < n2min || j > n2max)) || 
+			(l == 1 && (i < n1min || i > n1max || j < n2min || j >= n2max)))
+			continue;
+#endif
+
 		    ltotal++;
 
 		    switch (plane) {
@@ -116,6 +132,10 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 	ofs << "grestore\n";
 	for (uint j = 0; j < n2; j++)
 	     for (uint i = 0; i < n1; i++) {
+#ifdef REGION_ONLY
+		 if (i < n1min || i > n1max || j < n2min || j > n2max)
+		     continue;
+#endif
 		 char fz = 0;
 		 switch (plane) {
 		     case 'z': i0 = mesh.index(i,j,k); break;
@@ -178,8 +198,10 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		 }
 	     }
 
+#ifndef REGION_ONLY
 	ofs << "b (" << plane << " plane #" << k << ", #links = " << lleft << "/" << ltotal << " = " << 
 		100.*lleft/ltotal << "%) 10 730 ms" << std::endl;
+#endif
 	ofs << "showpage" << std::endl;
 	ofs << "%%EndPage\n";
 	
