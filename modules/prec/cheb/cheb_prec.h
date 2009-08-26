@@ -49,6 +49,8 @@ private:
      * enough new matrix would still be positive definite
      */
     bool to_remove(double c, double v, double beta, double& s) {
+#if 1
+	/* Dynamic variant */
 	double t = -2*v / (c*(beta-1));
 #if 0
 	/* There can be several possibilities */
@@ -67,6 +69,12 @@ private:
 	    return false;
 
 	s += t;
+#else
+	/* Static variant */
+	if (1 + 12*(-v)/c > beta)
+	    return false;
+#endif
+
 	return true;
     }
 

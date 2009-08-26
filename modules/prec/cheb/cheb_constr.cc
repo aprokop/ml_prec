@@ -70,6 +70,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		/* The link is marked as free to remove from i-th end */
 		uint j = A.ja[rstart+1 + sorted[_j]];
 
+		/* TODO: for j > i we actually already know the offset in LinkType::a array
+		 * so it can be significantly sped up */
 		if (ltype.mark(i,j)) {
 		    /* This link is marked as removable from both ends so it is removed */
 		    nlinks[i]--;
