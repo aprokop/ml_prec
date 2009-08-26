@@ -8,6 +8,8 @@
 
 typedef uvector<double> Vector;
 
+bool is_nan(const Vector& v);
+
 void dump(const std::string& filename, bool ascii = false);
 void load(const std::string& filename, bool ascii = false);
 

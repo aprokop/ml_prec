@@ -53,3 +53,11 @@ void load(Vector& v, const std::string& filename, bool ascii) {
     }
     LOG_INFO("Loaded vector: size = " << n);
 }
+
+bool is_nan(const Vector& v) {
+    uint n = v.size();
+    for (uint i = 0; i < n; i++)
+	if (::is_nan(v[i]))
+	    return true;
+    return false;
+}
