@@ -40,38 +40,66 @@ int main (int argc, char * argv[]) {
     std::cout << cfg << std::endl;
     LOG_DEBUG("Config parameters: " << cfg);
 
-    TIME_INIT();
+    PrecBase * B_ = NULL;
 
-    PrecBase * B_ = 0;
-    if (cfg.prec == UH_CHEB_PREC) {
-	TIME_START();
-	B_ = new Prec(A, cfg);
-	std::cout << std::endl << TIME_INFO("Construction time") << std::endl;
+    std::vector<double> ctimes, stimes;
 
-	Prec& Bcheb = static_cast<Prec&>(*B_);
-	LOG_INFO(Bcheb);
-#if 1
-	Bcheb.graph_planes("grids.ps", 0, 'z', mesh);
-	return 0;
-#endif
-    } else if (cfg.prec == AMG_PREC) {
-	B_ = new AMGPrec(A);
-    } else if (cfg.prec == DIAG_PREC) {
-	B_ = new DiagPrec(A);
+    // =====  Construction phase  =====
+    /* Timers */
+    double cstart, cfinish, sstart, sfinish;
+    for (uint i = 0; i < cfg.ntests; i++) {
+	if (B_) {
+	    delete B_;
+	    B_ = NULL;
+	}
+	cstart = cfinish = 0;
+	if (cfg.prec == UH_CHEB_PREC) {
+	    cstart = pclock();
+	    B_ = new Prec(A, cfg);
+	    cfinish = pclock();
+	} else if (cfg.prec == AMG_PREC) {
+	    B_ = new AMGPrec(A);
+	} else if (cfg.prec == DIAG_PREC) {
+	    B_ = new DiagPrec(A);
+	}
+	ctimes.push_back(cfinish - cstart);
+	LLL_INFO("Construction time : " << ctimes.back());
     }
     PrecBase& B = *B_;
 
-    TIME_START();
-    if (cfg.solver == PCG_SOLVER)
-	PCGSolver(A, Vector(A.size()), B, 1e-6);
-    else {
-	if (cfg.prec != UH_CHEB_PREC)
-	    THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
-
+    if (cfg.prec == UH_CHEB_PREC) {
 	Prec& Bcheb = static_cast<Prec&>(B);
-	ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), Vector(A.size()), Bcheb, 1e-6);
+	LOG_INFO(Bcheb);
+#if 0
+	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
+	return 0;
+#endif
     }
-    std::cout << std::endl << TIME_INFO("Solution time") << std::endl;
+
+    Vector b(A.size(), 0.);
+    /* =====  Solution phase  ===== */
+    for (uint i = 0; i < cfg.ntests; i++) {
+	sstart = pclock();
+	if (cfg.solver == PCG_SOLVER)
+	    PCGSolver(A, b, B, 1e-6);
+	else {
+	    if (cfg.prec != UH_CHEB_PREC)
+		THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
+
+	    Prec& Bcheb = static_cast<Prec&>(B);
+	    ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, 1e-6);
+	}
+	sfinish = pclock();
+
+	stimes.push_back(sfinish - sstart);
+	LLL_INFO("Solution time : " << stimes.back());
+    }
+    double ctime = avg_time(ctimes);
+    double stime = avg_time(stimes);
+
+    LLL_INFO("Avg construction time: " << ctime);
+    LLL_INFO("Avg solution time    : " << stime);
+    LLL_INFO("Avg total time       : " << ctime + stime);
 
     delete B_;
 

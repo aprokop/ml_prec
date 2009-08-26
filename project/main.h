@@ -6,11 +6,7 @@
 #include <iostream>
 #include <vector>
 
-// #define DIAG_PREC
-// #define AMG_PREC
-#define CHEB_PREC
-// #define RELX_PREC
-
 int set_params(int argc, char * argv[], Config& config);
+double avg_time(const std::vector<double>& times);
 
 #endif // __MAIN_H__
