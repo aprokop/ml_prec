@@ -41,7 +41,6 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.nz               = 85;
 
     cfg.ntests           = 1;
-    cfg.matrix           = std::string("matrix.dat");
     cfg.use_tails        = 1;
     cfg.optimize_storage = 1;
     cfg.solver           = PCG_SOLVER;
@@ -79,14 +78,14 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 's': {
 			  cfg.sigmas.clear();
 			  std::istringstream os(optarg);
-			  std::copy(std::istream_iterator<double>(os), std::istream_iterator<double>(), 
+			  std::copy(std::istream_iterator<double>(os), std::istream_iterator<double>(),
 				    std::back_inserter(cfg.sigmas));
 		      }
 		      break;
 	    case 'b': {
 			  cfg.niters.clear();
 			  std::istringstream os(optarg);
-			  std::copy(std::istream_iterator<double>(os), std::istream_iterator<double>(), 
+			  std::copy(std::istream_iterator<double>(os), std::istream_iterator<double>(),
 				    std::back_inserter(cfg.niters));
 		      }
 		      break;
@@ -126,7 +125,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      else
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
-	    case '?': 
+	    case '?':
 	    default:
 		      abort();
 	}

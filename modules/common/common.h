@@ -31,10 +31,11 @@ struct Config {
     uint   ntests;
     bool   use_tails;
     bool   optimize_storage;
-    std::string matrix;
     SolverType solver;
     PrecType prec;
-    
+
+    std::string matrix;
+
     friend std::ostream& operator<<(std::ostream& os, const Config& config);
 };
 

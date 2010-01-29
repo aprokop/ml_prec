@@ -22,8 +22,6 @@ int main (int argc, char * argv[]) {
     log4cxx::PropertyConfigurator::configure("./log4cxx.properties");
 #endif
 
-    // logger.logf(log4cxx::Level::DEBUG, "Some forma: %d %%\n", 15);
-
     Config cfg;
     if (set_params(argc, argv, cfg)) {
 	LOG_INFO("Error while setting parameters, exiting...");
@@ -33,9 +31,14 @@ int main (int argc, char * argv[]) {
 
     SkylineMatrix A;
 
-    SPEMesh mesh;
-    mesh.construct_matrix(A, cfg.c);
-    A.stat(true);
+    if (cfg.matrix.empty()) {
+	SPEMesh mesh;
+	mesh.construct_matrix(A, cfg.c);
+    } else {
+	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
+	bool transform = true;
+	A.load(cfg.matrix, transform);
+    }
 
     std::cout << cfg << std::endl;
     LOG_DEBUG("Config parameters: " << cfg);
@@ -76,18 +79,20 @@ int main (int argc, char * argv[]) {
 #endif
     }
 
+    double eps = 1e-6;
+
     Vector b(A.size(), 0.);
     /* =====  Solution phase  ===== */
     for (uint i = 0; i < cfg.ntests; i++) {
 	sstart = pclock();
 	if (cfg.solver == PCG_SOLVER)
-	    PCGSolver(A, b, B, 1e-6);
+	    PCGSolver(A, b, B, eps);
 	else {
 	    if (cfg.prec != UH_CHEB_PREC)
 		THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
 
 	    Prec& Bcheb = static_cast<Prec&>(B);
-	    ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, 1e-6);
+	    ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, eps);
 	}
 	sfinish = pclock();
 
