@@ -6,8 +6,7 @@
 DEFINE_LOGGER("PCG");
 
 Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) THROW {
-    ASSERT(A.rows() == A.cols() && A.cols() == b.size(), "Wrong dimesions: " << 
-	   "A:" << A.rows() << " x " << A.cols() << ", b: " << b.size());
+    ASSERT_SIZE(b.size(), A.size());
 
     uint   n = b.size();
     Vector r(n), x(n), z(n);
@@ -86,17 +85,15 @@ Vector PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, double eps) T
     std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
 #if 1
-#define LLL_DEBUG(v)	 LOG_DEBUG(v);std::cout << v << std::endl 
     double out = double(mult)/CLOCKS_PER_SEC;
     LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
     out = double(inv)/CLOCKS_PER_SEC;
     if (ninv) {
 	LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
-	LLL_DEBUG(std::fixed << std::setprecision(3) << 
-		  "Time of (possible construction) [time of first inversion - avg] = " << 
+	LLL_DEBUG(std::fixed << std::setprecision(3) <<
+		  "Time of (possible construction) [time of first inversion - avg] = " <<
 		  double(cstr - inv/ninv)/CLOCKS_PER_SEC);
     }
-#undef LLL_DEBUG
 #endif
 
     return x;

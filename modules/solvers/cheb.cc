@@ -5,10 +5,9 @@
 
 DEFINE_LOGGER("ChebSolver");
 
-Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax, 
+Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 		  const Vector& b, PrecBase& B, double eps) THROW {
-    ASSERT(A.rows() == A.cols() && A.cols() == b.size(), "Wrong dimesions: " << 
-	   "A:" << A.rows() << " x " << A.cols() << ", b: " << b.size());
+    ASSERT_SIZE(b.size(), A.size());
 
     uint   n = b.size();
     Vector r(n), x(n), u0(n), u1(n);
@@ -61,7 +60,7 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 	inv += clock() - delta;
 	ninv++;
 
-	for (uint k = 0; k < n; k++) 
+	for (uint k = 0; k < n; k++)
 	    x[k] = u1[k] + alpha*x[k] + beta*(u1[k] - u0[k]);
 
 	delta = clock();
@@ -78,15 +77,13 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
     std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
 #if 1
-#define LLL_DEBUG(v)	 LOG_DEBUG(v);std::cout << v << std::endl 
     double out = double(mult)/CLOCKS_PER_SEC;
     LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
     out = double(inv)/CLOCKS_PER_SEC;
     LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
-    LLL_DEBUG(std::fixed << std::setprecision(3) << 
-	      "Time of (possible construction) [time of first inversion - avg] = " << 
+    LLL_DEBUG(std::fixed << std::setprecision(3) <<
+	      "Time of (possible construction) [time of first inversion - avg] = " <<
 	      double(cstr - inv/ninv)/CLOCKS_PER_SEC);
-#undef LLL_DEBUG
 #endif
 
     return x;
