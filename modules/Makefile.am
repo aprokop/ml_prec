@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir) 
+AM_CPPFLAGS = -I$(top_srcdir)
 
 noinst_LIBRARIES = libmodules.a
 libmodules_a_SOURCES = \
@@ -27,6 +27,7 @@ libmodules_a_SOURCES = \
 		       prec/prec_base.h \
 		       solvers/pcg.cc \
 		       solvers/cheb.cc \
+		       solvers/simple_solver.cc \
 		       solvers/amg1r6.f \
 		       solvers/solvers.cc \
 		       solvers/solvers.h
