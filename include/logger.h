@@ -5,11 +5,13 @@
 #include "include/uvector.h"
 
 #include <vector>
+#include <map>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 #ifndef NO_LOGGER
 
@@ -34,7 +36,7 @@
 
 namespace log4cxx {
     class SysLogger;
-    /// ostringstream wrapper for SysLogger 
+    /// ostringstream wrapper for SysLogger
     class LoggerStream {
     private:
 	SysLogger* logger;
@@ -47,7 +49,7 @@ namespace log4cxx {
 
 	// to output class must support smth like
 	// ostringstream& operator<<(ostringstream&)
-	template<class T> 
+	template<class T>
 	    LoggerStream& operator<<(const T& t) {
 		if (buf)
 		    (*buf) << t;
@@ -179,9 +181,11 @@ namespace log4cxx {
 #define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << v)
 
 #ifndef NO_LOGGER
-#define LLL_INFO(v)  LOG_INFO(v), std::cout << "INFO : " << __func__ << " : " << v << std::endl
+#define LLL_INFO(v)  LOG_INFO(v), std::cout << "INFO : " << v << std::endl
+#define LLL_DEBUG(v) LOG_DEBUG(v), std::cout << "DEBUG : " << v << std::endl
 #else
 #define LLL_INFO(v)  LOG_INFO(v)
+#define LLL_DEBUG(v) LOG_DEBUG(v)
 #endif
 
 // Some other staff
@@ -195,7 +199,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
-    os << " size = " << v.size() << std::endl;;
+    os << " size = " << v.size() << std::endl;
     for (typename uvector<T>::const_iterator it = v.begin(); it != v.end(); it++)
 	os << " " << it - v.begin() << ": " << *it << std::endl;
     return os;
@@ -204,6 +208,13 @@ std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
 template<typename T1,typename T2>
 std::ostream& operator<<(std::ostream& os, const std::pair<T1,T2>& p) {
     return os << "(" << p.first << "," << p.second << ")";
+}
+
+template<typename T1, typename T2>
+std::ostream& operator<<(std::ostream& os, const std::map<T1,T2>& p) {
+    for (typename std::map<T1,T2>::const_iterator it = p.begin(); it != p.end(); it++)
+	os << *it << std::endl;
+    return os;
 }
 
 

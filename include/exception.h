@@ -3,8 +3,6 @@
 
 #include "config/config.h"
 
-#include "include/tools.h"
-
 #include <string>
 #include <exception>
 #include <iostream>
@@ -20,7 +18,7 @@ public:
     virtual ~Exception() throw() { }
 
     // Gets message text
-    const char * what() const throw () { return msg.c_str(); } 
+    const char * what() const throw () { return msg.c_str(); }
 };
 
 #define THROW throw(Exception)
@@ -31,15 +29,21 @@ public:
     throw Exception(os.str()); \
 }
 
+#define unlikely(expr) __builtin_expect(!!(expr), 0)
+#define likely(expr)   __buildin_expect(!!(expr), 1)
+
 #ifndef NO_ASSERT
 #define ASSERT(expression, what) \
 { \
-    if (!(expression)) \
+    if (unlikely(!(expression))) \
 	THROW_EXCEPTION(what); \
 }
 #else
 #define ASSERT(expression,what)
 #endif
+
+#define ASSERT_SIZE(got, expected) ASSERT(got == expected, "Wrong size: " << got << " (expected " << expected << ")")
+#define ASSERT_SIZE_LESS(got,expected) ASSERT(uint(got) < uint(expected), "Index is out of boundaries: " << got << " (max = " << expected << ")")
 
 
 #endif // __EXCEPTION_H__
