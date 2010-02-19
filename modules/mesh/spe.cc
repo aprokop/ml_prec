@@ -8,24 +8,30 @@
 
 DEFINE_LOGGER("SPEMesh");
 
-SPEMesh::SPEMesh() {
-    nx = 60;	    ny = 220;	    nz = 85;	    N = nx*ny*nz;
+SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
+    ASSERT(_nx && _ny && _nz, "Wrong mesh dimensions: " << _nx << " x " << _ny << " x " << _nz);
+    knx = 60;	    kny = 220;	    knz = 85;	    kN = knx*kny*knz;
     hx = 20;	    hy = 10;	    hz = 2;
-    size_x = 1200;  size_y = 2200;  size_z = 170;
+    nx = _nx; ny = _ny; nz = _nz;
+    N = nx*ny*nz;
+    size_x = nx*hx;
+    size_y = ny*hy;
+    size_z = nz*hz;
 
     std::ifstream spe("spe_perm.dat");
     ASSERT(spe.good(), "Could not open spe");
 
+    kx.resize(kN);
+    ky.resize(kN);
+    kz.resize(kN);
+
     TIME_INIT();
     TIME_START();
-    kx.resize(N);
-    ky.resize(N);
-    kz.resize(N);
-    for (uint i = 0; i < N; i++)
+    for (uint i = 0; i < kN; i++)
 	spe >> kx[i];
-    for (uint i = 0; i < N; i++)
+    for (uint i = 0; i < kN; i++)
 	spe >> ky[i];
-    for (uint i = 0; i < N; i++)
+    for (uint i = 0; i < kN; i++)
 	spe >> kz[i];
     LOG_DEBUG(TIME_INFO("Reading SPE file"));
     LEAVE_MESSAGE("SPEMesh read");
@@ -52,9 +58,6 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     A.ia.reserve(N+1);
     A.ja.reserve(7*N);
     A.a.reserve(7*N);
-    TIME_START();
-    A.nrow = A.ncol = N;
-    A.ia.push_back(0);
 
 #define ADD(di,dj,dk,axis) { \
     i1 = index(i+di, j+dj, k+dk); \
@@ -64,9 +67,18 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     A.a[dind] += v; \
 }
 
-    for (uint k = 0; k < nz; k++) 
+    TIME_START();
+    A.nrow = A.ncol = N;
+    A.ia.push_back(0);
+#ifdef XYZ
+    for (uint k = 0; k < nz; k++)
 	for (uint j = 0; j < ny; j++)
 	    for (uint i = 0; i < nx; i++) {
+#elif defined ZXY
+    for (uint j = 0; j < ny; j++)
+	for (uint i = 0; i < nx; i++)
+	    for (uint k = 0; k < nz; k++) {
+#endif
 		i0 = index(i, j, k);
 		A.ja.push_back(i0);
 		A.a.push_back(c);
@@ -74,16 +86,47 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
 		uint dind = A.a.size() - 1;
 		double v;
 
+#ifdef XYZ
 		if (k)	      ADD( 0,  0, -1, z);
 		if (j)	      ADD( 0, -1,  0, y);
 		if (i)	      ADD(-1,  0,  0, x);
 		if (i < nx-1) ADD(+1,  0,  0, x);
 		if (j < ny-1) ADD( 0, +1,  0, y);
 		if (k < nz-1) ADD( 0,  0, +1, z);
+#elif defined ZXY
+		if (j)	      ADD( 0, -1,  0, y);
+		if (i)	      ADD(-1,  0,  0, x);
+		if (k)	      ADD( 0,  0, -1, z);
+		if (k < nz-1) ADD( 0,  0, +1, z);
+		if (i < nx-1) ADD(+1,  0,  0, x);
+		if (j < ny-1) ADD( 0, +1,  0, y);
+#endif
 
 		A.ia.push_back(A.ja.size());
 	    }
 
     LOG_DEBUG(TIME_INFO("Constructing matrix"));
     LEAVE_MESSAGE("Matrix constructed");
+}
+
+/* Construct unsymmetric M-matrix with diagonal domination */
+void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double shift) const {
+    construct_matrix(A, c);
+
+    const uvector<uint>& ia = A.ia;
+    const uvector<uint>& ja = A.ja;
+    uvector<double>&	  a = A.a;
+
+    const uint n = A.size();
+    /* Add unsymmetric part */
+    for (uint i = 0; i < n; i++) {
+	uint dind = ia[i];
+
+	/* Modify each element by small percent */
+	for (uint j = ia[i]+1; j < ia[i+1]; j++) {
+	    double d = random(-shift,shift) * a[j];
+	    a[j]    -= d;
+	    a[dind] += d;
+	}
+    }
 }
