@@ -17,10 +17,10 @@ uint SkylineMatrix::index(uint i, uint j) const {
     if (i == j)
 	return ia[i];
 
-    uvector<uint>::const_iterator start = ja.begin() + ia[i] + 1; 
+    uvector<uint>::const_iterator start = ja.begin() + ia[i] + 1;
     uvector<uint>::const_iterator   end = ja.begin() + ia[i+1];
     uvector<uint>::const_iterator it = std::lower_bound(start, end, j);
-    if (it != end && !(j < *it)) 
+    if (it != end && !(j < *it))
 	return it-ja.begin();
 
     return uint(-1);
@@ -72,7 +72,7 @@ SkylineMatrix::SkylineMatrix(const MapMatrix& A) {
 	a.push_back(row.find(i)->second);
 
 	/* Add remaining elements of a row */
-	for (MapMatrix::Row::const_iterator it = row.begin(); it != row.end(); it++) 
+	for (MapMatrix::Row::const_iterator it = row.begin(); it != row.end(); it++)
 	    if (it->first != i) {
 		ja.push_back(it->first);
 		a.push_back(it->second);
@@ -175,14 +175,14 @@ void SkylineMatrix::permute(const std::vector<uint>& perm) THROW {
 
     /* Compute inverse permutation vector */
     std::vector<uint> iperm(n);
-    for (uint i = 0; i < n; i++) 
+    for (uint i = 0; i < n; i++)
 	iperm[perm[i]] = i;
 
     SkylineMatrix B = *this;
 
     /* Construct new ia */
     B.ia[0] = 0;
-    for (uint bi = 0; bi < n; bi++) 
+    for (uint bi = 0; bi < n; bi++)
 	B.ia[bi+1] = B.ia[bi] + (ia[iperm[bi]+1] - ia[iperm[bi]]);
 
     std::vector<uint> inds, sorted;

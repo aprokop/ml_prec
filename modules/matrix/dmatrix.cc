@@ -86,10 +86,10 @@ DMatrix::DMatrix(const CSRMatrix& sm) {
     nrow = sm.rows();
     ncol = sm.cols();
 
-    /* FIXME: this must be done much faster by going 
+    /* FIXME: this must be done much faster by going
      * through nonzero elements of CSRMatrix */
     for (uint i = 0; i < nrow; i++)
-	for (uint j = 0;j < ncol; j++)
+	for (uint j = 0; j < ncol; j++)
 	    data[i*ncol+j] = sm(i,j);
     factored = false;
 }

@@ -44,10 +44,10 @@ const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
 uint CSRMatrix::index(uint i, uint j) const {
     check_indices(i,j);
 
-    uvector<uint>::const_iterator start = ja.begin() + ia[i]; 
+    uvector<uint>::const_iterator start = ja.begin() + ia[i];
     uvector<uint>::const_iterator   end = ja.begin() + ia[i+1];
     uvector<uint>::const_iterator it = std::lower_bound(start, end, j);
-    if (it != end && !(j < *it)) 
+    if (it != end && !(j < *it))
 	return it-ja.begin();
 
     return uint(-1);
@@ -59,8 +59,8 @@ bool CSRMatrix::exist(uint i, uint j) const THROW {
 
 double CSRMatrix::operator()(uint i, uint j) const THROW {
     uint ind = index(i,j);
-    if (ind != uint(-1)) 
-	return a[ia[i]];
+    if (ind != uint(-1))
+	return a[ind];
 
     // LOG_WARN("(" << i << "," << j << ") is not in stencil");
     return 0;
@@ -70,7 +70,7 @@ double& CSRMatrix::operator()(uint i, uint j) THROW {
     uint ind = index(i,j);
     ASSERT(ind != uint(-1), "(" << i << "," << j << ") is not in stencil");
 
-    return a[ia[i]];
+    return a[ind];
 }
 
 void transpose(const CSRMatrix& A, CSRMatrix& B) {
@@ -86,7 +86,7 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 
     // Calculate number of elements in each column
     for (uint i = 0; i < A.nrow; i++)
-	for (uint j = A.ia[i]; j < A.ia[i+1]; j++) 
+	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 	    marker[A.ja[j]]++;
 
     // Fill array ia for transposed matrix using marker
@@ -97,7 +97,7 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 	B.ia[i+1] = B.ia[i] + marker[i];
 	marker[i] = B.ia[i];
     }
-  
+
     // Fill in B.ja and B.a
     B.ja.resize(B.ia[B.nrow]);
     B.a.resize(B.ia[B.nrow]);
@@ -105,7 +105,7 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
     for (uint i = 0; i < A.nrow; i++)
 	for (uint j = A.ia[i]; j < A.ia[i+1]; j++) {
 	    col = A.ja[j];
-	    relpos = marker[col]; 
+	    relpos = marker[col];
 
 	    B.ja[relpos] = i;
 	    B.a[relpos] = A.a[j];
@@ -276,7 +276,7 @@ void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW
 	    ASSERT(A.ncol == v.size(), "Multiplying sparse matrix and vector with different dimensions");
 	    ASSERT(res.size() == A.nrow, "Not enough space in res vector");
 
-	    for (uint i = 0; i < A.nrow; i++) 
+	    for (uint i = 0; i < A.nrow; i++)
 		for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 		    res[i] += A.a[j] * v[A.ja[j]];
 	    break;
@@ -285,7 +285,7 @@ void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW
 	    ASSERT(A.nrow == v.size(), "Multiplying sparse matrix and vector with different dimensions");
 	    ASSERT(res.size() == A.ncol, "Not enough space in res vector");
 
-	    for (uint i = 0; i < A.nrow; i++) 
+	    for (uint i = 0; i < A.nrow; i++)
 		for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 		    res[A.ja[j]] += A.a[j] * v[i];
 	    break;
