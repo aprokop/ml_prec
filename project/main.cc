@@ -1,6 +1,7 @@
 #include "main.h"
 #include "config/config.h"
 #include "include/time.h"
+#include "modules/matrix/matrix.h"
 #include "modules/mesh/mesh.h"
 #include "modules/prec/amg/amg_prec.h"
 #include "modules/prec/diag/diag.h"
@@ -32,8 +33,12 @@ int main (int argc, char * argv[]) {
     SkylineMatrix A;
 
     if (cfg.matrix.empty()) {
-	SPEMesh mesh;
+	SPEMesh mesh(cfg.nx, cfg.ny, cfg.nz);
+#if 1
 	mesh.construct_matrix(A, cfg.c);
+#else
+	mesh.construct_matrix_unsym(A, cfg.c, 0.2);
+#endif
     } else {
 	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
 	bool transform = true;
