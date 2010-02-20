@@ -23,7 +23,7 @@ private:
 	Vector tmp0, tmp1;
 	SkylineMatrix A;
 
-	std::vector<uint> tr; 
+	std::vector<uint> tr;
 	std::vector<uint> dtr;
 	std::vector<Tail> tails;
 

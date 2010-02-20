@@ -13,13 +13,13 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     double min_x = 0, max_x = 0;
     double min_y = 0, max_y = 0;
     switch (plane) {
-	case 'z': n1 = mesh.nx; n2 = mesh.ny; n3 = mesh.nz; 
+	case 'z': n1 = mesh.nx; n2 = mesh.ny; n3 = mesh.nz;
 		  max_x = mesh.size_x; max_y = mesh.size_y;
 		  break;
 	case 'x': n1 = mesh.ny; n2 = mesh.nz; n3 = mesh.nx;
 		  max_x = mesh.size_y; max_y = mesh.size_z;
 		  break;
-	case 'y': n1 = mesh.nx; n2 = mesh.nz; n3 = mesh.ny; 
+	case 'y': n1 = mesh.nx; n2 = mesh.nz; n3 = mesh.ny;
 		  max_x = mesh.size_x; max_y = mesh.size_z;
 		  break;
     }
@@ -50,7 +50,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     ofs << "/b{0 0 0 setrgbcolor}def\n";
     ofs << "%%EndProlog\n\n";
 
-    ofs << "userdict/start-hook known{start-hook}if\n"; 
+    ofs << "userdict/start-hook known{start-hook}if\n";
 
     uint i0 = -1, i1 = -1;
     uint li0 = -1, li1 = -1;
@@ -62,7 +62,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     uint n1min = 44, n1max = 60;
     uint n2min = 50, n2max = 100;
 #endif
-    
+
     uint left = 0, total = 0;
     uint pages = 0;
 #ifndef REGION_ONLY
@@ -77,11 +77,11 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 	ofs << mult_x << " " << mult_y << " scale\n";
 
 	uint ltotal = 0, lleft = 0;
-	for (uint l = 0; l < 2; l++) 
+	for (uint l = 0; l < 2; l++)
 	    for (uint j = 0; j < n2 - l; j++)
 		for (uint i = 0; i < n1 - (1-l); i++) {
 #ifdef REGION_ONLY
-		    if ((l == 0 && (i < n1min || i > n1max || j < n2min || j > n2max)) || 
+		    if ((l == 0 && (i < n1min || i > n1max || j < n2min || j > n2max)) ||
 			(l == 1 && (i < n1min || i > n1max || j < n2min || j >= n2max)))
 			continue;
 #endif
@@ -104,7 +104,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		    }
 
 		    if (map_identity) {
-			if ((it0 = rev_map.find(i0)) == rev_map.end() || 
+			if ((it0 = rev_map.find(i0)) == rev_map.end() ||
 			    (it1 = rev_map.find(i1)) == rev_map.end())
 			    continue;
 
@@ -147,9 +147,9 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		     if ((it0 = rev_map.find(i0)) == rev_map.end())
 			 continue;
 		     li0 = it0->second;
-		 } 
+		 }
 
-		 if (k) { 
+		 if (k) {
 		     switch (plane) {
 			 case 'z': i1 = mesh.index(i,j,k-1); break;
 			 case 'x': i1 = mesh.index(k-1,i,j); break;
@@ -160,7 +160,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 			     li1 = it1->second;
 			     if (A.exist(li0, li1))
 				 fz++;
-			 } 
+			 }
 		     } else {
 			 if (A.exist(i0,i1))
 			     fz++;
@@ -199,12 +199,12 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 	     }
 
 #ifndef REGION_ONLY
-	ofs << "b (" << plane << " plane #" << k << ", #links = " << lleft << "/" << ltotal << " = " << 
+	ofs << "b (" << plane << " plane #" << k << ", #links = " << lleft << "/" << ltotal << " = " <<
 		100.*lleft/ltotal << "%) 10 730 ms" << std::endl;
 #endif
 	ofs << "showpage" << std::endl;
 	ofs << "%%EndPage\n";
-	
+
 	total += ltotal;
 	left  += lleft;
     }

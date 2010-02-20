@@ -6,17 +6,17 @@ DEFINE_LOGGER("AMGPrec");
 
 extern "C" {
   void FORTRAN(amg1r6)(double *a, int *ia, int *ja,  double *u, double *f, int *ig,
-			 int *nda, int *ndia, int *ndja, int *ndu, int *ndf, int *ndig, 
+			 int *nda, int *ndia, int *ndja, int *ndu, int *ndf, int *ndig,
 			 int *nnu, int *matrix, int *iswtch, int *iout, int *iprint,
-			 int *levelx, int *ifirst, int *ncyc, double *eps, int *madapt, int *nrd, int *nsolco, 
-			 int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr); 
+			 int *levelx, int *ifirst, int *ncyc, double *eps, int *madapt, int *nrd, int *nsolco,
+			 int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr);
 }
 
 void AMGPrec::solve(Vector& f, Vector& x) THROW {
     ASSERT((int)f.size() == n && (int)x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
 #if 0
-    srandom(time(NULL)); 
+    srandom(time(NULL));
     for (int i = 0; i < n; i++) {
 	x[i] = 100*(random() - 0.5*RAND_MAX)/RAND_MAX;
     }
@@ -28,27 +28,27 @@ void AMGPrec::solve(Vector& f, Vector& x) THROW {
     int ierr;
     FORTRAN(amg1r6)(&a[0], &ia[0], &ja[0], &x[0], &f[0], &ig[0],
 		    &nda, &ndia, &ndja, &ndu, &ndf, &ndig, &n,
-		    &amg_config.matrix, 
-		    &amg_config.iswtch, 
-		    &amg_config.iout, 
-		    &amg_config.iprint, 
-		    &amg_config.levelx, 
-		    &amg_config.ifirst, 
-		    &amg_config.ncyc, 
-		    &amg_config.eps, 
-		    &amg_config.madapt, 
-		    &amg_config.nrd, 
-		    &amg_config.nsolco, 
-		    &amg_config.nru, 
-		    &amg_config.ecg1, 
-		    &amg_config.ecg2, 
-		    &amg_config.ewt2, 
-		    &amg_config.nwt, 
-		    &amg_config.ntr, 
+		    &amg_config.matrix,
+		    &amg_config.iswtch,
+		    &amg_config.iout,
+		    &amg_config.iprint,
+		    &amg_config.levelx,
+		    &amg_config.ifirst,
+		    &amg_config.ncyc,
+		    &amg_config.eps,
+		    &amg_config.madapt,
+		    &amg_config.nrd,
+		    &amg_config.nsolco,
+		    &amg_config.nru,
+		    &amg_config.ecg1,
+		    &amg_config.ecg2,
+		    &amg_config.ewt2,
+		    &amg_config.nwt,
+		    &amg_config.ntr,
 		    &ierr);
 
     // no setup after the first call
-    amg_config.iswtch = 3; 
+    amg_config.iswtch = 3;
 
     x.resize(n);
     f.resize(n);
@@ -98,13 +98,13 @@ AMGPrec::AMGConfig::AMGConfig() {
     /******************************************************************
      *                            GROUP 1
      ******************************************************************/
-    /** 
+    /**
      * matrix - integer value containing info about matrix
-     * 1st digit:   
-     *	    1 - symmetric,   
+     * 1st digit:
+     *	    1 - symmetric,
      *	    2 - not symmetric
-     * 2nd digit:   
-     *	    1 - rowsum zero, 
+     * 2nd digit:
+     *	    1 - rowsum zero,
      *	    2 - rowsum not zero
      */
     matrix = 12;
@@ -128,18 +128,18 @@ AMGPrec::AMGConfig::AMGConfig() {
      */
     iswtch = 4;
 
-    /** 
+    /**
      * iout - parameter controlling the amount of output during solution phase
      * 1st digit:   not used, has to be non-zero
-     * 2nd digit:   
-     *	    0 - no output, 
+     * 2nd digit:
+     *	    0 - no output,
      *	    1 - residual before and after solution process,
      *	    2 - add. statistics on CP-times and storage requirements
      *	    3 - add. residual after each AMG cycle
      */
     iout   = 10;
 
-    /** 
+    /**
      * iprint - parameter specifying the FORTRAN unit numbers for output
      * 1st digit:   not used; has to be non-zero
      * 2nd & 3d :   unit number for results
@@ -150,8 +150,8 @@ AMGPrec::AMGConfig::AMGConfig() {
     /******************************************************************
      *                            GROUP 3
      ******************************************************************/
-    /** 
-     * maximum number of layers to be created (>=1) 
+    /**
+     * maximum number of layers to be created (>=1)
      */
     levelx = 25;
 
@@ -162,7 +162,7 @@ AMGPrec::AMGConfig::AMGConfig() {
      *	    0 - no setting of first approximation
      *	    1 - first approximation constant to zero
      *	    2 - first approximation constant to one
-     *	    3 - first approximation is random function with concrete random 
+     *	    3 - first approximation is random function with concrete random
      *		sequence being determined by the following digits
      * rest (rndu):
      *	    determines the concrete random sequence used in the case itypu=3
@@ -191,7 +191,7 @@ AMGPrec::AMGConfig::AMGConfig() {
      *	    2 - stop, if ||res|| < eps
      *	    3 - stop, if ||res|| < eps * |F|
      *	    4 - stop, if ||res|| < eps * |U| * |diag|,
-     *	    with 
+     *	    with
      *		||REC|| - L2-norm of residual
      *		eps	- (see input parameter eps)
      *		|F|	- sup norm of rhs
@@ -211,12 +211,12 @@ AMGPrec::AMGConfig::AMGConfig() {
      */
     eps    = 1e-6;
 
-    /** 
+    /**
      * madapt - integer value specifying the choice of coarsest grid in cycling
      * 1st digit (msel):
      *	    1 - in cycling, all grids constructed in the setup phase are used
      *		without check
-     *	    2 - the number of grids is automatically reduced if the convergence 
+     *	    2 - the number of grids is automatically reduced if the convergence
      *		factor on the coarser grids is found to be large than a given
      *		value fac (see below)
      * rest (fac):
@@ -230,8 +230,8 @@ AMGPrec::AMGConfig::AMGConfig() {
     /**
      * nrd - parameter describing relaxation (downwards)
      * 1st digit:	    not used; has to be non-zero
-     * 2nd digit (nrdx):    
-     *	    actual number of smoothing steps to be performed 
+     * 2nd digit (nrdx):
+     *	    actual number of smoothing steps to be performed
      *	    the type of which is given by the following digits
      * rest (nrdtyp):
      *	    1 - relaxation over the F-points only
@@ -244,15 +244,15 @@ AMGPrec::AMGConfig::AMGConfig() {
 
     /**
      * nsolco - parameter controlling the solution on coarsest grid
-     * 1st digit (nsc): 
+     * 1st digit (nsc):
      *	    1 - Gauss-Seidel method
      *	    2 - direct solver (Yale smp)
      * rest (nrcx, only if nsc == 1):
-     *	    number of GS sweeps on coarsest grid (>=0) 
-     *	    [if = 0 then as many as are needed to reduce residual 
+     *	    number of GS sweeps on coarsest grid (>=0)
+     *	    [if = 0 then as many as are needed to reduce residual
      *	     by two orders of magnitude]
      */
-    nsolco = 2;	
+    nsolco = 2;
 
     /**
      * nru - parameter for relaxation (upwards), analogous to nrd
@@ -262,9 +262,9 @@ AMGPrec::AMGConfig::AMGConfig() {
     /******************************************************************
      *                            GROUP 4
      ******************************************************************/
-    /** 
+    /**
      * ecg1, ecg2, ewt2 - parameters affecting the creation of coarser grids and/or the
-     * definition of the interpolation; the choice of these parameters depends on the 
+     * definition of the interpolation; the choice of these parameters depends on the
      * actual AMG version (subroutine crsng)
      */
     ecg1 = 0.0;
@@ -273,7 +273,7 @@ AMGPrec::AMGConfig::AMGConfig() {
 
     /**
      * nwt - integer parameter affecting the creation of coarser grids and/or the definition
-     * of the interpolation; the choice of this parameter depends on the actual AMG version 
+     * of the interpolation; the choice of this parameter depends on the actual AMG version
      * (subroutine crsng)
      */
     nwt = 2;

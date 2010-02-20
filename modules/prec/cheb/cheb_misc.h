@@ -22,7 +22,7 @@ private:
 	ASSERT(i != j, "i == j == " << i);
 	ASSERT(i < n && j < n, "i = " << i << ", j = " << j << ", n == " << n);
 
-	if (i > j) 
+	if (i > j)
 	    std::swap(i,j);
 
 	return A.index(i,j);

@@ -6,7 +6,7 @@
 class DiagPrec: public PrecBase {
 private:
     uint n;
-    std::vector<double> d; 
+    std::vector<double> d;
 
 public:
     DiagPrec(const SkylineMatrix& A);

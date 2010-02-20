@@ -12,7 +12,7 @@ DEFINE_LOGGER("DMatrix");
 
 DMatrix::DMatrix(uint _n, Type type) THROW {
     ASSERT(_n, "Can't create matrix 0x0");
-    nrow = ncol = _n; 
+    nrow = ncol = _n;
     data.resize(nrow*ncol, 0.);
     factored = false;
 
@@ -27,7 +27,7 @@ DMatrix::DMatrix(uint _n, Type type) THROW {
 
 DMatrix::DMatrix(uint _m, uint _n) THROW {
     ASSERT(_m && _n, "Can't create matrix " << _m << "x" << _n);
-    nrow = _m; 
+    nrow = _m;
     ncol = _n;
     data.resize(nrow*ncol, 0.);
     factored = false;
@@ -52,7 +52,7 @@ DMatrix::DMatrix(const char* values) THROW {
 	uint cols = 0;
 	nrow++;
 	while (buffer.peek() != EOF && buffer.peek() != ';') {
-	    cols++;	
+	    cols++;
 	    buffer >> b;
 	    data.push_back(b);
 	    while (buffer.peek() == ' ')
@@ -97,7 +97,7 @@ DMatrix::DMatrix(const CSRMatrix& sm) {
 bool DMatrix::operator==(const DMatrix& m) const THROW {
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Comparing matrices with different dimensions");
     ASSERT(factored == false, "This operation is not available for factored matrices");
-    return data == m.data;	
+    return data == m.data;
 }
 
 bool DMatrix::operator!=(const DMatrix& m) const THROW {
@@ -300,9 +300,9 @@ bool DMatrix::is_symmetric() const {
     return true;
 }
 
-/* 
+/*
  * Given an s.p.d matrix A routine constructs its Cholesky decomposition
- * A = L L^T. Only the upper triangle of A is used for input; it is not 
+ * A = L L^T. Only the upper triangle of A is used for input; it is not
  * modified. The Cholesky factor L is stored in the lower triangle of A,
  * except for its diagonal which is stored in d
  */
@@ -326,7 +326,7 @@ void dpotrf(DMatrix& A) {
 		sum -= A(i,k)*A(j,k);
 
 	    if (i == j) {
-		if (sum <= 0.0) 
+		if (sum <= 0.0)
 		    THROW_EXCEPTION("Failed: sum = " << sum);
 		A.d[i] = sqrt(sum);
 	    } else {
@@ -354,7 +354,7 @@ void dposv(DMatrix& A, DMatrix& B) {
 	    B(0,k) *= inv;
 	return;
     }
-    
+
     for (uint k = 0; k < nrhs; k++) {
 	/* Solve system with L */
 	for (uint i = 0; i < n; i++) {
@@ -387,10 +387,10 @@ void dpotri(DMatrix& A) {
 // void dposv(DMatrix& A, DMatrix& B) {
     // ASSERT(A.rows() == A.cols(), A.sizes());
     // ASSERT(B.rows() == A.rows(), "A: " << A.sizes() << ", B: " << B.sizes());
-// 
+//
     // std::cout << A << std::endl;
     // std::cout << B << std::endl;
-// 
+//
     // // int clapack_dposv(const enum ATLAS_ORDER Order, const enum ATLAS_UPLO Uplo,
 		      // // const int N, const int NRHS, double *A, const int lda,
 		      // // double *B, const int ldb);
@@ -398,20 +398,20 @@ void dpotri(DMatrix& A) {
     // // int info = clapack_dposv(CblasRowMajor, CblasUpper, A.rows(), B.cols(), A.as_vector(), A.rows(), B.as_vector(), B.rows());
     // // int info = clapack_dposv(CblasColMajor, CblasUpper, A.rows(), B.cols(), A.as_vector(), A.rows(), B.as_vector(), B.rows());
     // int info = clapack_dposv(CblasColMajor, CblasUpper, A.rows(), B.cols(), A.as_vector(), A.rows(), B.as_vector(), B.cols());
-    // ASSERT(info == 0, "lapack dposv returned " << info); 
-// 
+    // ASSERT(info == 0, "lapack dposv returned " << info);
+//
     // std::cout << B << std::endl;
     // exit(1);
 // }
-// 
-// void dgemm(double alpha, const DMatrix& A, CBLAS_TRANSPOSE opA, const DMatrix& B, CBLAS_TRANSPOSE opB, 
+//
+// void dgemm(double alpha, const DMatrix& A, CBLAS_TRANSPOSE opA, const DMatrix& B, CBLAS_TRANSPOSE opB,
 	   // double beta, DMatrix& C) {
     // uint m = (opA == CblasNoTrans) ? A.rows() : A.cols();
     // uint n = (opB == CblasNoTrans) ? B.cols() : B.rows();
     // uint k = (opA == CblasNoTrans) ? A.cols() : A.rows();
     // ASSERT(C.rows() == m && C.cols() == n, "C: " << C.sizes() << ", op(A)op(B): " << m << "x" << n);
-// 
-    // cblas_dgemm(CblasRowMajor, opA, opB, m, n, k, alpha, 
+//
+    // cblas_dgemm(CblasRowMajor, opA, opB, m, n, k, alpha,
 		// A.as_vector(), A.rows(), B.as_vector(), B.rows(), beta, C.as_vector(), C.rows());
 // }
 // #else

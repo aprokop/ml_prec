@@ -51,7 +51,7 @@ public:
     typedef ptrdiff_t					difference_type;
 
 public:
-    uvector(size_type n = 0) { 
+    uvector(size_type n = 0) {
 	start = allocate(n);
 	finish = start + n;
 	end_of_storage = start + n;
@@ -64,14 +64,14 @@ public:
 	    *(start + i) = val;
     }
 
-    uvector(const uvector& v) { 
+    uvector(const uvector& v) {
 	size_type n = v.size();
 	start = allocate(n);
 	finish = start + n;
 	end_of_storage = start + n;
 	memcpy(start, v.start, n*sizeof(value_type));
     }
-    ~uvector() { 
+    ~uvector() {
 	deallocate(start);
     }
 
@@ -89,9 +89,9 @@ public:
 	return finish - start;
     }
 
-    /* 
+    /*
      * This function does not resize to increasing size (only if start = 0)
-     * When I tried doing that it seems that compiler stops inlining it 
+     * When I tried doing that it seems that compiler stops inlining it
      * and the call becomes significantly slower
      */
     void resize(size_type new_size) {
@@ -162,7 +162,7 @@ public:
     pointer data() {
 	return pointer(start);
     }
-    const_pointer data() const { 
+    const_pointer data() const {
 	return const_pointer(start);
     }
 

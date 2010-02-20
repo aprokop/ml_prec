@@ -30,12 +30,12 @@ std::ostream& operator<<(std::ostream& os, const RelPrec& p) {
 	}
 #endif
 #if 0
-	if (level) 
+	if (level)
 	    os << "A: " << li.A;
 #endif
     }
     return os;
-} 
+}
 
 void RelPrec::graph_planes(const std::string& filename, uint level, char plane) const {
     // construct reverse map
@@ -49,7 +49,7 @@ void RelPrec::graph_planes(const std::string& filename, uint level, char plane) 
 	for (uint i = 0; i < n; i++)
 	    rev_map[gtr[i]] = i;
 	gtr.clear();
-    } 
+    }
 
     ::graph_planes(filename, levels[level].A, rev_map, plane, level, mesh);
 }

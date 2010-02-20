@@ -11,8 +11,8 @@
 
 DEFINE_LOGGER("Prec");
 
-/* 
- * Insertion sort of vector sorted with respect to absolute values in vector a 
+/*
+ * Insertion sort of vector sorted with respect to absolute values in vector a
  * NOTE: later if for some matrices we would get many elements in a row we could
  * replace this sort with a faster one (think heapsort)
  * T must support fabs and < operators
@@ -134,7 +134,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		    tail.push_back(tn);
 		} while (nlinks[i0] == 1);
 
-		if (!tail.size()) 
+		if (!tail.size())
 		    continue;
 
 		tn.index = i0;
@@ -166,9 +166,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	}
     nnz += n;
 
-    /* 
+    /*
      * Construct next level local matrix
-     * For simplicity during the construction we use indices from this level and not the next one yet 
+     * For simplicity during the construction we use indices from this level and not the next one yet
      */
     SkylineMatrix& nA = ln.A;
 
@@ -225,12 +225,12 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	} else {
 	    lrevtr[i] = -1;
 	    if (nlinks[i] != -1) {
-		/* 
-		 * All links for this point are gone and the point does not belong to a tail. 
-		 * Add it to the diagonal vector 
+		/*
+		 * All links for this point are gone and the point does not belong to a tail.
+		 * Add it to the diagonal vector
 		 */
 		dtr.push_back(i);
-	    } 
+	    }
 	}
     }
     nA.nrow = nA.ncol = n;

@@ -4,7 +4,7 @@
 
 void generate_x0(Vector& x) {
 #if 0
-    srandom(time(NULL)); 
+    srandom(time(NULL));
 #else
     // we don't want it to change from run to run
     srandom(3);

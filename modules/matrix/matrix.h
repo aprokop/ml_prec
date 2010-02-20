@@ -40,7 +40,7 @@ class DMatrix : public Matrix {
 private:
     std::vector<double> data;
 
-    /* 
+    /*
      * Symmetric matrix can also be stored in factored form.
      * In this case the original matrix is stored in upper triangle,
      * L (except the diagonal) is stored in lower triangle, diagonal
@@ -120,7 +120,7 @@ public:
 void dpotrf(DMatrix& A);
 void dposv(DMatrix& A, DMatrix& B);
 
-// void dgemm(double alpha, const DMatrix& A, CBLAS_TRANSPOSE opA, const DMatrix& B, CBLAS_TRANSPOSE opB, 
+// void dgemm(double alpha, const DMatrix& A, CBLAS_TRANSPOSE opA, const DMatrix& B, CBLAS_TRANSPOSE opB,
 	   // double beta, DMatrix& C);
 
 class MapMatrix : public Matrix {
@@ -211,7 +211,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
 
     friend void get_matrix_part(const SkylineMatrix& A, SkylineMatrix& lA, uint start, uint end);
-    friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA, 
+    friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA,
 				       std::vector<uint>& r, uint my_rank, uint ncpus);
 };
 

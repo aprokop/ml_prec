@@ -40,8 +40,8 @@ void Prec::solve(uint level, Vector& f, Vector& x) const THROW {
 	uint n = ln.N;
 	uint ncheb = li.ncheb;
 
-	Vector& f1 = li.f1; 
-	for (uint i = 0; i < n; i++) 
+	Vector& f1 = li.f1;
+	for (uint i = 0; i < n; i++)
 	    f1[i] = f[tr[i]];
 
 
@@ -98,14 +98,14 @@ void Prec::solve(uint level, Vector& f, Vector& x) const THROW {
 	    multiply(A, u1, tmp, 's');
 	    daxpy(-1, f1, tmp);
 	    solve(level+1, tmp, x1);
-	    for (uint k = 0; k < n; k++) 
+	    for (uint k = 0; k < n; k++)
 		x1[k] = u1[k] - alpha*x1[k] + beta*(u1[k] - u0[k]);
 	}
 
 	/* Copy the result of Chebyshev iterations to x */
 	for (uint i = 0; i < n; i++)
 	    x[tr[i]] = x1[i];
-    } 
+    }
 
     /* Solve diagonal subsystem */
     for (uint _i = 0; _i < dtr.size(); _i++) {

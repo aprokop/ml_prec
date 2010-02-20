@@ -33,11 +33,11 @@ void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
     if (level < nlevels-1) {
 	uint n = levels[level+1].N;
 
-	Vector& f1 = li.f1; 
-	for (uint i = 0; i < n; i++) 
+	Vector& f1 = li.f1;
+	for (uint i = 0; i < n; i++)
 	    f1[i] = f[tr[i]];
 
-	Vector& x1 = li.x1; 
+	Vector& x1 = li.x1;
 	if (niter) {
 	    const CSRMatrix& A = levels[level+1].A;
 
@@ -52,8 +52,8 @@ void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
 	    // ===============    STEP 2+    ===============
 	    for (uint i = 1; i < niter; i++) {
 		// x1 = x0 + B^{-1}(f - A*x0)
-		residual(A, f1, x1, tmp0); 
-		solve(tmp0, tmp1, level+1); 
+		residual(A, f1, x1, tmp0);
+		solve(tmp0, tmp1, level+1);
 		daxpy(1., tmp1, x1);
 	    }
 	} else {

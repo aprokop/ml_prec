@@ -11,7 +11,7 @@
 
 DEFINE_LOGGER("RelPrec");
 
-RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, 
+RelPrec::RelPrec(const SkylineMatrix& A, uint _niter, double _gamma,
 		 const std::vector<double>& _sigmas, const MeshBase& _mesh) : mesh(_mesh) {
     ASSERT(A.size(), "Matrix has size 0");
     ASSERT(_gamma > 1, "Wrong gamma: " << _gamma);
@@ -64,7 +64,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 	it    = std::lower_bound(start, end, i);
 
 	uint jstart = std::distance(A.ja.begin(), it);
-	for (uint j = jstart; j < A.ia[i+1]; j++) 
+	for (uint j = jstart; j < A.ia[i+1]; j++)
 	    links.push_back(Link(-A.a[j], i, A.ja[j]));
     }
     std::sort(links.begin(), links.end());
@@ -76,15 +76,15 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     for (std::vector<Link>::const_iterator it = links.begin(); it != links.end(); it++) {
 	i0 = it->i0;
 	i1 = it->i1;
-	double c1 = remc[i0]; 
+	double c1 = remc[i0];
 	double c2 = remc[i1];
 	if (is_equal(c1, 0.) || is_equal(c2, 0.))
 	    continue;
 	// calculate what would be the minimum sigma to remove the link
-	std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(), 
+	std::vector<double>::const_iterator lb = std::lower_bound(sigmas.begin(), sigmas.end(),
 								  1 + (c1 + c2)/(c1*c2)*it->val);
 
-	if (lb == sigmas.end()) 
+	if (lb == sigmas.end())
 	    continue;
 
 	// remove link with sigma = *lb
@@ -97,7 +97,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 	double pc = 2*it->val/(sigma-1), pc1, pc2;
 	// note: here we can play some games with
-	// distributions of pc1 and pc2 between 
+	// distributions of pc1 and pc2 between
 	// c1 and c2
 	if (c1 < pc) {
 	    pc1 = c1;
@@ -120,7 +120,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     LOG_DEBUG(TIME_INFO("# " << level << ": removing links"));
 
     // multiply the rest of c by gamma
-    daxpy(gamma, remc, aux); 
+    daxpy(gamma, remc, aux);
 
     // ===============  STEP 2 : tail removing ===============
     TIME_START();
@@ -129,7 +129,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 
     double v = 0;
 #if 1
-    for (uint i = 0; i < N; i++) 
+    for (uint i = 0; i < N; i++)
 	if (nlinks[i] == 1) {
 	    Tail tail;
 
@@ -197,12 +197,12 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
     TIME_START();
     SkylineMatrix& nA = levels[level+1].A;
     nA.ia.push_back(0);
-    for (uint i = 0; i < N; i++) 
+    for (uint i = 0; i < N; i++)
 	if (nlinks[i] > 0) {
 	    // the node goes to the next level
 
 	    // dind corresponds to the position of diagonal
-	    uint dind = nA.a.size(); 
+	    uint dind = nA.a.size();
 
 	    nA.ja.push_back(i);
 	    nA.a.push_back(aux[i]);
@@ -230,7 +230,7 @@ void RelPrec::construct_level(uint level, const SkylineMatrix& A) {
 
     // change nA.ja to use local indices
     for (uint j = 0; j < nA.ja.size(); j++) {
-	ASSERT(revtr[nA.ja[j]] != uint(-1), 
+	ASSERT(revtr[nA.ja[j]] != uint(-1),
 	       "Trying to invert wrong index: j = " << j << ", nA.ja[j] = " << nA.ja[j]);
 	nA.ja[j] = revtr[nA.ja[j]];
     }

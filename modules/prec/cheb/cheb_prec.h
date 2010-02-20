@@ -25,11 +25,11 @@ private:
 	mutable
 	Vector x1, f1, u0, u1, tmp; /* Some auxilary vectors for Chebyshev iterations */
 
-	uvector<uint> tr;	    /* C-indices */ 
+	uvector<uint> tr;	    /* C-indices */
 	uvector<uint> dtr;	    /* F-indices */
 	std::vector<Tail> tails;    /* Tridiagonal matrices */
 
-	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also 
+	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
 				       used in tail elimination */
     };
     uint nlevels;
@@ -38,14 +38,14 @@ private:
     const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
 				       need to make a copy */
 
-    /* 
+    /*
      * This function tries to increase s by amount necessary to mark v as removable.
      * If it can not be done (i.e. there is not enough value of c for that then s
      * is not changed
      * NOTE: if matrix contains positive offdiagonal elements (as in the
      * case when we take Schur complement to u and p in mixed hybrid FEM)
      * removing negative offdiagonal elements may result in matrix which is
-     * not positive definite. Sometimes we can assume that if c is big 
+     * not positive definite. Sometimes we can assume that if c is big
      * enough new matrix would still be positive definite
      */
     bool to_remove(double c, double v, double beta, double& s) {
@@ -62,7 +62,7 @@ private:
 	    t =  2*v / (c*(1-alpha));
 	} else {
 	    // LOG_WARN("Zero offdiagonal element");
-	} 
+	}
 #endif
 
 	if (s+t > 1)
