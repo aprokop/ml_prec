@@ -34,11 +34,10 @@ int main (int argc, char * argv[]) {
 
     if (cfg.matrix.empty()) {
 	SPEMesh mesh(cfg.nx, cfg.ny, cfg.nz);
-#if 1
-	mesh.construct_matrix(A, cfg.c);
-#else
-	mesh.construct_matrix_unsym(A, cfg.c, 0.2);
-#endif
+	if (!cfg.unsym_matrix)
+	    mesh.construct_matrix(A, cfg.c);
+	else
+	    mesh.construct_matrix_unsym(A, cfg.c, 0.2);
     } else {
 	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
 	bool transform = true;

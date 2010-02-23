@@ -31,6 +31,7 @@ struct Config {
     uint   ntests;
     bool   use_tails;
     bool   optimize_storage;
+    bool   unsym_matrix;
     SolverType solver;
     PrecType prec;
 

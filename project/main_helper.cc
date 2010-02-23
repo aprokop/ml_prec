@@ -29,6 +29,7 @@ static void usage() {
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -p|--prec={uh_cheb|amg|diag}    Preconditioner type" << std::endl;
+    std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -39,6 +40,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.nx               = 60;
     cfg.ny               = 220;
     cfg.nz               = 85;
+
+    cfg.unsym_matrix	 = false;
 
     cfg.ntests           = 1;
     cfg.use_tails        = 1;
@@ -64,7 +67,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:u", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -125,6 +128,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      else
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
+	    case 'u': cfg.unsym_matrix = true; break;
 	    case '?':
 	    default:
 		      abort();

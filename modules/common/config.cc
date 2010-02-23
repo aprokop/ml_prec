@@ -15,6 +15,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     if (cfg.matrix.empty()) {
 	os << "c                : " << cfg.c << std::endl;
 	os << "Geometry         : " << cfg.nx << " x " << cfg.ny << " x " << cfg.nz << std::endl;
+	os << "Unsymmetric      : " << (cfg.unsym_matrix ? "true" : "false") << std::endl;
     } else {
 	os << "Matrix file      : " << cfg.matrix << std::endl;
     }
