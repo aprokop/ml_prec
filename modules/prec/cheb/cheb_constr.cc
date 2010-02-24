@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <ostream>
 
 DEFINE_LOGGER("Prec");
@@ -283,14 +284,34 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 	levels[l].beta = cfg.sigmas.back();
     }
 
-    uint N = A.size();
+    std::auto_ptr<SkylineMatrix> Asym;
+    if (!cfg.unsym_matrix)
+	Asym.reset(const_cast<SkylineMatrix*>(&A));
+    else {
+	Asym.reset(new SkylineMatrix(A));
+
+	uint N = Asym->size();
+	const uvector<uint>& ia = Asym->get_ia();
+	const uvector<uint>& ja = Asym->get_ja();
+	uvector<double>&      a = Asym->a;
+
+	/* Create a symmetric variant of the matrix */
+	for (uint i = 0; i < N; i++)
+	    for (uint j = ia[i]+1; j < ia[i+1]; j++) {
+		double d = (*Asym)(ja[j],i); /* <= 0 */
+		if (d > a[j])
+		    a[j] = d;
+	    }
+    }
+
+    uint N = Asym->size();
     li.aux.resize(N);
     for (uint i = 0; i < N; i++) {
 	li.aux[i] = 0;
-	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
-	    li.aux[i] += A.a[j];
+	for (uint j = Asym->ia[i]; j < Asym->ia[i+1]; j++)
+	    li.aux[i] += Asym->a[j];
     }
-    construct_level(0, A);
+    construct_level(0, *Asym);
 
     /* Set number of Chebyshev iterations per level */
     for (uint l = 0; l < nlevels; l++)
