@@ -8,7 +8,7 @@ DEFINE_LOGGER("SymPrec");
 void SymPrec::solve(Vector& f, Vector& x) THROW {
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
-    PCGSolver(Asym, f, *B, x, eps, false);
+    PCGSolver(Asym, f, *B, x, eps, true);
 }
 
 SymPrec::SymPrec(const SkylineMatrix& A, const Config& cfg) {
