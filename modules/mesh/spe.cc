@@ -149,7 +149,10 @@ void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double tau) con
 		s += (-a[j]);
 	}
 
-	double alpha = tau/(1-tau) * c * s;
+	if (is_equal(s, 0.0))
+	    continue;
+
+	double alpha = tau/(1-tau) * c/s;
 
 	a[dind] += alpha * s;
 	for (uint j = ia[i]+1; j < ia[i+1]; j++)
