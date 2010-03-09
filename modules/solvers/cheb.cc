@@ -5,12 +5,13 @@
 
 DEFINE_LOGGER("ChebSolver");
 
-Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
-		  const Vector& b, PrecBase& B, double eps) THROW {
+void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, PrecBase& B, Vector& x,
+		double eps, bool silent) THROW {
     ASSERT_SIZE(b.size(), A.size());
+    ASSERT_SIZE(x.size(), A.size());
 
     uint   n = b.size();
-    Vector r(n), x(n), u0(n), u1(n);
+    Vector r(n), u0(n), u1(n);
     double alpha, beta;
     double norm, init_norm;
     double eta = (lmax + lmin) / (lmax - lmin);
@@ -18,7 +19,6 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
     clock_t  mult = 0,  inv = 0,  cstr = 0, delta;
     int	    nmult = 0, ninv = 0;
 
-    LOG_DEBUG("Generating initial approximation");
     generate_x0(x);
     residual(A, b, x, r);
     norm = init_norm = dnrm2(r);
@@ -44,7 +44,8 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
 
     // ===============    STEPS 2+    ===============
     while (norm/init_norm > eps) {
-	LOG_INFO("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+	if (!silent)
+	    LOG_DEBUG("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
 	// hack to avoid copying and allocating new memory
 	u0.swap(x);
@@ -73,18 +74,21 @@ Vector ChebSolver(const CSRMatrix& A, double lmin, double lmax,
     }
 
     niter--;
-    LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
-    std::cout << "#" << niter << ": relative -> " << std::scientific << norm/init_norm << std::fixed << std::endl;
 
-#if 1
-    double out = double(mult)/CLOCKS_PER_SEC;
-    LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << out/nmult << "\t total = " << out);
-    out = double(inv)/CLOCKS_PER_SEC;
-    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << out/ninv << "\t total = " << out);
-    LLL_DEBUG(std::fixed << std::setprecision(3) <<
-	      "Time of (possible construction) [time of first inversion - avg] = " <<
-	      double(cstr - inv/ninv)/CLOCKS_PER_SEC);
-#endif
+    if (!silent) {
+	double mult_ = double(mult) / CLOCKS_PER_SEC;
+	double inv_  = double(inv)  / CLOCKS_PER_SEC;
 
-    return x;
+	LLL_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+
+	LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult_/nmult << "\t total = " << mult_);
+	if (ninv) {
+	    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv_/ninv << "\t total = " << inv_);
+	    LLL_DEBUG(std::fixed << std::setprecision(3) <<
+		      "Time of (possible construction) [time of first inversion - avg] = " <<
+		      double(cstr)/CLOCKS_PER_SEC - inv_/ninv);
+	}
+    } else {
+	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+    }
 }
