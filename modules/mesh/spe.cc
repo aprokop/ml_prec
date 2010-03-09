@@ -50,6 +50,8 @@ SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
 }
 
 void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
+    LOG_INFO("Constructing symmetric part");
+
     uint i0, i1;
     double v;
 
@@ -109,9 +111,18 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     LEAVE_MESSAGE("Matrix constructed");
 }
 
-/* Construct unsymmetric M-matrix with diagonal domination */
-void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double shift) const {
+/* Construct unsymmetric M-matrix with diagonal domination
+ * Parameter tau's role may vary
+ *  - it may serve to determine the random shift percentage in the matrix coefficients
+ *  - it may serve as a value q in the speed of convergence (see mini-report on regular splitting)
+ */
+void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double tau) const {
     construct_matrix(A, c);
+
+    LOG_INFO("Constructing unsymmetric part");
+
+    if (!tau)
+	THROW_EXCEPTION("Unsymmetricity parameter is 0");
 
     const uvector<uint>& ia = A.ia;
     const uvector<uint>& ja = A.ja;
@@ -122,11 +133,28 @@ void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double shift) c
     for (uint i = 0; i < n; i++) {
 	uint dind = ia[i];
 
+#if 0
 	/* Modify each element by small percent */
 	for (uint j = ia[i]+1; j < ia[i+1]; j++) {
 	    double d = random(-shift,shift) * a[j];
 	    a[j]    -= d;
 	    a[dind] += d;
 	}
+#else
+	double s = 0.0, c = 0.0;
+	/* s = \sum_{j > i} a_{ij} */
+	for (uint j = ia[i]; j < ia[i+1]; j++) {
+	    c += a[j];
+	    if (ja[j] > i)
+		s += (-a[j]);
+	}
+
+	double alpha = tau/(1-tau) * c * s;
+
+	a[dind] += alpha * s;
+	for (uint j = ia[i]+1; j < ia[i+1]; j++)
+	    if (ja[j] > i)
+		a[j] *= (1 + alpha);
+#endif
     }
 }
