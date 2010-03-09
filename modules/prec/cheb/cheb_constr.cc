@@ -284,11 +284,13 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 	levels[l].beta = cfg.sigmas.back();
     }
 
-    std::auto_ptr<SkylineMatrix> Asym;
+    SkylineMatrix* Asym;
     if (!cfg.unsym_matrix)
-	Asym.reset(const_cast<SkylineMatrix*>(&A));
+	Asym = const_cast<SkylineMatrix*>(&A);
     else {
-	Asym.reset(new SkylineMatrix(A));
+	/* NOTE: level0_A reference IS incorrect, as it references
+	 * the unsymmetric matrix */
+	Asym = new SkylineMatrix(A);
 
 	uint N = Asym->size();
 	const uvector<uint>& ia = Asym->get_ia();
@@ -336,6 +338,9 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 	this->optimize_storage();
 	LOG_DEBUG(TIME_INFO("Storage optimization"));
     }
+
+    if (cfg.unsym_matrix)
+	delete Asym;
 }
 
 /* Optimize level matrices for symmetricity */
