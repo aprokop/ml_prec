@@ -30,6 +30,9 @@ int main (int argc, char * argv[]) {
 	return 1;
     }
 
+    std::cout << cfg << std::endl;
+    LOG_DEBUG("Config parameters: " << cfg);
+
     SkylineMatrix A;
 
     if (cfg.matrix.empty()) {
@@ -43,9 +46,6 @@ int main (int argc, char * argv[]) {
 	bool transform = true;
 	A.load(cfg.matrix, transform);
     }
-
-    std::cout << cfg << std::endl;
-    LOG_DEBUG("Config parameters: " << cfg);
 
     PrecBase * B_ = NULL;
 
