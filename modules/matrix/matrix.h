@@ -201,6 +201,7 @@ public:
 
     // Friend classes
     friend class Prec;
+    friend class SymPrec;
     friend class RelPrec;
     friend class AMGPrec;
     friend class SPEMesh;
