@@ -7,6 +7,7 @@
 #include "modules/prec/diag/diag.h"
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
+#include "modules/prec/sym/sym.h"
 #include "modules/solvers/solvers.h"
 
 // logger
@@ -40,7 +41,7 @@ int main (int argc, char * argv[]) {
 	if (!cfg.unsym_matrix)
 	    mesh.construct_matrix(A, cfg.c);
 	else
-	    mesh.construct_matrix_unsym(A, cfg.c, 0.2);
+	    mesh.construct_matrix_unsym(A, cfg.c, 0.1);
     } else {
 	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
 	bool transform = true;
@@ -60,15 +61,23 @@ int main (int argc, char * argv[]) {
 	    B_ = NULL;
 	}
 	cstart = cfinish = 0;
-	if (cfg.prec == UH_CHEB_PREC) {
-	    cstart = pclock();
+	cstart = pclock();
+	if (!cfg.unsym_matrix) {
+	    if (cfg.prec == UH_CHEB_PREC) {
+		B_ = new Prec(A, cfg);
+	    } else if (cfg.prec == AMG_PREC) {
+		B_ = new AMGPrec(A);
+	    } else if (cfg.prec == DIAG_PREC) {
+		B_ = new DiagPrec(A);
+	    }
+	} else {
+#if 1
 	    B_ = new Prec(A, cfg);
-	    cfinish = pclock();
-	} else if (cfg.prec == AMG_PREC) {
-	    B_ = new AMGPrec(A);
-	} else if (cfg.prec == DIAG_PREC) {
-	    B_ = new DiagPrec(A);
+#else
+	    B_ = new SymPrec(A, cfg);
+#endif
 	}
+	cfinish = pclock();
 	ctimes.push_back(cfinish - cstart);
 	LLL_INFO("Construction time : " << ctimes.back());
     }
@@ -86,17 +95,22 @@ int main (int argc, char * argv[]) {
     double eps = 1e-6;
 
     Vector b(A.size(), 0.);
+    Vector x(A.size());
     /* =====  Solution phase  ===== */
     for (uint i = 0; i < cfg.ntests; i++) {
 	sstart = pclock();
-	if (cfg.solver == PCG_SOLVER)
-	    PCGSolver(A, b, B, eps);
-	else {
-	    if (cfg.prec != UH_CHEB_PREC)
-		THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
+	if (!cfg.unsym_matrix) {
+	    if (cfg.solver == PCG_SOLVER)
+		PCGSolver(A, b, B, x, eps);
+	    else {
+		if (cfg.prec != UH_CHEB_PREC)
+		    THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
 
-	    Prec& Bcheb = static_cast<Prec&>(B);
-	    ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, eps);
+		Prec& Bcheb = static_cast<Prec&>(B);
+		ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
+	    }
+	} else {
+	    SimpleSolver(A, b, B, x, eps);
 	}
 	sfinish = pclock();
 
