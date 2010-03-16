@@ -13,14 +13,15 @@ void SymPrec::solve(Vector& f, Vector& x) THROW {
 
 SymPrec::SymPrec(const SkylineMatrix& A, const Config& cfg) {
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
-    Asym = A;
 
+    n = A.size();
+
+    Asym = A;
     const uvector<uint>& ia = Asym.get_ia();
     const uvector<uint>& ja = Asym.get_ja();
     uvector<double>&      a = Asym.a;
 
     /* Create a symmetric variant of the matrix */
-    uint n = A.size();
     for (uint i = 0; i < n; i++)
 	for (uint j = ia[i]+1; j < ia[i+1]; j++) {
 	    double d = Asym(ja[j],i); /* <= 0 */

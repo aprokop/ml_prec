@@ -11,8 +11,10 @@
  */
 class SymPrec: public PrecBase {
 private:
+    uint		n;
     SkylineMatrix	Asym;
     std::auto_ptr<Prec>	B;
+
     double		eps;
 
 public:
