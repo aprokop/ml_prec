@@ -27,8 +27,9 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
     os << "Solver           : ";
     switch(cfg.solver) {
-	case PCG_SOLVER : os << "pcg"; break;
-	case CHEB_SOLVER: os << "cheb"; break;
+	case PCG_SOLVER    : os << "pcg"; break;
+	case CHEB_SOLVER   : os << "cheb"; break;
+	case SIMPLE_SOLVER : os << "simple"; break;
 	default		: THROW_EXCEPTION("Unknown SolverType");
     }
     os << std::endl;

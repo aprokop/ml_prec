@@ -9,7 +9,8 @@
 
 enum SolverType {
     PCG_SOLVER,
-    CHEB_SOLVER
+    CHEB_SOLVER,
+    SIMPLE_SOLVER
 };
 
 enum PrecType {
