@@ -28,8 +28,9 @@ static void usage() {
     std::cout << "  -S|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
-    std::cout << "  -p|--prec={uh_cheb|amg|diag}    Preconditioner type" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|sym_split|multi_split}" << std::endl;
+    std::cout << "                                  Preconditioner type" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -125,6 +126,10 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.prec = AMG_PREC;
 		      else if (!strcmp(optarg, "diag"))
 			  cfg.prec = DIAG_PREC;
+		      else if (!strcmp(optarg, "sym_split"))
+			  cfg.prec = SYM_SPLIT_PREC;
+		      else if (!strcmp(optarg, "multi_split"))
+			  cfg.prec = MULTI_SPLIT_PREC;
 		      else
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
@@ -135,11 +140,17 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	}
     }
 
-    if (cfg.niters.size() == 1 && cfg.sigmas.size() == 1 &&
-	((cfg.niters[0] == 2 && cfg.sigmas[0] >= 4) ||
-	 (cfg.niters[0] == 3 && cfg.sigmas[0] >= 9))) {
-	LOG_WARN("Possibly wrong relation between niter and sigma");
+    /* Check inconsistencies in parameters */
+    if (cfg.prec == UH_CHEB_PREC) {
+	if (cfg.niters.size() == 1 && cfg.sigmas.size() == 1 &&
+	    ((cfg.niters[0] == 2 && cfg.sigmas[0] >= 4) ||
+	     (cfg.niters[0] == 3 && cfg.sigmas[0] >= 9))) {
+	    LOG_WARN("Possibly wrong relation between niter and sigma");
+	}
     }
+    if (cfg.solver == CHEB_SOLVER && cfg.prec != UH_CHEB_PREC)
+	THROW_EXCEPTION("Trying to call Chebyshev solver for not UH Cheb preconditioner");
+
 
     return 0;
 }

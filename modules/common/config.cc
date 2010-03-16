@@ -35,9 +35,11 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
     os << "Preconditioner   : ";
     switch(cfg.prec) {
-	case UH_CHEB_PREC : os << "uh_cheb"; break;
-	case AMG_PREC     : os << "amg"; break;
-	case DIAG_PREC    : os << "diag"; break;
+	case UH_CHEB_PREC     : os << "uh_cheb"; break;
+	case AMG_PREC         : os << "amg"; break;
+	case DIAG_PREC        : os << "diag"; break;
+	case SYM_SPLIT_PREC   : os << "sym_split"; break;
+	case MULTI_SPLIT_PREC : os << "multi_split"; break;
 	default           : THROW_EXCEPTION("Unknown PrecType");
     }
     os << std::endl;

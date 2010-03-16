@@ -15,7 +15,9 @@ enum SolverType {
 enum PrecType {
     UH_CHEB_PREC,
     AMG_PREC,
-    DIAG_PREC
+    DIAG_PREC,
+    SYM_SPLIT_PREC,
+    MULTI_SPLIT_PREC
 };
 
 struct Config {

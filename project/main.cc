@@ -8,6 +8,7 @@
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
 #include "modules/prec/sym/sym.h"
+#include "modules/prec/multi_split/multi_split_prec.h"
 #include "modules/solvers/solvers.h"
 
 // logger
@@ -62,20 +63,12 @@ int main (int argc, char * argv[]) {
 	}
 	cstart = cfinish = 0;
 	cstart = pclock();
-	if (!cfg.unsym_matrix) {
-	    if (cfg.prec == UH_CHEB_PREC) {
-		B_ = new Prec(A, cfg);
-	    } else if (cfg.prec == AMG_PREC) {
-		B_ = new AMGPrec(A);
-	    } else if (cfg.prec == DIAG_PREC) {
-		B_ = new DiagPrec(A);
-	    }
-	} else {
-#if 1
-	    B_ = new Prec(A, cfg);
-#else
-	    B_ = new SymPrec(A, cfg);
-#endif
+	switch (cfg.prec) {
+	    case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
+	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
+	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
+	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
+	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
 	}
 	cfinish = pclock();
 	ctimes.push_back(cfinish - cstart);
@@ -103,9 +96,6 @@ int main (int argc, char * argv[]) {
 	    if (cfg.solver == PCG_SOLVER)
 		PCGSolver(A, b, B, x, eps);
 	    else {
-		if (cfg.prec != UH_CHEB_PREC)
-		    THROW_EXCEPTION("Trying to call chebyshev solver for not UH preconditioner");
-
 		Prec& Bcheb = static_cast<Prec&>(B);
 		ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
 	    }

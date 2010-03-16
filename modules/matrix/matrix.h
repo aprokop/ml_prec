@@ -205,6 +205,7 @@ public:
     friend class RelPrec;
     friend class AMGPrec;
     friend class SPEMesh;
+    friend class MultiSplitPrec;
 
     // Friend functions
     friend void	multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
