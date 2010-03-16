@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 
-class LinkType {
+class LinkTypeCheb {
 private:
     uint n;
     const SkylineMatrix& A;
@@ -29,7 +29,7 @@ private:
     }
 
 public:
-    LinkType(const SkylineMatrix& _A) : A(_A) {
+    LinkTypeCheb(const SkylineMatrix& _A) : A(_A) {
 	n = _A.size();
 	a.resize(A.get_ja().size(), 2);
     }

@@ -2,7 +2,6 @@
 #define __PREC_H__
 
 #include "config/config.h"
-#include "cheb_misc.h"
 #include "modules/prec/misc/misc.h"
 #include "modules/common/common.h"
 #include "modules/prec/prec_base.h"

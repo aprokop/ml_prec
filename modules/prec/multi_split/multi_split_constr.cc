@@ -1,4 +1,5 @@
 #include "multi_split_prec.h"
+#include "multi_split_misc.h"
 
 #include "include/time.h"
 #include "include/tools.h"
@@ -12,38 +13,7 @@
 
 DEFINE_LOGGER("MultiSplitPrec");
 
-class LinkType {
-private:
-    uint n;
-    const SkylineMatrix& A;
-    uvector<char> a;
-
-    /* Checks indices i and j (with ASSERT) and returns index in a */
-    uint index(uint i, uint j) const THROW {
-	ASSERT(i != j, "i == j == " << i);
-
-	return A.index(i,j);
-    }
-
-public:
-    LinkType(const SkylineMatrix& _A) : A(_A) {
-	n = _A.size();
-	a.resize(A.get_ja().size(), 1);
-    }
-
-    /* Mark link as removed from one end. Returns whether the link can be removed from both ends */
-    bool mark(uint i, uint j) {
-	return --a[index(i,j)] == 0;
-    }
-    /* Check whether the link was removed */
-    bool is_removed(uint i, uint j) const {
-	return a[index(i,j)] == 0;
-    }
-    /* Mark link as removed */
-    void remove(uint i, uint j) {
-	a[index(i,j)] = 0;
-    }
-};
+typedef class LinkTypeMultiSplit LinkType;
 
 /*
  * Insertion sort of vector sorted with respect to absolute values in vector a
@@ -67,9 +37,9 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     Level& ln = levels[level+1];
 
-    uvector<double>& aux	     = li.aux;
-    uvector<uint>& tr		     = li.tr;
-    uvector<uint>& dtr		     = li.dtr;
+    uvector<double>& aux = li.aux;
+    uvector<uint>& tr	 = li.tr;
+    uvector<uint>& dtr	 = li.dtr;
 
     li.N   = A.size();
     li.nnz = A.ja.size();
@@ -94,8 +64,10 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
 
-	for (uint _j = rstart+1; _j < rend; _j++)
-	    nlinks_in[A.ja[_j]]++;
+	for (uint _j = rstart+1; _j < rend; _j++) {
+	    uint j = A.ja[_j];
+	    nlinks_in[j]++;
+	}
 
 	/* Sort off-diagonal elements wrt their abs values */
 	psort(adata + rstart+1, nrz, sorted);
@@ -110,6 +82,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 		ltype.mark(i,j); /* mark outgoing link as removable */
 		nlinks_out[i]--;
+		nlinks_in[j]--;
 
 		s -= aij;
 	    } else {
@@ -119,7 +92,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	}
     }
 
-    /* Compute n & nnz. Small problem: nnz might include bnd links */
+    /* Compute n & nnz */
     uint n = 0, nnz = 0;
     for (uint i = 0; i < N; i++)
 	if (nlinks_out[i] > 0 || nlinks_in[i] > 0) {
@@ -229,7 +202,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     uint N = A.size();
     li.aux.resize(N);
     for (uint i = 0; i < N; i++) {
-	li.aux[i] = 0;
+	li.aux[i] = 0.0;
 	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 	    li.aux[i] += A.a[j];
     }

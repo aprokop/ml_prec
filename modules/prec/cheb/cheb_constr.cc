@@ -1,4 +1,5 @@
 #include "cheb_prec.h"
+#include "cheb_misc.h"
 
 #include "include/time.h"
 #include "include/tools.h"
@@ -11,6 +12,8 @@
 #include <ostream>
 
 DEFINE_LOGGER("Prec");
+
+typedef class LinkTypeCheb LinkType;
 
 /*
  * Insertion sort of vector sorted with respect to absolute values in vector a
