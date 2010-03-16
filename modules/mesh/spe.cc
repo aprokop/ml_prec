@@ -136,7 +136,7 @@ void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double tau) con
 #if 1
 	/* Modify each element by small percent */
 	for (uint j = ia[i]+1; j < ia[i+1]; j++) {
-	    double d = random(-shift,shift) * a[j];
+	    double d = random(-tau,tau) * a[j];
 	    a[j]    -= d;
 	    a[dind] += d;
 	}
