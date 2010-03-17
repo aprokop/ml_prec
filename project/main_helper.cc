@@ -151,7 +151,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     if (cfg.solver == CHEB_SOLVER && cfg.prec != UH_CHEB_PREC)
 	THROW_EXCEPTION("Trying to call Chebyshev solver for not UH Cheb preconditioner");
 
-    if (cfg.prec == UH_CHEB_PREC)
+    if (cfg.prec == UH_CHEB_PREC || cfg.prec == SYM_SPLIT_PREC)
 	for (uint i = 0; i < cfg.sigmas.size(); i++)
 	    if (cfg.sigmas[i] <= 1)
 		THROW_EXCEPTION("All sigmas must be > 1");
