@@ -262,7 +262,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	li.u1.resize(n);
 	li.tmp.resize(n);
 
-	ASSERT(level+1 < nlevels, "Too many levels: " << level+1);
+	if (level+1 >= nlevels)
+	    THROW_EXCEPTION("Too many levels: " << level+1);
+
 	construct_level(level+1, nA);
     } else {
 	LOG_DEBUG("Reducing number of levels: " << nlevels << " -> " << level+1);
