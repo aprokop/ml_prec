@@ -60,6 +60,7 @@ void MultiSplitPrec::solve(uint level, Vector& f, Vector& x) const THROW {
     /* Solve diagonal subsystem */
     for (uint i_ = 0; i_ < dtr.size(); i_++) {
 	uint i = dtr[i_];
-	x[i] = f[i] / li.aux[i];
+	double c1 = 1/(1 - li.q) * li.aux[i];
+	x[i] = f[i] / c1;
     }
 }
