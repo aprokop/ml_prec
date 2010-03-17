@@ -174,6 +174,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	} else {
 	    lrevtr[i] = -1;
 	    dtr.push_back(i);
+	    /* NOTE: scaling of c for F-nodes is done in
+	     * solve() routine */
 	}
     }
     nA.nrow = nA.ncol = n;
