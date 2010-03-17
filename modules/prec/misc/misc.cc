@@ -4,7 +4,8 @@
 #include <fstream>
 #include <iomanip>
 
-#define REGION_ONLY
+// #define REGION_ONLY
+static std::string header(void);
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
 		  char plane, bool map_identity, const MeshBase& mesh) {
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
@@ -32,24 +33,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     ASSERT(ofs.good(), "Cannot open file");
     ofs << std::fixed << std::setprecision(4);
 
-    ofs << "%!PS-Adobe-2.0\n";
-    ofs << "%%Title: Graph\n";
-    ofs << "%%Creator: prok\n";
-    time_t t = time(NULL);
-    ofs << "%%Creation date: " << ctime(&t);
-    ofs << "%%Pages: (atend)\n";
-    ofs << "%%EndComments\n\n";
-
-    ofs << "%%BeginProlog\n";
-    ofs << "/Helvetica findfont 14 scalefont setfont\n";
-    ofs << "/v {moveto lineto stroke} def\n";
-    ofs << "/ms {moveto show} bind def\n";
-    ofs << "/a{1.1 0 360 arc fill}def\n";
-    ofs << "/r{1 0 0 setrgbcolor}def\n";
-    ofs << "/g{0 1 0 setrgbcolor}def\n";
-    ofs << "/b{0 0 0 setrgbcolor}def\n";
-    ofs << "%%EndProlog\n\n";
-
+    ofs << header();
     ofs << "userdict/start-hook known{start-hook}if\n";
 
     uint i0 = -1, i1 = -1;
@@ -71,7 +55,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     uint k = 63; {
 #endif
 	ofs << "%%Page: " << ++pages << std::endl;
-	ofs << "0 setlinewidth\n";
+	// ofs << "0 setlinewidth\n";
 	ofs << "30 40 translate\n";
 	ofs << "gsave\n";
 	ofs << mult_x << " " << mult_y << " scale\n";
@@ -117,19 +101,23 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 
 		    if (!A.exist(li0, li1))
 			continue;
+		    std::string al = "v";
+		    if (!A.exist(li1, li0))
+		      al = al + "v";
 
 		    lleft++;
 
 		    const Point& a = nodes[i0], b = nodes[i1];
 		    switch (plane) {
-			case 'z': ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " v" << std::endl; break;
-			case 'x': ofs << a.y << " " << a.z << " " << b.y << " " << b.z << " v" << std::endl; break;
-			case 'y': ofs << a.x << " " << a.z << " " << b.x << " " << b.z << " v" << std::endl; break;
+			case 'z': ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " " << al << std::endl; break;
+			case 'x': ofs << a.y << " " << a.z << " " << b.y << " " << b.z << " " << al << std::endl; break;
+			case 'y': ofs << a.x << " " << a.z << " " << b.x << " " << b.z << " " << al << std::endl; break;
 		    }
 		}
 
 	// Need to return scale to (1,1) as we'll have ellipses using /a if not
 	ofs << "grestore\n";
+#if 0
 	for (uint j = 0; j < n2; j++)
 	     for (uint i = 0; i < n1; i++) {
 #ifdef REGION_ONLY
@@ -197,6 +185,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		     case 'y': ofs << mult_x*a.x << " " << mult_y*a.z << " a\n"; break;
 		 }
 	     }
+#endif
 
 #ifndef REGION_ONLY
 	ofs << "b (" << plane << " plane #" << k << ", #links = " << lleft << "/" << ltotal << " = " <<
@@ -215,3 +204,54 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
     // std::cout << "#links = " << left << "/" << total << " = " << 100.*left/total << "%" << std::endl;
 }
 
+std::string header(void) {
+    std::ostringstream os;
+
+    os << "%!PS-Adobe-2.0\n";
+    os << "%%Title: Graph\n";
+    os << "%%Creator: prok\n";
+    time_t t = time(NULL);
+    os << "%%Creation date: " << ctime(&t);
+    os << "%%Pages: (atend)\n";
+    os << "%%EndComments\n\n";
+
+    os << "%%BeginProlog\n";
+    os << "/Helvetica findfont 14 scalefont setfont\n";
+    os << "/v {moveto lineto stroke} def\n";
+    os << "/ms {moveto show} bind def\n";
+    os << "/a{1.1 0 360 arc fill}def\n";
+    os << "/r{1 0 0 setrgbcolor}def\n";
+    os << "/g{0 1 0 setrgbcolor}def\n";
+    os << "/b{0 0 0 setrgbcolor}def\n";
+    os << "%%BeginProcSet: arrows 1.0 0\n";
+    os << "% \"arrowhead\" takes these arguments:\n";
+    os << "% lineweight prevX prevY\n";
+    os << "/arrowhead { %def\n";
+    os << "gsave\n";
+    os << "currentpoint\n";
+    os << "4 2 roll exch 4 -1 roll exch\n";
+    os << "sub 3 1 roll sub\n";
+    os << "exch atan rotate dup scale\n";
+    os << "-5 3 rlineto\n";
+    os << "1 -3 rlineto\n";
+    os << "-1 -3 rlineto\n";
+    os << "closepath fill\n";
+    os << "grestore\n";
+    os << "newpath\n";
+    os << "} bind def\n";
+    os << "/l^ { %def % lineto-arrow\n";
+    os << "currentlinewidth currentpoint 5 3 roll\n";
+    os << "lineto\n";
+    os << "currentpoint stroke moveto\n";
+    os << "arrowhead\n";
+    os << "} bind def\n";
+    os << "/vv{\n";
+    os << "    4 2 roll\n";
+    os << "    moveto\n";
+    os << "    l^\n";
+    os << "} def\n";
+    os << "%%EndProcSet: arrows 1.0 0\n";
+    os << "%%EndProlog\n\n";
+
+    return os.str();
+}

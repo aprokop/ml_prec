@@ -47,8 +47,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     /* Number of nodes in the subdomain */
     uint N = li.N;
 
-    std::vector<int> nlinks_out(N);
-    std::vector<int> nlinks_in(N, 0);
+    uvector<int> nlinks_out(N);
+    uvector<int> nlinks_in(N, 0);
     LinkType ltype(A);
 
     /* Marking stage */
@@ -60,7 +60,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	uint rend   = A.ia[i+1];	    /* Row end */
 	uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
 
-	nlinks_out[i] += nrz;
+	nlinks_out[i] = nrz;
 
 	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
 
@@ -91,6 +91,19 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    }
 	}
     }
+
+#if 0
+    {
+	uint out = 0, in = 0;
+	for (uint i = 0; i < N; i++) {
+	    out += nlinks_out[i];
+	    in  += nlinks_in[i];
+	}
+	if (out != in)
+	    THROW_EXCEPTION("out = " << out << ", in = " << in);
+
+    }
+#endif
 
     /* Compute n & nnz */
     uint n = 0, nnz = 0;
@@ -129,7 +142,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    /* Calculate the position of the diagonal element */
 	    uint dind = ind;
 
-	    double c1 = li.q/(1 - li.q) * aux[i];
+	    double c1 = 1.0/(1 - li.q) * aux[i];
 
 	    nA.ja[dind] = i;
 	    nA.a[dind]  = c1;

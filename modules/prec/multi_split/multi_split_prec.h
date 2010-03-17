@@ -4,6 +4,7 @@
 #include "config/config.h"
 #include "modules/common/common.h"
 #include "modules/prec/prec_base.h"
+#include "modules/mesh/mesh.h"
 
 #include <iostream>
 
@@ -43,6 +44,7 @@ public:
     ~MultiSplitPrec() { }
 
     void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
+    void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     friend std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p);
     friend std::ostream& operator<<(std::ostream& os, const MultiSplitPrec::Level& li);
