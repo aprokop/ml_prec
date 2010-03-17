@@ -37,8 +37,8 @@ int main (int argc, char * argv[]) {
 
     SkylineMatrix A;
 
+    SPEMesh mesh(cfg.nx, cfg.ny, cfg.nz);
     if (cfg.matrix.empty()) {
-	SPEMesh mesh(cfg.nx, cfg.ny, cfg.nz);
 	if (!cfg.unsym_matrix)
 	    mesh.construct_matrix(A, cfg.c);
 	else
@@ -79,9 +79,17 @@ int main (int argc, char * argv[]) {
     if (cfg.prec == UH_CHEB_PREC) {
 	Prec& Bcheb = static_cast<Prec&>(B);
 	LOG_INFO(Bcheb);
+#if 1
+	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
+	return 0;
+#endif
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
 	MultiSplitPrec& Bms = static_cast<MultiSplitPrec&>(B);
 	LOG_INFO(Bms);
+#if 1
+	Bms.graph_planes("grids.ps", 1, 'z', mesh);
+	return 0;
+#endif
     }
 
     double eps = 1e-6;
