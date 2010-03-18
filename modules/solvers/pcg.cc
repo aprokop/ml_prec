@@ -6,6 +6,7 @@
 DEFINE_LOGGER("PCG");
 
 void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, double eps, bool silent) THROW {
+    double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
 
@@ -16,8 +17,8 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
     double app, rz0, rz1;
     double norm, init_norm;
 
-    clock_t  mult = 0,  inv = 0,  cstr = 0, delta;
-    int	    nmult = 0, ninv = 0;
+    double  mult = 0,  inv = 0,  cstr = 0, delta;
+    int	   nmult = 0, ninv = 0;
 
     generate_x0(x);
     residual(A, b, x, r);
@@ -34,9 +35,9 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
     residual(A, b, x, r);
 #endif
 
-    delta = clock();
+    delta = pclock();
     B.solve(r, z);
-    cstr = clock() - delta;
+    cstr = pclock() - delta;
 
     p = z;
     rz0 = ddot(r, z);
@@ -50,9 +51,9 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
 	if (!silent)
 	    LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
-	delta = clock();
+	delta = pclock();
 	multiply(A, p, Ap);
-	mult += clock() - delta;
+	mult += pclock() - delta;
 	nmult++;
 
 	app = ddot(Ap, p);
@@ -67,9 +68,9 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
 
 	norm = dnrm2(r);
 
-	delta = clock();
+	delta = pclock();
 	B.solve(r, z);
-	inv += clock() - delta;
+	inv += pclock() - delta;
 	ninv++;
 
 	rz1 = ddot(r, z);
@@ -81,19 +82,21 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
 	rz0 = rz1;
 	niter++;
     }
+    gtime = pclock() - gtime;
 
     if (!silent) {
-	double mult_ = double(mult) / CLOCKS_PER_SEC;
-	double inv_  = double(inv)  / CLOCKS_PER_SEC;
-
 	LLL_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
-	LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult_/nmult << "\t total = " << mult_);
+	LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult/nmult << "\t total = " << mult);
 	if (ninv) {
-	    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv_/ninv << "\t total = " << inv_);
-	    LLL_DEBUG(std::fixed << std::setprecision(3) <<
-		      "Time of (possible construction) [time of first inversion - avg] = " <<
-		      double(cstr)/CLOCKS_PER_SEC - inv_/ninv);
+	    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv/ninv << "\t total = " << inv);
+	    double cstr_pos = cstr - inv/ninv;
+	    if (cstr_pos > 1e-1) {
+		LLL_DEBUG(std::fixed << std::setprecision(3) <<
+			  "Time of (possible) construction: " << cstr_pos);
+		LLL_DEBUG(std::fixed << std::setprecision(3) <<
+			  "Time of (possible) solution    : " << gtime - cstr_pos);
+	    }
 	}
     } else {
 	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
