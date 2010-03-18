@@ -107,7 +107,8 @@ AMGPrec::AMGConfig::AMGConfig() {
      *	    1 - rowsum zero,
      *	    2 - rowsum not zero
      */
-    matrix = 12;
+    // matrix = 12;
+    matrix = 22;
 
     /******************************************************************
      *                            GROUP 2
