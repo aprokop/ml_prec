@@ -188,6 +188,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 #endif
 
 #ifndef REGION_ONLY
+	/* NOTE: it only makes sense for symmetric matrices */
 	ofs << "b (" << plane << " plane #" << k << ", #links = " << lleft << "/" << ltotal << " = " <<
 		100.*lleft/ltotal << "%) 10 730 ms" << std::endl;
 #endif
