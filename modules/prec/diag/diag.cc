@@ -8,7 +8,7 @@ void DiagPrec::solve(Vector& f, Vector& x) THROW {
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     for (uint i = 0; i < n; i++) {
-	x[i] = f[i] / d[i];
+	x[i] = f[i] * d[i];
     }
 }
 
@@ -20,7 +20,8 @@ DiagPrec::DiagPrec(const SkylineMatrix& A) {
     double v;
     for (uint i = 0; i < n; i++) {
 	v = A(i,i);
-	ASSERT(v > 0, "Something is very strange: (" << i << ") has " << v << " on diagonal, aborting...");
-	d[i] = v;
+	if (v <= 0)
+	    THROW_EXCEPTION("Something is very strange: (" << i << ") has " << v << " on diagonal, aborting...");
+	d[i] = 1./v;
     }
 }
