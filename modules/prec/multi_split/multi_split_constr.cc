@@ -33,13 +33,14 @@ static void psort(const double *a, uint n, uvector<uint>& sorted) {
     }
 }
 
+static uvector<double> aux;
 void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     Level& ln = levels[level+1];
 
-    uvector<double>& aux = li.aux;
     uvector<uint>& tr	 = li.tr;
     uvector<uint>& dtr	 = li.dtr;
+    uvector<double>& dtr_val = li.dtr_val;
 
     li.N   = A.size();
     li.nnz = A.ja.size();
@@ -92,19 +93,6 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	}
     }
 
-#if 0
-    {
-	uint out = 0, in = 0;
-	for (uint i = 0; i < N; i++) {
-	    out += nlinks_out[i];
-	    in  += nlinks_in[i];
-	}
-	if (out != in)
-	    THROW_EXCEPTION("out = " << out << ", in = " << in);
-
-    }
-#endif
-
     /* Compute n & nnz */
     uint n = 0, nnz = 0;
     for (uint i = 0; i < N; i++)
@@ -125,7 +113,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     nA.a.resize(nnz);
     tr.resize(n);
     dtr.reserve(N-n);
-    ln.aux.resize(n);
+    dtr_val.reserve(N-n);
 
     /*
      * Reverse translation vector: indices of level l -> indices of level l+1
@@ -166,19 +154,26 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    tr[iaind] = i;
 	    lrevtr[i] = iaind;
 
-	    /* Calculate next level aux array */
-	    ln.aux[iaind] = c1;
+	    /* Calculate new c value */
+	    /* NOTE:
+	     * At this point aux is part old/part new:
+	     * 0, ..., iaind  : new aux
+	     * iaind+1, ..., N: old aux
+	     */
+	    aux[iaind] = c1;
 
 	    iaind++;
 
 	} else {
 	    lrevtr[i] = -1;
 	    dtr.push_back(i);
+	    dtr_val.push_back((1-li.q)/aux[i]);
 	    /* NOTE: scaling of c for F-nodes is done in
 	     * solve() routine */
 	}
     }
     nA.nrow = nA.ncol = n;
+    aux.resize(n);
 
     /* Change matrix to use next level indices */
     for (uint k = 0; k < nA.ja.size(); k++) {
@@ -217,11 +212,11 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 	levels[l].niter = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
 
     uint N = A.size();
-    li.aux.resize(N);
+    aux.resize(N);
     for (uint i = 0; i < N; i++) {
-	li.aux[i] = 0.0;
+	aux[i] = 0.0;
 	for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
-	    li.aux[i] += A.a[j];
+	    aux[i] += A.a[j];
     }
 
     construct_level(0, A);

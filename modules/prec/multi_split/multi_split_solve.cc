@@ -19,7 +19,6 @@ void MultiSplitPrec::solve(uint level, Vector& f, Vector& x) const THROW {
 
     uint N = li.N;
 
-    const uvector<uint>& dtr = li.dtr;
     const uvector<uint>& tr  = li.tr;
 
     if (level < nlevels-1) {
@@ -58,9 +57,10 @@ void MultiSplitPrec::solve(uint level, Vector& f, Vector& x) const THROW {
     }
 
     /* Solve diagonal subsystem */
+    const uvector<uint>& dtr = li.dtr;
+    const uvector<double>& dtr_val = li.dtr_val;
     for (uint i_ = 0; i_ < dtr.size(); i_++) {
 	uint i = dtr[i_];
-	double c1 = 1/(1 - li.q) * li.aux[i];
-	x[i] = f[i] / c1;
+	x[i] = f[i] * dtr_val[i_];
     }
 }

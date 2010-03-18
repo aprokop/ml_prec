@@ -25,10 +25,9 @@ private:
 
 	uvector<uint> tr;	    /* C-indices */
 	uvector<uint> dtr;	    /* F-indices */
-
-	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
-				       used in tail elimination */
+	uvector<double> dtr_val;    /* Value of diagonal for F-nodes */
     };
+
     uint nlevels;
     std::vector<Level> levels;
 
