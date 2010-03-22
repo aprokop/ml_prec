@@ -99,11 +99,18 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 			li1 = i1;
 		    }
 
-		    if (!A.exist(li0, li1))
+		    bool aij_present = A.exist(li0, li1);
+		    bool aji_present = A.exist(li1, li0);
+
+		    if (!aij_present && !aji_present)
 			continue;
 		    std::string al = "v";
-		    if (!A.exist(li1, li0))
-		      al = al + "v";
+		    if (aij_present && !aji_present)
+			al = al + "v";
+		    if (!aij_present && aji_present) {
+			al = al + "v";
+			std::swap(i0, i1);
+		    }
 
 		    lleft++;
 
@@ -117,7 +124,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 
 	// Need to return scale to (1,1) as we'll have ellipses using /a if not
 	ofs << "grestore\n";
-#if 0
+#if 1
 	for (uint j = 0; j < n2; j++)
 	     for (uint i = 0; i < n1; i++) {
 #ifdef REGION_ONLY
@@ -146,11 +153,11 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		     if (map_identity) {
 			 if ((it1 = rev_map.find(i1)) != rev_map.end()) {
 			     li1 = it1->second;
-			     if (A.exist(li0, li1))
+			     if (A.exist(li0,li1) || A.exist(li1,li0))
 				 fz++;
 			 }
 		     } else {
-			 if (A.exist(i0,i1))
+			 if (A.exist(i0,i1) || A.exist(i1,i0))
 			     fz++;
 		     }
 
@@ -164,11 +171,11 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 		     if (map_identity) {
 			 if ((it1 = rev_map.find(i1)) != rev_map.end()) {
 			     li1 = it1->second;
-			     if (A.exist(li0, li1))
+			     if (A.exist(li0,li1) || A.exist(li1,li0))
 				 fz++;
 			 }
 		     } else {
-			 if (A.exist(i0,i1))
+			 if (A.exist(i0,i1) || A.exist(i1,i0))
 			     fz++;
 		     }
 		 }
