@@ -4,6 +4,7 @@
 #include "config/config.h"
 #include "modules/common/common.h"
 #include "modules/prec/prec_base.h"
+#include "modules/prec/misc/misc.h"
 #include "modules/mesh/mesh.h"
 
 #include <iostream>
@@ -21,11 +22,13 @@ private:
 	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
 
 	mutable
-	Vector x1, f1, u0, r;	    /* Some auxilary vectors for internal iterations */
+	Vector r, r1, u0, u1;	    /* Some auxilary vectors for internal iterations */
 
 	uvector<uint> tr;	    /* C-indices */
 	uvector<uint> dtr;	    /* F-indices */
 	uvector<double> dtr_val;    /* Value of diagonal for F-nodes */
+
+	std::vector<Tail> tails;    /* Tridiagonal matrices */
     };
 
     uint nlevels;
@@ -36,7 +39,11 @@ private:
 
     void construct_level(uint level, const SkylineMatrix& A);
 
-    void solve(uint level, Vector& f, Vector& x) const THROW;
+    void solve(uint level, const Vector& f, Vector& x) const THROW;
+
+    void truncate_tails(uint level, Vector& f) const THROW;
+    void restore_tails(uint level, const Vector& f, Vector& x) const THROW;
+    void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
 
 public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);

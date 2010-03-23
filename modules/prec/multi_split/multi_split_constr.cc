@@ -38,8 +38,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     Level& ln = levels[level+1];
 
-    uvector<uint>& tr	 = li.tr;
-    uvector<uint>& dtr	 = li.dtr;
+    uvector<uint>& tr        = li.tr;
+    uvector<uint>& dtr       = li.dtr;
     uvector<double>& dtr_val = li.dtr_val;
 
     li.N   = A.size();
@@ -53,7 +53,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     LinkType ltype(A);
 
     /* Marking stage */
-    uint MAX_NUM = 1000; /* Maximum number of elements in a row */
+    uint MAX_NUM = 100; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     const double* adata = &(A.a[0]);
     for (uint i = 0; i < N; i++) {
@@ -81,7 +81,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    if (aij <= s) {
 		uint j = A.ja[_j];
 
-		ltype.mark(i,j); /* mark outgoing link as removable */
+		ltype.remove(i,j); /* mark outgoing link as removable */
 		nlinks_out[i]--;
 		nlinks_in[j]--;
 
@@ -89,6 +89,103 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    } else {
 		/* We exhausted available value of c. No other adjoint links can be removed */
 		break;
+	    }
+	}
+
+	/* Update c value */
+	aux[i] *= 1./(1-li.q);
+    }
+
+    std::vector<Tail>& tails = li.tails;
+    if (use_tails) {
+	uint i0 = uint(-1), i1 = uint(-1);
+	for (uint i = 0; i < N; i++) {
+	    if (nlinks_out[i] == 1 && nlinks_in[i] <= 1) {
+		Tail tail;
+		tail.reserve(5);
+		TailNode tn;
+
+		double v = 0;
+
+		i0 = i;
+		do {
+		    /* Step 1: check that there is only one outgoing link */
+		    if (nlinks_out[i0] != 1)
+			break;
+
+		    /* Step 2: check that there is either no incoming connections,
+		     *	       or one incoming connection with the same point, as
+		     *	       outgoing
+		     */
+		    uint _j;
+		    if (!ltype.find_remaining_link(i0, _j)) {
+			THROW_EXCEPTION("Remaining link was not found");
+			break;
+		    }
+		    i1 = A.ja[_j];
+
+		    bool aji_present = (ltype.stat(i1,i0) == PRESENT);
+		    if (!( nlinks_in[i0] == 0 ||
+			  (nlinks_in[i0] == 1 && aji_present))) {
+			/*
+			 * Node i0 has more than one incoming connection, or
+			 * it has one incoming connection but not from i1
+			 */
+			break;
+		    }
+
+		    ltype.remove(i0, i1);
+
+		    tn.index = i0;
+		    tn.a3 = -v; /* Old value */
+
+		    double aij = A.a[_j];   /* < 0 */
+
+		    tn.a2  = 1/(aux[i0] - aij);
+		    tn.a1  = -aij*tn.a2;
+		    tn.a3 *= tn.a2;
+
+		    double aji = 0;
+		    if (aji_present) {
+			aji = A(i1,i0);
+			ltype.remove(i1, i0);
+
+			nlinks_in[i0]--;
+			nlinks_out[i1]--;
+		    }
+		    v = aji;
+
+		    nlinks_out[i0] = -1;
+		    nlinks_in[i1]--;
+
+		    aux[i1] += aux[i0]*(-aji)/(aux[i0] - aij);
+
+		    i0 = i1;
+
+		    tail.push_back(tn);
+		} while (true);
+
+		if (!tail.size())
+		    continue;
+
+		tn.index = i0;
+		tn.a1 = 0.0;
+
+		if (nlinks_out[i0] == 0 && nlinks_in[i0] == 0) {
+		    /* i0 is the end node in fully tridiagonal matrix */
+		    tn.a2 = 1/aux[i0];
+		    nlinks_out[i0] = -1;
+		    tail.end_type = 'f';
+		} else {
+		    /* i0 has incoming/outgoing links */
+		    tn.a2 = 1.0;
+		    tail.end_type = 'l';
+		}
+		tn.a3 = -v*tn.a2;
+
+		tail.push_back(tn);
+
+		tails.push_back(tail);
 	    }
 	}
     }
@@ -115,10 +212,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     dtr.reserve(N-n);
     dtr_val.reserve(N-n);
 
-    /*
-     * Reverse translation vector: indices of level l -> indices of level l+1
-     * NOTE: it is a local vector
-     */
+    /* Reverse translation vector: indices of level l -> indices of level l+1 */
     uvector<int> lrevtr(N);
 
     nA.ia[0] = 0;
@@ -130,15 +224,13 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    /* Calculate the position of the diagonal element */
 	    uint dind = ind;
 
-	    double c1 = 1.0/(1 - li.q) * aux[i];
-
 	    nA.ja[dind] = i;
-	    nA.a[dind]  = c1;
+	    nA.a[dind]  = aux[i];
 	    ind++;
 
 	    for (uint _j = A.ia[i]+1; _j < A.ia[i+1]; _j++) {
 		uint j = A.ja[_j];
-		if (!ltype.is_removed(i,j)) {
+		if (ltype.stat(i,j) == PRESENT) {
 		    /* Link goes to coarse level */
 		    double v = A.a[_j];
 
@@ -160,16 +252,17 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	     * 0, ..., iaind  : new aux
 	     * iaind+1, ..., N: old aux
 	     */
-	    aux[iaind] = c1;
+	    aux[iaind] = aux[i];
 
 	    iaind++;
 
 	} else {
 	    lrevtr[i] = -1;
-	    dtr.push_back(i);
-	    dtr_val.push_back((1-li.q)/aux[i]);
-	    /* NOTE: scaling of c for F-nodes is done in
-	     * solve() routine */
+	    if (nlinks_out[i] != -1) {
+		/* Link does not belong to a tail */
+		dtr.push_back(i);
+		dtr_val.push_back(1.0/aux[i]);
+	    }
 	}
     }
     nA.nrow = nA.ncol = n;
@@ -181,12 +274,21 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	nA.ja[k] = lrevtr[nA.ja[k]];
     }
 
+    if (use_tails) {
+	/* Check whether the ends are really local (or belong to a T intersection) */
+	for (uint i = 0; i < tails.size(); i++) {
+	    Tail& tail = tails[i];
+	    if (tail.end_type == 'l' && lrevtr[tail.back().index] == -1)
+		tail.end_type = 't';
+	}
+    }
+
+    li.u0.resize(N);
+    li.r.resize(N);
     if (n) {
 	/* Allocate space for Chebyshev vectors */
-	li.x1.resize(n);
-	li.f1.resize(n);
-	li.u0.resize(n);
-	li.r.resize(n);
+	li.r1.resize(n);
+	li.u1.resize(n);
 
 	if (level+1 >= nlevels)
 	    THROW_EXCEPTION("Too many levels: " << level+1);
@@ -199,16 +301,18 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
+    use_tails = cfg.use_tails;
+
     nlevels = 30;
     levels.resize(nlevels);
-    Level& li = levels[0];
 
     /* Fill in q parameter for each level */
     for (uint l = 0; l < nlevels; l++)
 	levels[l].q = (l >= cfg.sigmas.size() ? cfg.sigmas.back() : cfg.sigmas[l]);
 
     /* Set number of iterations per level */
-    for (uint l = 0; l < nlevels; l++)
+    levels[0].niter = 1;
+    for (uint l = 1; l < nlevels; l++)
 	levels[l].niter = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
 
     uint N = A.size();

@@ -7,6 +7,12 @@
 #include "include/uvector.h"
 #include "modules/matrix/matrix.h"
 
+enum LinkStatus {
+    PRESENT,
+    REMOVED,
+    ABSENT
+};
+
 class LinkTypeMultiSplit {
 private:
     uint n;
@@ -16,27 +22,48 @@ private:
     /* Checks indices i and j (with ASSERT) and returns index in a */
     uint index(uint i, uint j) const THROW {
 	ASSERT(i != j, "i == j == " << i);
-
 	return A.index(i,j);
     }
 
 public:
     LinkTypeMultiSplit(const SkylineMatrix& A_) : A(A_) {
-	n = A_.size();
+	n = A.size();
 	a.resize(A.get_ja().size(), 1);
     }
 
-    /* Mark directed link as removed from one end */
-    bool mark(uint i, uint j) {
-	return (--a[index(i,j)]) == 0;
-    }
-    /* Check whether the link was removed */
-    bool is_removed(uint i, uint j) const {
-	return a[index(i,j)] == 0;
+    /* Check link status */
+    LinkStatus stat(uint i, uint j) const {
+	uint ind = index(i,j);
+	if (ind == uint(-1))
+	    return ABSENT;
+	return a[ind] ? PRESENT : REMOVED;
     }
     /* Mark link as removed */
     void remove(uint i, uint j) {
-	a[index(i,j)] = 0;
+	uint ind = index(i,j);
+	ASSERT(ind != uint(-1), "Cannot removed absent link: (" << i << "," << j << ")");
+	a[ind] = 0;
+    }
+    bool find_remaining_link(uint i, uint& _j) {
+	ASSERT(i < n, "i = " << i << ", n = " << n);
+
+	const uvector<uint>& ia = A.get_ia();
+	const uvector<uint>& ja = A.get_ja();
+
+	for (_j = ia[i]+1; _j < ia[i+1]; _j++)
+	    if (a[_j])
+		return true;
+
+	return false;
+    }
+
+    /* Find the remaining link (actually it finds the first one).
+     * Returns index in ja */
+    bool remove_remaining_link(uint i, uint& _j) {
+	bool ret = find_remaining_link(i, _j);
+	if (ret)
+	    a[_j] = 0;
+	return ret;
     }
 };
 
