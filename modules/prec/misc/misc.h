@@ -16,7 +16,10 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const std
 
 struct TailNode {
     uint index;
-    // x_i = a1*x_{i+1} + a2*f_i + a3*f_{i-1}
+    /*
+     * x[i] = a1*x[i+1] + F[i]
+     * F[i] = a2*f[i] + a3*f[i-1]
+     */
     double a1, a2, a3;
 };
 struct Tail : std::vector<TailNode> {
