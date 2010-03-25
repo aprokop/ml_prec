@@ -27,11 +27,20 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 
 	::graph_planes(filename, level0_A, rev_map, plane, level, mesh);
     }
-
 }
 
 std::ostream& operator<<(std::ostream& os, const Prec& p) {
+    os << std::endl;
     os << "nlevels = " << p.nlevels << std::endl;
+    float oc = 0, gc = 0;
+    for (uint level = 0; level < p.nlevels; level++) {
+	gc += p.levels[level].N;
+	oc += p.levels[level].nnz;
+    }
+    gc /= p.levels[0].N;
+    oc /= p.levels[0].nnz;
+    os << "gc     = " << gc << std::endl;   /* Grid complexity */
+    os << "oc     = " << oc << std::endl;   /* Operator complexity */
     for (uint level = 0; level < p.nlevels; level++) {
 	os << std::endl << "================== Level: " << level << " =======================" << std::endl;
 	os << p.levels[level];
