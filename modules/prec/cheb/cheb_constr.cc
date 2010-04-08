@@ -76,7 +76,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 		/* TODO: for j > i we actually already know the offset in LinkType::a array
 		 * so it can be significantly sped up */
-		if (ltype.mark(i,j)) {
+		if (ltype.mark(i,j) == REMOVED) {
 		    /* This link is marked as removable from both ends so it is removed */
 		    nlinks[i]--;
 		    nlinks[j]--;
@@ -115,7 +115,6 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		    /* Find the remaining link */
 		    uint _j;
 		    if (!ltype.remove_remaining_link(i0, _j)) {
-			/* We haven't found the links in the matrix => it is a boundary link. Skip it */
 			THROW_EXCEPTION("Huh??");
 			break;
 		    }
@@ -204,7 +203,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	    for (uint _j = A.ia[i]+1; _j < A.ia[i+1]; _j++) {
 		uint j = A.ja[_j];
-		if (!ltype.is_removed(i,j)) {
+		if (ltype.stat(i,j) == PRESENT) {
 		    /* Link goes to coarse level */
 		    /* Scale the link */
 		    double v = A.a[_j] / li.beta;

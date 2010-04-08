@@ -11,6 +11,11 @@
 #include <map>
 #include <vector>
 
+enum LinkStatus {
+    PRESENT,
+    REMOVED
+};
+
 class LinkTypeCheb {
 private:
     uint n;
@@ -35,12 +40,16 @@ public:
     }
 
     /* Mark link as removed from one end. Returns whether the link can be removed from both ends */
-    bool mark(uint i, uint j) {
-	return --a[index(i,j)] == 0;
+    LinkStatus mark(uint i, uint j) {
+	return (--a[index(i,j)] == 0) ? REMOVED : PRESENT;
     }
     /* Check whether the link was removed */
     bool is_removed(uint i, uint j) const {
 	return a[index(i,j)] == 0;
+    }
+    /* Check link status */
+    LinkStatus stat(uint i, uint j) const {
+	return a[index(i,j)] ? PRESENT : REMOVED;
     }
     /* Mark link as removed */
     void remove(uint i, uint j) {
