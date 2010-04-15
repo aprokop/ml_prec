@@ -84,7 +84,7 @@ private:
     }
 
     void construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
-			       uint& Md, uint& M, uvector<uint>& map, uvector<uint>& rmap) const;
+			       uint& Md, uint& M, uvector<uint>& map) const;
 
     void optimize_storage();
     void construct_level(uint level, const SkylineMatrix& A);

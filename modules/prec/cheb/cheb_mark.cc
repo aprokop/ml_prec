@@ -6,7 +6,7 @@
 DEFINE_LOGGER("Prec");
 
 void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
-				 uint& Md, uint& M, uvector<uint>& map, uvector<uint>& rmap) const {
+				 uint& Md, uint& M, uvector<uint>& map) const {
     uint N = A.size();
 
     uint pind = 0;
@@ -16,11 +16,8 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
     /* Group 1: all links with zero links */
     for (uint i = 0; i < N; i++)
 	if (nlinks[i] == 0) {
-	    rmap[i] = pind;
-	    map[pind] = i;
-	    pind++;
-
-	    marked[i] = 1;
+	    map[pind++] = i;
+	    marked[i]   = 1;
 	}
     Md = pind;
 
@@ -35,11 +32,8 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 		i0 = i;
 
 		do {
-		    rmap[i0]   = pind;
-		    map[pind]  = i0;
-		    pind++;
-
-		    marked[i0] = 1;
+		    map[pind++] = i0;
+		    marked[i0]  = 1;
 
 		    /* Find the remaining link */
 		    uint j_;
@@ -60,11 +54,8 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
 		if (nlinks[i0] == 0) {
 		    /* i0 is the end node in fully tridiagonal matrix */
-		    rmap[i0]   = pind;
-		    map[pind]  = i0;
-		    pind++;
-
-		    marked[i0] = 1;
+		    map[pind++] = i0;
+		    marked[i0]  = 1;
 
 		    nlinks[i0] = -1;
 		}
@@ -76,9 +67,8 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
     /* Mark all others */
     for (uint i = 0; i < N; i++)
-	if (marked[i] == 0) {
-	    rmap[i]   = pind;
-	    map[pind] = i;
-	    pind++;
-	}
+	if (marked[i] == 0)
+	    map[pind++] = i;
+
+    LOG_DEBUG("pind = " << pind << ", N = " << N);
 }

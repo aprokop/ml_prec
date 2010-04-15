@@ -99,8 +99,13 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uvector<uint>& rmap = li.rmap;
 
     map.resize(N);
+    construct_permutation(A, ltype, nlinks, Md, M, map);
+
+    /* Construct reverse map */
     rmap.resize(N);
-    construct_permutation(A, ltype, nlinks, Md, M, map, rmap);
+    for (uint i = 0; i < N; i++)
+	rmap[map[i]] = i;
+
 
     /* Exclude diagonal */
 #if 0
