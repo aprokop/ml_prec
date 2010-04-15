@@ -15,6 +15,7 @@ private:
 
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
+	uint Md;
 	uint M;                     /* Size of the excluded block */
 
 	double alpha, beta;	    /* Spectral constants used for the level */
@@ -27,6 +28,8 @@ private:
 
 	uvector<uint> map;	    /* permuted -> original */
 	uvector<uint> rmap;	    /* original -> permuted */
+
+	uvector<double> dval;
 
 	mutable
 	Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Gauss */
@@ -81,7 +84,7 @@ private:
     }
 
     void construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
-			       uint& M, uvector<uint>& map, uvector<uint>& rmap) const;
+			       uint& Md, uint& M, uvector<uint>& map, uvector<uint>& rmap) const;
 
     void optimize_storage();
     void construct_level(uint level, const SkylineMatrix& A);

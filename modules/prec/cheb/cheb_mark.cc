@@ -6,7 +6,7 @@
 DEFINE_LOGGER("Prec");
 
 void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
-				 uint& M, uvector<uint>& map, uvector<uint>& rmap) const {
+				 uint& Md, uint& M, uvector<uint>& map, uvector<uint>& rmap) const {
     uint N = A.size();
 
     uint pind = 0;
@@ -22,6 +22,7 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
 	    marked[i] = 1;
 	}
+    Md = pind;
 
 #if 0
     /* Group 2: all tails */
@@ -79,7 +80,5 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 	    rmap[i]   = pind;
 	    map[pind] = i;
 	    pind++;
-
-	    marked[i] = 1;
 	}
 }

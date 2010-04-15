@@ -100,10 +100,8 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
     for (int i = M-1; i >= 0; i--) {
 	double z = w[i];
 
-	uint j_;
-	for (j_ = U.ia[i+1]-1; j_ > U.ia[i]; j_--) {
+	for (uint j_ = U.ia[i]+1; j_ < U.ia[i+1]; j_++)
 	    z -= U.a[j_] * x[map[U.ja[j_]]];
-	}
 
 	x[map[i]] = z / U.a[U.ia[i]];
     }

@@ -94,18 +94,21 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     }
 
     uint& M             = li.M;
+    uint& Md		= li.Md;
     uvector<uint>& map  = li.map;
     uvector<uint>& rmap = li.rmap;
 
     map.resize(N);
     rmap.resize(N);
-    construct_permutation(A, ltype, nlinks, M, map, rmap);
+    construct_permutation(A, ltype, nlinks, Md, M, map, rmap);
 
-    /* Check permutation */
-    for (uint i = 0; i < N; i++)
-	ASSERT(rmap[map[i]] == i, "Problem in permutation " << i);
-
-    LOG_DEBUG("Level #" << level << ": M = " << M);
+    /* Exclude diagonal */
+#if 0
+    uvector<double>& dval = li.dval;
+    dval.resize(Md);
+    for (uint i = 0; i < Md; i++)
+	dval[i] = 1./aux[map[i]];
+#endif
 
     SkylineMatrix& nA = ln.A;
     SkylineMatrix&  U = li.U;
@@ -189,8 +192,6 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	/* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
 	if (i < M) {
-	    ASSERT(k == i, "k = " << k << ", i = " << i);
-
 	    /* Update U */
 	    for (std::set<uint>::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
 		U.ja.push_back(*it);
