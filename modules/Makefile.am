@@ -16,6 +16,7 @@ libmodules_a_SOURCES = \
 		       common/config.cc \
 		       common/common.h \
 		       prec/cheb/cheb_constr.cc \
+		       prec/cheb/cheb_mark.cc \
 		       prec/cheb/cheb_misc.cc \
 		       prec/cheb/cheb_solve.cc \
 		       prec/cheb/cheb_misc.h \

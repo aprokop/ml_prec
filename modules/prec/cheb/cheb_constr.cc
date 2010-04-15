@@ -10,6 +10,7 @@
 #include <cmath>
 #include <memory>
 #include <ostream>
+#include <set>
 
 DEFINE_LOGGER("Prec");
 
@@ -37,20 +38,19 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     Level& li = levels[level];
     Level& ln = levels[level+1];
 
-    uvector<double>& aux	     = li.aux;
-    uvector<uint>& tr		     = li.tr;
-    uvector<uint>& dtr		     = li.dtr;
-
     li.N   = A.size();
     li.nnz = A.ja.size();
 
     /* Number of nodes in the subdomain */
     uint N = li.N;
 
-    std::vector<int> nlinks(N);
+    uvector<int> nlinks(N, 0);
     LinkType ltype(A);
 
-    /* Mark */
+    uvector<double>& aux = li.aux;
+    aux.resize(N);
+
+    /* Drop links */
     uint MAX_NUM = 1000; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     const double* adata = A.a.data();
@@ -59,9 +59,14 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	uint rend   = A.ia[i+1];	    /* Row end */
 	uint nrz    = rend - rstart - 1;    /* Number of links */
 
+	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
+
 	nlinks[i] += nrz;
 
-	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
+	/* TODO: do not compute aux[i] every level; translate from upper to lower */
+	aux[i] = 0.0;
+	for (uint j_ = rstart; j_ < rend; j_++)
+	    aux[i] += A.a[j_];
 
 	/* Sort off-diagonal elements wrt their abs values */
 	psort(adata + rstart+1, nrz, sorted);
@@ -88,178 +93,134 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	}
     }
 
-    std::vector<Tail>& tails = li.tails;
-    if (use_tails) {
-	uint tnn = 0;
-	for (uint i = 0; i < N; i++)
-	    if (nlinks[i] == 1)
-		tnn++;
+    uint& M             = li.M;
+    uvector<uint>& map  = li.map;
+    uvector<uint>& rmap = li.rmap;
 
-	/* Remove tails inside the subdomain */
-	tails.resize(tnn+1);
-	tnn = 0;
+    map.resize(N);
+    rmap.resize(N);
+    construct_permutation(A, ltype, nlinks, M, map, rmap);
 
-	uint i0 = uint(-1), i1 = uint(-1);
-	double v = 0;
-	for (uint i = 0; i < N; i++)
-	    if (nlinks[i] == 1) {
-		Tail& tail = tails[tnn];
-		tail.reserve(5);
-		TailNode tn;
-
-		i0 = i;
-		do {
-		    tn.index = i0;
-		    tn.a3 = -v; /* old v */
-
-		    /* Find the remaining link */
-		    uint _j;
-		    if (!ltype.remove_remaining_link(i0, _j)) {
-			THROW_EXCEPTION("Huh??");
-			break;
-		    }
-
-		    i1 = A.ja[_j];
-		    /* The link actually belongs to the next level so it is scaled */
-		    v = A.a[_j] / li.beta;
-
-		    tn.a2  = 1/(aux[i0] - v);
-		    tn.a1  = -v*tn.a2;
-		    tn.a3 *= tn.a2;
-
-		    nlinks[i0] = -1;
-		    nlinks[i1]--;
-
-		    aux[i1] += aux[i0]*(-v) / (aux[i0] - v);
-
-		    i0 = i1;
-
-		    tail.push_back(tn);
-		} while (nlinks[i0] == 1);
-
-		if (!tail.size())
-		    continue;
-
-		tn.index = i0;
-
-		if (nlinks[i0] == 0) {
-		    /* i0 is the end node in fully tridiagonal matrix */
-		    tn.a2 = 1/aux[i0];
-		    nlinks[i0] = -1;
-		    tail.end_type = 'f';
-		} else {
-		    tn.a2 = 1.;
-		    tail.end_type = 'l';
-		}
-		tn.a3 = -v*tn.a2;
-
-		tail.push_back(tn);
-
-		tnn++;
-	    }
-	tails.resize(tnn);
-    }
-
-    /* Compute n & nnz. Small problem: nnz might include bnd links */
-    uint n = 0, nnz = 0;
+    /* Check permutation */
     for (uint i = 0; i < N; i++)
-	if (nlinks[i] > 0) {
-	    n++;
-	    nnz += nlinks[i];
-	}
-    nnz += n;
+	ASSERT(rmap[map[i]] == i, "Problem in permutation " << i);
 
-    /*
-     * Construct next level local matrix
-     * For simplicity during the construction we use indices from this level and not the next one yet
-     */
+    LOG_DEBUG("Level #" << level << ": M = " << M);
+
     SkylineMatrix& nA = ln.A;
+    SkylineMatrix&  U = li.U;
+    CSRMatrix&      L = li.L;
 
-    nA.ia.resize(n+1);
-    nA.ja.resize(nnz);
-    nA.a.resize(nnz);
-    tr.resize(n);
-    dtr.reserve(N-n);
-    ln.aux.resize(n);
+    /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
+    uvector<int> jr(N, -1);
+    std::set<uint> jw;
+    uvector<double> w;
+    uint max_num;
 
-    /*
-     * Reverse translation vector: indices of level l -> indices of level l+1
-     * NOTE: it is a local vector
-     */
-    uvector<int> lrevtr(N);
+    L.ia.push_back(0);   L.nrow = N;    L.ncol = N;
+    U.ia.push_back(0);   U.nrow = M;    U.ncol = N;
+    nA.ia.push_back(0); nA.nrow = N-M; nA.ncol = N-M;
 
-    nA.ia[0] = 0;
-    uint ind = 0, iaind = 0;
+    uint n = N-M;
+
+    /* i corresponds to a permuted index */
     for (uint i = 0; i < N; i++) {
-	if (nlinks[i] > 0) {
-	    /* The node goes to the next level */
+	/* Step 0: clear tmp values */
+	for (std::set<uint>::const_iterator it = jw.begin(); it != jw.end(); it++)
+	    jr[*it] = -1;
+	max_num = 0;
+	jw.clear();
+	w.clear();
 
-	    /* Calculate the position of the diagonal element */
-	    uint dind = ind;
+	uint arow = map[i];	/* Index of a row in A */
 
-	    nA.ja[ind] = i;
-	    nA.a[ind] = aux[i];
-	    ind++;
+	/* Step 1: create buffer with permuted row of A */
+	/* Add diagonal element to buffer */
+	jr[i] = max_num++;
+	jw.insert(i);
+	w.push_back(aux[i]);    /* w[0] is the value of the diagonal element */
 
-	    for (uint _j = A.ia[i]+1; _j < A.ia[i+1]; _j++) {
-		uint j = A.ja[_j];
-		if (ltype.stat(i,j) == PRESENT) {
-		    /* Link goes to coarse level */
-		    /* Scale the link */
-		    double v = A.a[_j] / li.beta;
+	/* Add off-diagonal elements to buffer */
+	for (uint j_ = A.ia[arow]+1; j_ < A.ia[arow+1]; j_++) {
+	    uint j = A.ja[j_];
 
-		    nA.ja[ind]  = j;
-		    nA.a[ind]   = v;
-		    nA.a[dind] += -v;
+	    if (ltype.stat(arow,j) == PRESENT) {
+		uint new_j = rmap[j];   /* permuted index */
 
-		    ind++;
+		jr[new_j] = max_num++;
+		jw.insert(new_j);
+
+		double z = A.a[j_] / li.beta;   /* scale the element */
+
+		w.push_back(z);
+		w[0] -= z;       /* update diagonal */
+	    }
+	}
+
+	/* Step 2: perform sparse gaussian elimination */
+	uint m = std::min(i, M);
+
+	uint k = *(jw.begin());
+	while (k < m) {
+	    double lik = w[jr[k]] / U(k,k);
+
+	    /* Update L */
+	    L.ja.push_back(k);
+	    L.a.push_back(lik);
+
+	    /* Update buffer using k-th row of U */
+	    for (uint j_ = U.ia[k]+1; j_ < U.ia[k+1]; j_++) {
+		uint j = U.ja[j_];      /* j is a permuted index */
+
+		if (jr[j] != -1) {
+		    /* Element already exists in the buffer => update */
+		    w[jr[j]] -= lik*U.a[j_];
+		} else {
+		    /* Element does not exist in the buffer => create */
+		    jr[j] = max_num++;
+		    jw.insert(j);
+		    w.push_back(-lik*U.a[j_]);
 		}
 	    }
 
-	    nA.ia[iaind+1] = ind;
-	    tr[iaind] = i;
-	    lrevtr[i] = iaind;
+	    k = *(jw.upper_bound(k));
+	}
+	L.ia.push_back(L.ja.size());
 
-	    /* Calculate next level aux array */
-	    ln.aux[iaind] = aux[i];
+	/* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
+	if (i < M) {
+	    ASSERT(k == i, "k = " << k << ", i = " << i);
 
-	    iaind++;
-
-	} else {
-	    lrevtr[i] = -1;
-	    if (nlinks[i] != -1) {
-		/*
-		 * All links for this point are gone and the point does not belong to a tail.
-		 * Add it to the diagonal vector
-		 */
-		dtr.push_back(i);
+	    /* Update U */
+	    for (std::set<uint>::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
+		U.ja.push_back(*it);
+		U.a.push_back(w[jr[*it]]);
 	    }
+
+	    U.ia.push_back(U.ja.size());
+	} else {
+	    /* Update A_{level+1} */
+	    uint adind = nA.ja.size();
+	    nA.ja.push_back(i-M);
+	    nA.a.push_back(w[0]);
+
+	    for (std::set<uint>::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
+		if (*it != i) {
+		    nA.ja.push_back(*it-M);
+		    nA.a.push_back(w[jr[*it]]);
+		}
+
+	    nA.ia.push_back(nA.ja.size());
 	}
     }
-    nA.nrow = nA.ncol = n;
 
-    /* Change matrix to use next level indices */
-    for (uint k = 0; k < nA.ja.size(); k++) {
-	ASSERT(lrevtr[nA.ja[k]] != -1, "Trying to invert wrong index: k = " << k << ", nA.ja[k] = " << nA.ja[k]);
-	nA.ja[k] = lrevtr[nA.ja[k]];
-    }
-
-    if (use_tails) {
-	/* Check whether the ends are really local (or belong to a T intersection */
-	for (uint i = 0; i < tails.size(); i++) {
-	    Tail& tail = tails[i];
-	    if (tail.end_type == 'l' && lrevtr[tail.back().index] == -1)
-		tail.end_type = 't';
-	}
-    }
-
+    li.w.resize(N);
     if (n) {
 	/* Allocate space for Chebyshev vectors */
-	li.x1.resize(n);
-	li.f1.resize(n);
+	li.tmp.resize(n);
+	li.x2.resize(n);
 	li.u0.resize(n);
 	li.u1.resize(n);
-	li.tmp.resize(n);
 
 	if (level+1 >= nlevels)
 	    THROW_EXCEPTION("Too many levels: " << level+1);
@@ -292,8 +253,8 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
     if (!cfg.unsym_matrix)
 	Asym = const_cast<SkylineMatrix*>(&A);
     else {
-	/* NOTE: level0_A reference IS incorrect, as it references
-	 * the unsymmetric matrix */
+	/* Symmetrize the matrix */
+	/* NOTE: level0_A reference WILL BE incorrect, as it references the unsymmetric matrix */
 	Asym = new SkylineMatrix(A);
 
 	uint N = Asym->size();
@@ -310,13 +271,6 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 	    }
     }
 
-    uint N = Asym->size();
-    li.aux.resize(N);
-    for (uint i = 0; i < N; i++) {
-	li.aux[i] = 0;
-	for (uint j = Asym->ia[i]; j < Asym->ia[i+1]; j++)
-	    li.aux[i] += Asym->a[j];
-    }
     construct_level(0, *Asym);
 
     /* Set number of Chebyshev iterations per level */

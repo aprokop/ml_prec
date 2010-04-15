@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -217,5 +218,12 @@ std::ostream& operator<<(std::ostream& os, const std::map<T1,T2>& p) {
     return os;
 }
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::set<T>& s) {
+    for (typename std::set<T>::const_iterator it = s.begin(); it != s.end(); it++)
+	os << " " << *it;
+    os << std::endl;
+    return os;
+}
 
 #endif // __LOGGER_H__

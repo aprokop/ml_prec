@@ -1,5 +1,5 @@
 # Prelude
-AC_INIT([spe_parallel], [0.9.5], [andrey.prok@gmail.com])
+AC_INIT([spe_parallel], [0.9.6], [andrey.prok@gmail.com])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])

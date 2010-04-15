@@ -7,6 +7,8 @@
 DEFINE_LOGGER("Prec");
 
 void Prec::graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const {
+    THROW_EXCEPTION("Not implemented");
+#if 0
     // construct reverse map
     std::map<uint,uint> rev_map;
     if (level) {
@@ -27,6 +29,7 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 
 	::graph_planes(filename, level0_A, rev_map, plane, level, mesh);
     }
+#endif
 }
 
 std::ostream& operator<<(std::ostream& os, const Prec& p) {
@@ -50,13 +53,14 @@ std::ostream& operator<<(std::ostream& os, const Prec& p) {
 
 std::ostream& operator<<(std::ostream& os, const Prec::Level& li) {
     os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
-    os << "tr: " << li.tr.size() << ", dtr: " << li.dtr.size() << std::endl;
     os << "ncheb = " << li.ncheb << std::endl;
     os << "alpha = " << li.alpha << ", beta = " << li.beta << std::endl;
     os << "[lmin, lmax] = [" << li.lmin << "," << li.lmax << "], cond = " << li.lmax/li.lmin << std::endl;
     os << std::endl;
 #if 0
     os << "A: " << li.A;
+    os << "L: " << li.L;
+    os << "U: " << li.U;
 #endif
     return os;
 }

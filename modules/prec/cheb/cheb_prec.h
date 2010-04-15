@@ -8,25 +8,28 @@
 #include "modules/mesh/mesh.h"
 #include <iostream>
 
+class LinkTypeCheb;
 class Prec : public PrecBase {
 private:
     bool use_tails;
 
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
+	uint M;                     /* Size of the excluded block */
 
 	double alpha, beta;	    /* Spectral constants used for the level */
 	double lmin, lmax;	    /* Spectral boundaries for the level */
 	uint ncheb;		    /* Number of Chebyshev iterations on the level */
 
 	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
+	CSRMatrix     L;
+	SkylineMatrix U;
+
+	uvector<uint> map;	    /* permuted -> original */
+	uvector<uint> rmap;	    /* original -> permuted */
 
 	mutable
-	Vector x1, f1, u0, u1, tmp; /* Some auxilary vectors for Chebyshev iterations */
-
-	uvector<uint> tr;	    /* C-indices */
-	uvector<uint> dtr;	    /* F-indices */
-	std::vector<Tail> tails;    /* Tridiagonal matrices */
+	Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Gauss */
 
 	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
 				       used in tail elimination */
@@ -77,10 +80,13 @@ private:
 	return true;
     }
 
+    void construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
+			       uint& M, uvector<uint>& map, uvector<uint>& rmap) const;
+
     void optimize_storage();
     void construct_level(uint level, const SkylineMatrix& A);
 
-    void solve(uint level, Vector& f, Vector& x) const THROW;
+    void solve(uint level, const Vector& f, Vector& x) const THROW;
 
 public:
     Prec(const SkylineMatrix& A, const Config& cfg);
