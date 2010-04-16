@@ -13,17 +13,9 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
     uvector<uint> marked(N, 0);
 
-    /* Group 1: all links with zero links */
-    for (uint i = 0; i < N; i++)
-	if (nlinks[i] == 0) {
-	    map[pind++] = i;
-	    marked[i]   = 1;
-	}
-    Md = pind;
-
-    /* Group 2: all tails */
+    /* Group 1: all tails */
     if (use_tails) {
-	uint i0, i1;
+	uint i0 = -1, i1 = -1;
 
 	for (uint i = 0; i < N; i++)
 	    if (nlinks[i] == 1) {
@@ -63,8 +55,14 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
     M = pind;
 
-    /* Mark all others */
+    uint eind = N-1;
     for (uint i = 0; i < N; i++)
-	if (marked[i] == 0)
-	    map[pind++] = i;
+	if (marked[i] == 0) {
+	    if (nlinks[i] == 0)
+		map[eind--] = i;
+	    else
+		map[pind++] = i;
+	}
+
+    Md = N - pind;
 }

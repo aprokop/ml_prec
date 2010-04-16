@@ -51,6 +51,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     aux.resize(N);
 
     /* Drop links */
+    log_state("M");
     uint MAX_NUM = 1000; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     const double* adata = A.a.data();
@@ -92,6 +93,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    }
 	}
     }
+    log_state("d");
 
     uint& M             = li.M;
     uint& Md		= li.Md;
@@ -99,21 +101,14 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uvector<uint>& rmap = li.rmap;
 
     map.resize(N);
+    log_state("P");
     construct_permutation(A, ltype, nlinks, Md, M, map);
+    log_state("d");
 
     /* Construct reverse map */
     rmap.resize(N);
     for (uint i = 0; i < N; i++)
 	rmap[map[i]] = i;
-
-
-    /* Exclude diagonal */
-#if 0
-    uvector<double>& dval = li.dval;
-    dval.resize(Md);
-    for (uint i = 0; i < Md; i++)
-	dval[i] = 1./aux[map[i]];
-#endif
 
     SkylineMatrix& nA = ln.A;
     SkylineMatrix&  U = li.U;
@@ -125,13 +120,15 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uvector<double> w;
     uint max_num;
 
-    L.ia.push_back(0);   L.nrow = N;    L.ncol = N;
-    U.ia.push_back(0);   U.nrow = M;    U.ncol = N;
-    nA.ia.push_back(0); nA.nrow = N-M; nA.ncol = N-M;
+    uint n = N-M-Md;
+    L.ia.push_back(0);     L.nrow = N-Md;    L.ncol = N-Md;
+    U.ia.push_back(0);     U.nrow = M;       U.ncol = N-Md;
+    nA.ia.push_back(0);   nA.nrow = n;      nA.ncol = n;
 
     /* TODO: deal with M = 0 */
     /* i corresponds to a permuted index */
-    for (uint i = 0; i < N; i++) {
+    log_state("LU");
+    for (uint i = 0; i < N-Md; i++) {
 	/* Step 0: clear tmp values */
 	for (std::set<uint>::const_iterator it = jw.begin(); it != jw.end(); it++)
 	    jr[*it] = -1;
@@ -218,10 +215,18 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    nA.ia.push_back(nA.ja.size());
 	}
     }
+    log_state("d");
+
+    /* Process diagonal block */
+    log_state("D");
+    uvector<double>& dval = li.dval;
+    dval.resize(Md);
+    for (uint i = 0; i < Md; i++)
+	dval[i] = 1./aux[map[i+(N-Md)]];
+    log_state("d");
 
     li.w.resize(N);
 
-    uint n = N-M;
     if (n) {
 	/* Allocate space for Chebyshev vectors */
 	li.tmp.resize(n);
@@ -240,6 +245,11 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
+    /* Initialize ViTE */
+    foss = new std::ostringstream;
+    (*foss) << std::fixed << std::setprecision(8);
+    vite_start = pclock();
+
     use_tails = cfg.use_tails;
 
     nlevels = 30;
@@ -306,6 +316,10 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 
     if (cfg.unsym_matrix)
 	delete Asym;
+}
+
+Prec::~Prec() {
+    dump_vite_trace();
 }
 
 /* Optimize level matrices for symmetricity */

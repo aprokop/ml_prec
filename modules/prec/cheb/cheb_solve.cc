@@ -14,8 +14,9 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const Level& li = levels[level];
     const Level& ln = levels[level+1];
 
-    uint N = li.N;
-    uint M = li.M;
+    uint N  = li.N;
+    uint M  = li.M;
+    uint Md = li.Md;
 
     const uvector<uint>& map  = li.map;
 
@@ -24,7 +25,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 
     /* Solve L*w = f */
     Vector& w = li.w;
-    for (uint i = 0; i < N; i++) { /* i is a permuted index */
+    for (uint i = 0; i < N-Md; i++) { /* i is a permuted index */
 	w[i] = f[map[i]];
 	for (uint j_ = L.ia[i]; j_ < L.ia[i+1]; j_++)
 	    w[i] -= L.a[j_] * w[L.ja[j_]];
@@ -93,8 +94,8 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 		x2[k] = u1[k] - alpha*x2[k] + beta*(u1[k] - u0[k]);
 	}
 
-	for (uint i = M; i < N; i++)
-	    x[map[i]] = x2[i-M];
+	for (uint i = 0; i < n; i++)
+	    x[map[i+M]] = x2[i];
     }
 
     for (int i = M-1; i >= 0; i--) {
@@ -104,5 +105,11 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	    z -= U.a[j_] * x[map[U.ja[j_]]];
 
 	x[map[i]] = z / U.a[U.ia[i]];
+    }
+
+    const uvector<double>& dval = li.dval;
+    for (uint i = 0; i < Md; i++) {
+	uint j = map[(N-Md) + i];
+	x[j] = dval[i]*f[j];
     }
 }

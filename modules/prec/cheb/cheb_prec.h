@@ -2,6 +2,7 @@
 #define __PREC_H__
 
 #include "config/config.h"
+#include "include/time.h"
 #include "modules/prec/misc/misc.h"
 #include "modules/common/common.h"
 #include "modules/prec/prec_base.h"
@@ -15,7 +16,6 @@ private:
 
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-	uint Md;
 	uint M;                     /* Size of the excluded block */
 
 	double alpha, beta;	    /* Spectral constants used for the level */
@@ -29,6 +29,7 @@ private:
 	uvector<uint> map;	    /* permuted -> original */
 	uvector<uint> rmap;	    /* original -> permuted */
 
+	uint Md;
 	uvector<double> dval;
 
 	mutable
@@ -86,6 +87,22 @@ private:
     void construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
 			       uint& Md, uint& M, uvector<uint>& map) const;
 
+    /* ViTE framework */
+    mutable std::ostringstream *foss;
+    double vite_start;
+#ifdef USE_VITE
+    void log_state(const char* name) const {
+	*foss << "10 " << pclock() - vite_start << " S T0 " << name << std::endl;
+    }
+    void log_event(uint val) const {
+	*foss << "11 " << pclock() - vite_start << " E T0 " << val << std::endl;
+    }
+#else
+    void log_state(const char* name) const { }
+    void log_event(uint val) const { }
+#endif
+    void dump_vite_trace() const;
+
     void optimize_storage();
     void construct_level(uint level, const SkylineMatrix& A);
 
@@ -93,7 +110,7 @@ private:
 
 public:
     Prec(const SkylineMatrix& A, const Config& cfg);
-    ~Prec() { }
+    ~Prec();
 
     void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
