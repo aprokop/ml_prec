@@ -5,6 +5,8 @@
 
 void MultiSplitPrec::graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const {
     // construct reverse map
+    THROW_EXCEPTION("Need to move to a new graph_planes");
+#if 0
     std::map<uint,uint> rev_map;
     if (level) {
 	uvector<uint> gtr = levels[level-1].tr;
@@ -24,6 +26,7 @@ void MultiSplitPrec::graph_planes(const std::string& filename, uint level, char 
 
 	::graph_planes(filename, level0_A, rev_map, plane, level, mesh);
     }
+#endif
 }
 
 std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p) {

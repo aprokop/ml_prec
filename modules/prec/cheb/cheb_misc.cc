@@ -7,29 +7,30 @@
 DEFINE_LOGGER("Prec");
 
 void Prec::graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const {
-    THROW_EXCEPTION("Not implemented");
-#if 0
-    // construct reverse map
-    std::map<uint,uint> rev_map;
+    uvector<uint> map;
     if (level) {
-	uvector<uint> gtr = levels[level-1].tr;
-	uint n = gtr.size();
+	uint n = levels[level].A.size();
+	const Level& lp = levels[level-1];
+
+	/* Construct map */
+	map.resize(n);
+	memcpy(&map[0], &lp.map[lp.M], (lp.N - lp.M - lp.Md)*sizeof(uint));;
+
 	for (int l = level-2; l >= 0; l--)
 	    for (uint i = 0; i < n; i++)
-		gtr[i] = levels[l].tr[gtr[i]];
-	for (uint i = 0; i < n; i++)
-	    rev_map[gtr[i]] = i;
-	gtr.clear();
+		map[i] = levels[l].map[map[i]];
 
-	::graph_planes(filename, levels[level].A, rev_map, plane, level, mesh);
+	::graph_planes(filename, levels[level].A, map, plane, level, mesh);
     } else {
 	uint n = level0_A.size();
-	for (uint k = 0; k < n; k++)
-	    rev_map[k] = k;
 
-	::graph_planes(filename, level0_A, rev_map, plane, level, mesh);
+	/* Construct map */
+	map.resize(n);
+	for (uint i = 0; i < n; i++)
+	    map[i] = i;
+
+	::graph_planes(filename, level0_A, map, plane, level, mesh);
     }
-#endif
 }
 
 std::ostream& operator<<(std::ostream& os, const Prec& p) {

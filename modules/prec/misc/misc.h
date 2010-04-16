@@ -11,7 +11,7 @@
 #include <vector>
 #include <map>
 
-void graph_planes(const std::string& filename, const SkylineMatrix& A, const std::map<uint,uint>& rev_map,
+void graph_planes(const std::string& filename, const SkylineMatrix& A, const uvector<uint>& map,
 		  char plane, bool map_identity, const MeshBase& mesh);
 
 struct TailNode {

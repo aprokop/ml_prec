@@ -23,9 +23,25 @@ public:
     virtual uint index(uint i, uint j, uint k) const = 0;
     virtual void construct_matrix(SkylineMatrix& A, double c) const = 0;
 
-    friend void graph_planes(const std::string& filename, const SkylineMatrix& A,
-			     const std::map<uint,uint>& rev_map,
-			     char plane, bool map_identity, const MeshBase& mesh);
+    const std::vector<Point>& get_nodes() const {
+	return nodes;
+    }
+    float get_size(char t) const {
+	switch (t) {
+	    case 'x': return size_x;
+	    case 'y': return size_y;
+	    case 'z': return size_z;
+	    default: THROW_EXCEPTION("Unknown type '" << t << "'");
+	}
+    }
+    uint get_n(char t) const {
+	switch (t) {
+	    case 'x': return nx;
+	    case 'y': return ny;
+	    case 'z': return nz;
+	    default: THROW_EXCEPTION("Unknown type '" << t << "'");
+	}
+    }
 };
 
 #define XYZ
