@@ -222,7 +222,6 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& s) {
     for (typename std::set<T>::const_iterator it = s.begin(); it != s.end(); it++)
 	os << " " << *it;
-    os << std::endl;
     return os;
 }
 

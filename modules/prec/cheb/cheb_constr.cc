@@ -129,14 +129,12 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     U.ia.push_back(0);   U.nrow = M;    U.ncol = N;
     nA.ia.push_back(0); nA.nrow = N-M; nA.ncol = N-M;
 
-    uint n = N-M;
-
+    /* TODO: deal with M = 0 */
     /* i corresponds to a permuted index */
     for (uint i = 0; i < N; i++) {
 	/* Step 0: clear tmp values */
 	for (std::set<uint>::const_iterator it = jw.begin(); it != jw.end(); it++)
 	    jr[*it] = -1;
-	max_num = 0;
 	jw.clear();
 	w.clear();
 
@@ -144,11 +142,12 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	/* Step 1: create buffer with permuted row of A */
 	/* Add diagonal element to buffer */
-	jr[i] = max_num++;
+	jr[i] = 0;
 	jw.insert(i);
-	w.push_back(aux[i]);    /* w[0] is the value of the diagonal element */
+	w.push_back(aux[map[i]]);    /* w[0] is the value of the diagonal element */
 
 	/* Add off-diagonal elements to buffer */
+	max_num = 1;
 	for (uint j_ = A.ia[arow]+1; j_ < A.ia[arow+1]; j_++) {
 	    uint j = A.ja[j_];
 
@@ -221,6 +220,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     }
 
     li.w.resize(N);
+
+    uint n = N-M;
     if (n) {
 	/* Allocate space for Chebyshev vectors */
 	li.tmp.resize(n);

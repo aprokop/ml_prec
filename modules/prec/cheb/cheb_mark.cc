@@ -21,7 +21,6 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 	}
     Md = pind;
 
-#if 0
     /* Group 2: all tails */
     if (use_tails) {
 	uint i0, i1;
@@ -61,7 +60,6 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 		}
 	    }
     }
-#endif
 
     M = pind;
 
@@ -69,6 +67,4 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
     for (uint i = 0; i < N; i++)
 	if (marked[i] == 0)
 	    map[pind++] = i;
-
-    LOG_DEBUG("pind = " << pind << ", N = " << N);
 }
