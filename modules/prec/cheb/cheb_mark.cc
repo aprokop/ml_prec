@@ -53,6 +53,17 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 	    }
     }
 
+#if 1
+    /* Group 2 */
+    for (uint i = 0; i < N; i++)
+	if (marked[i] == 0 && nlinks[i] == 2) {
+	    map[pind++] = i;
+	    nlinks[i] = -1;
+
+	    marked[i] = 1;
+	}
+#endif
+
     M = pind;
 
     uint eind = N-1;
