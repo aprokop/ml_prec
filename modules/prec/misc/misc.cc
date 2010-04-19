@@ -7,15 +7,15 @@
 static std::string header(void);
 static void mark_set_nodes(const MeshBase& mesh, char plane, uint index, const uvector<uint>& map, uvector<uint>& marked);
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const uvector<uint>& map,
-		  char plane, bool map_identity, const MeshBase& mesh) {
+		  char plane, const MeshBase& mesh) {
     ASSERT(plane == 'x' || plane == 'y' || plane == 'z', "Unknown plane: " << plane);
 
     uint n = 0;
     double min_x = 0, max_x = 0, min_y = 0, max_y = 0;;
     switch (plane) {
-	case 'z': max_x = mesh.get_size('x'); max_y = mesh.get_size('y'); n = mesh.get_n('x'); break;
-	case 'x': max_x = mesh.get_size('y'); max_y = mesh.get_size('z'); n = mesh.get_n('y'); break;
-	case 'y': max_x = mesh.get_size('x'); max_y = mesh.get_size('z'); n = mesh.get_n('z'); break;
+	case 'x': max_x = mesh.get_size('y'); max_y = mesh.get_size('z'); n = mesh.get_n('x'); break;
+	case 'y': max_x = mesh.get_size('x'); max_y = mesh.get_size('z'); n = mesh.get_n('y'); break;
+	case 'z': max_x = mesh.get_size('x'); max_y = mesh.get_size('y'); n = mesh.get_n('z'); break;
     }
 
     double mult_x = 550./(max_x - min_x), mult_y = 690./(max_y - min_y);
@@ -67,9 +67,9 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 
 			const Point& b = nodes[map[j]];
 			switch (plane) {
-			    case 'z': ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " " << al << std::endl; break;
 			    case 'x': ofs << a.y << " " << a.z << " " << b.y << " " << b.z << " " << al << std::endl; break;
 			    case 'y': ofs << a.x << " " << a.z << " " << b.x << " " << b.z << " " << al << std::endl; break;
+			    case 'z': ofs << a.x << " " << a.y << " " << b.x << " " << b.y << " " << al << std::endl; break;
 			}
 		    } else {
 			orth[i]++;
@@ -93,9 +93,9 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 
 		const Point& a = nodes[map[i]];
 		switch (plane) {
-		    case 'z': ofs << mult_x*a.x << " " << mult_y*a.y << " a\n"; break;
 		    case 'x': ofs << mult_x*a.y << " " << mult_y*a.z << " a\n"; break;
 		    case 'y': ofs << mult_x*a.x << " " << mult_y*a.z << " a\n"; break;
+		    case 'z': ofs << mult_x*a.x << " " << mult_y*a.y << " a\n"; break;
 		}
 	    }
     }
@@ -106,27 +106,34 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
     ofs << "%%EOF\n";
 }
 
-void mark_set_nodes(const MeshBase& mesh, char plane, uint k, const uvector<uint>& map, uvector<uint>& marked) {
-    const std::vector<Point>& nodes = mesh.get_nodes();
+void mark_set_nodes(const MeshBase& mesh, char plane, uint ind, const uvector<uint>& map, uvector<uint>& marked) {
+    uint n = map.size();
+    uint nx = mesh.get_n('x'), ny = mesh.get_n('y'), nz = mesh.get_n('z');
 
-    /* Construct reference node */
-    Point refp;
+    std::map<uint,uint> rmap;
+    for (uint i = 0; i < n; i++)
+	rmap[map[i]] = i;
+
+    std::map<uint,uint>::const_iterator it;
     switch (plane) {
-	case 'x': refp = nodes[mesh.index(k,0,0)]; break;
-	case 'y': refp = nodes[mesh.index(0,k,0)]; break;
-	case 'z': refp = nodes[mesh.index(0,0,k)]; break;
-	default: THROW_EXCEPTION("Uknown plane type '" << plane << "'");
-    }
-
-    uint N = map.size();
-    for (uint i = 0; i < N; i++) {
-	const Point& p = nodes[map[i]];
-
-	switch (plane) {
-	    case 'x': marked[i] = is_equal(p.x, refp.x) ? 1 : 0;   break;
-	    case 'y': marked[i] = is_equal(p.y, refp.y) ? 1 : 0;   break;
-	    case 'z': marked[i] = is_equal(p.z, refp.z) ? 1 : 0;   break;
-	}
+	case 'x':
+	    for (uint j = 0; j <= ny; j++)
+		for (uint k = 0; k <= nz; k++)
+		    if ((it = rmap.find(mesh.index(ind, j, k))) != rmap.end())
+			marked[it->second] = 1;
+	    break;
+	case 'y':
+	    for (uint i = 0; i <= nx; i++)
+		for (uint k = 0; k <= nz; k++)
+		    if ((it = rmap.find(mesh.index(i, ind, k))) != rmap.end())
+			marked[it->second] = 1;
+	    break;
+	case 'z':
+	    for (uint i = 0; i <= nx; i++)
+		for (uint j = 0; j <= ny; j++)
+		    if ((it = rmap.find(mesh.index(i, j, ind))) != rmap.end())
+			marked[it->second] = 1;
+	    break;
     }
 }
 

@@ -12,7 +12,7 @@
 #include <map>
 
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const uvector<uint>& map,
-		  char plane, bool map_identity, const MeshBase& mesh);
+		  char plane, const MeshBase& mesh);
 
 struct TailNode {
     uint index;
