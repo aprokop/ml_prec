@@ -178,8 +178,8 @@ namespace log4cxx {
 
 #define LOG_DEBUG_P(fmt,v)	_LOG_P(DEBUG, fmt, v)
 
-#define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << v)
-#define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << v)
+#define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << (v))
+#define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 
 #ifndef NO_LOGGER
 #define LLL_INFO(v)  LOG_INFO(v), std::cout << "INFO : " << v << std::endl
