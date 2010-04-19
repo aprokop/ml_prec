@@ -3,11 +3,14 @@
 
 #include "include/define.h"
 #include "modules/matrix/matrix.h"
+#include <iostream>
 #include <map>
 
 struct Point {
     double x, y, z;
 };
+
+std::ostream& operator<<(std::ostream& os, const Point& p);
 
 class MeshBase {
 protected:
@@ -61,7 +64,7 @@ public:
     void construct_matrix(SkylineMatrix& A, double c) const;
     void construct_matrix_unsym(SkylineMatrix& A, double c, double shift) const;
 
-    uint index(uint i, uint j, uint k) const {
+    uint index(uint i, uint j, uint k) const THROW {
 	ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
 
 #ifdef XYZ

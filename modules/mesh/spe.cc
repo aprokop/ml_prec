@@ -161,3 +161,7 @@ void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double tau) con
 #endif
     }
 }
+
+std::ostream& operator<<(std::ostream& os, const Point& p) {
+    return os << "(" << p.x << "," << p.y << "," << p.z << ")";
+}
