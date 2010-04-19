@@ -2,11 +2,12 @@
 #include "modules/prec/misc/misc.h"
 #include "include/logger.h"
 
-#include <map>
-
 DEFINE_LOGGER("Prec");
 
 void Prec::graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const {
+    if (level >= nlevels)
+	THROW_EXCEPTION("Expected level < " << nlevels);
+
     uvector<uint> map;
     if (level) {
 	uint n = levels[level].A.size();
@@ -14,13 +15,15 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 
 	/* Construct map */
 	map.resize(n);
-	memcpy(&map[0], &lp.map[lp.M], (lp.N - lp.M - lp.Md)*sizeof(uint));;
+	memcpy(&map[0], &lp.map[lp.M], (lp.N - lp.M - lp.Md)*sizeof(uint));
 
-	for (int l = level-2; l >= 0; l--)
+	for (int l = level-2; l >= 0; l--) {
+	    const Level& li = levels[l];
 	    for (uint i = 0; i < n; i++)
-		map[i] = levels[l].map[map[i]];
+		map[i] = li.map[li.M + map[i]];
+	}
 
-	::graph_planes(filename, levels[level].A, map, plane, level, mesh);
+	::graph_planes(filename, levels[level].A, map, plane, mesh);
     } else {
 	uint n = level0_A.size();
 
@@ -29,7 +32,7 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 	for (uint i = 0; i < n; i++)
 	    map[i] = i;
 
-	::graph_planes(filename, level0_A, map, plane, level, mesh);
+	::graph_planes(filename, level0_A, map, plane, mesh);
     }
 }
 
