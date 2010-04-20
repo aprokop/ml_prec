@@ -2,7 +2,6 @@
 #define __LOGGER_H__
 
 #include "config/config.h"
-#include "include/uvector.h"
 
 #include <vector>
 #include <map>
@@ -194,14 +193,6 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << " size = " << v.size() << std::endl;;
     for (typename std::vector<T>::const_iterator it = v.begin(); it != v.end(); it++)
-	os << " " << it - v.begin() << ": " << *it << std::endl;
-    return os;
-}
-
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
-    os << " size = " << v.size() << std::endl;
-    for (typename uvector<T>::const_iterator it = v.begin(); it != v.end(); it++)
 	os << " " << it - v.begin() << ": " << *it << std::endl;
     return os;
 }

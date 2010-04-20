@@ -9,6 +9,8 @@
 
 #include "include/exception.h"
 
+/* uvector works only for scalar types (int, unsigned, double) */
+
 #if 0
 #define uvector std::vector
 
@@ -83,7 +85,7 @@ public:
     reverse_iterator		rbegin()		{ return reverse_iterator(end()); }
     const_reverse_iterator	rbegin() const		{ return const_reverse_iterator(end()); }
     reverse_iterator		rend()			{ return reverse_iterator(begin()); }
-    const reverse_iterator	rend() const		{ return reverse_iterator(begin()); }
+    const_reverse_iterator	rend() const		{ return const_reverse_iterator(begin()); }
 
     size_type size() const {
 	return finish - start;
@@ -189,5 +191,13 @@ public:
     }
 };
 #endif
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
+    os << " size = " << v.size() << std::endl;
+    for (typename uvector<T>::const_iterator it = v.begin(); it != v.end(); it++)
+	os << " " << it - v.begin() << ": " << *it << std::endl;
+    return os;
+}
 
 #endif // #define __UVECTOR_H__
