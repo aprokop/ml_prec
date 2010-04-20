@@ -82,9 +82,9 @@ fi
 AC_MSG_CHECKING([wish for ViTE])
 AC_ARG_ENABLE(vite,
     [AC_HELP_STRING([--enable-vite],
-		    [use ViTE tracer @<:@default=no@:>@])],
+		    [use ViTE tracer @<:@default=yes@:>@])],
     enable_vite=$enableval,
-    enable_vite="no")
+    enable_vite="yes")
 AC_MSG_RESULT($enable_vite)
 if test x$enable_vite = xyes; then
     AC_DEFINE([USE_VITE], [1], [Output tracing info in Paje format])
