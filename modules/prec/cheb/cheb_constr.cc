@@ -4,6 +4,7 @@
 #include "include/time.h"
 #include "include/tools.h"
 #include "include/uvector.h"
+#include "include/svector.h"
 #include "include/logger.h"
 
 #include <algorithm>
@@ -116,7 +117,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
     uvector<int> jr(N, -1);
-    std::set<uint> jw;
+    // typedef std::set<uint> container;
+    typedef svector<uint> container;
+    container jw;
     uvector<double> w;
     uint max_num;
 
@@ -125,13 +128,19 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     U.ia.push_back(0);     U.nrow = M;       U.ncol = N-Md;
     nA.ia.push_back(0);   nA.nrow = n;      nA.ncol = n;
 
+    /* Reserve some space */
+    // L.ja.reserve(2*(N-Md));       L.a.reserve(2*(N-Md));
+    // U.ja.reserve(3*M);		  U.a.reserve(3*M);
+    // nA.ja.reserve(5*(N-M-Md));    nA.a.reserve(5*(N-M-Md));
+
     /* TODO: deal with M = 0 */
     /* i corresponds to a permuted index */
     log_state("LU");
     for (uint i = 0; i < N-Md; i++) {
 	/* Step 0: clear tmp values */
-	for (std::set<uint>::const_iterator it = jw.begin(); it != jw.end(); it++)
-	    jr[*it] = -1;
+	unsigned jwn = jw.size();
+	for (uint k = 0; k < jwn; k++)
+	    jr[jw[k]] = -1;
 	jw.clear();
 	w.clear();
 
@@ -194,7 +203,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	/* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
 	if (i < M) {
 	    /* Update U */
-	    for (std::set<uint>::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
+	    for (container::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
 		U.ja.push_back(*it);
 		U.a.push_back(w[jr[*it]]);
 	    }
@@ -206,7 +215,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    nA.ja.push_back(i-M);
 	    nA.a.push_back(w[0]);
 
-	    for (std::set<uint>::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
+	    for (container::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
 		if (*it != i) {
 		    nA.ja.push_back(*it-M);
 		    nA.a.push_back(w[jr[*it]]);
