@@ -1,2 +1,2 @@
 #!/bin/bash
-../tools/check_memory.sh ./main $*
+../tools/check_memory.sh ./spe_prec $*
