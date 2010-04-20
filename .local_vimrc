@@ -1,4 +1,4 @@
-syn keyword cType uint uvector
+syn keyword cType uint uvector svector
 syn keyword cType Vector
 syn keyword cType MatrixInterface SparseMatrix CSRMatrix SkylineMatrix
 syn keyword cType MeshBase SPEMesh TestMesh
