@@ -262,6 +262,10 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
     (*foss) << std::fixed << std::setprecision(8);
     vite_start = pclock();
 
+    /* Initialize stream for dumping norms */
+    norm_oss = new std::ostringstream;
+    (*norm_oss) << std::scientific;
+
     use_tails = cfg.use_tails;
 
     nlevels = 30;
@@ -331,7 +335,12 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 }
 
 Prec::~Prec() {
+    /* Output ViTE trace */
     dump_vite_trace();
+    delete foss;
+
+    dump_norm_trace();
+    delete norm_oss;
 }
 
 /* Optimize level matrices for symmetricity */

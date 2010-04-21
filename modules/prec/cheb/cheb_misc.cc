@@ -81,8 +81,12 @@ void Prec::dump_vite_trace() const {
     fos << (*foss).str();
 
     fos.close();
+}
 
-    // delete foss;
+void Prec::dump_norm_trace() const {
+    std::ofstream fos("norm.trace");
+    fos << (*norm_oss).str();
+    fos.close();
 }
 
 void print_vite_header(std::ofstream& fos) {

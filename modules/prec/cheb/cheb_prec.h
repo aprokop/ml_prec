@@ -103,6 +103,9 @@ private:
 #endif
     void dump_vite_trace() const;
 
+    mutable std::ostringstream *norm_oss;
+    void dump_norm_trace() const;
+
     void optimize_storage();
     void construct_level(uint level, const SkylineMatrix& A);
 
