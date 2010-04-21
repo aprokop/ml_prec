@@ -74,16 +74,16 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	psort(adata + rstart+1, nrz, sorted);
 
 	double s = 0.;
+	ltype.set_row(i);
 	for (uint _j = 0; _j < nrz; _j++) {
 	    double v = A.a[rstart+1 + sorted[_j]];
 
 	    if (to_remove(aux[i], v, li.beta, s)) {
 		/* The link is marked as free to remove from i-th end */
-		uint j = A.ja[rstart+1 + sorted[_j]];
+		uint j_ = rstart+1 + sorted[_j];
+		uint j = A.ja[j_];
 
-		/* TODO: for j > i we actually already know the offset in LinkType::a array
-		 * so it can be significantly sped up */
-		if (ltype.mark(i,j) == REMOVED) {
+		if (ltype.mark(j_) == REMOVED) {
 		    /* This link is marked as removable from both ends so it is removed */
 		    nlinks[i]--;
 		    nlinks[j]--;
@@ -117,8 +117,11 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
     uvector<int> jr(N, -1);
-    // typedef std::set<uint> container;
+#if 0
+    typedef std::set<uint> container;
+#else
     typedef svector<uint> container;
+#endif
     container jw;
     uvector<double> w;
     uint max_num;
@@ -154,10 +157,11 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	/* Add off-diagonal elements to buffer */
 	max_num = 1;
+	ltype.set_row(arow);
 	for (uint j_ = A.ia[arow]+1; j_ < A.ia[arow+1]; j_++) {
 	    uint j = A.ja[j_];
 
-	    if (ltype.stat(arow,j) == PRESENT) {
+	    if (ltype.stat(j_) == PRESENT) {
 		uint new_j = rmap[j];   /* permuted index */
 
 		jr[new_j] = max_num++;

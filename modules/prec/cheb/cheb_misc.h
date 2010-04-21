@@ -20,7 +20,11 @@ class LinkTypeCheb {
 private:
     uint n;
     const SkylineMatrix& A;
-    uvector<char> a;
+    const uvector<uint>& ia;
+    const uvector<uint>& ja;
+    uvector<uint> a;
+
+    uint row;
 
     /* Checks indices i and j (with ASSERT) and returns index in a */
     uint index(uint i, uint j) const THROW {
@@ -33,51 +37,50 @@ private:
 	return A.index(i,j);
     }
 
-public:
-    LinkTypeCheb(const SkylineMatrix& _A) : A(_A) {
-	n = _A.size();
-	a.resize(A.get_ja().size(), 2);
+    uint real_j_(uint j_) const {
+	ASSERT(ia[row] < j_ && j_ < ia[row+1], "Wrong j_: " << j_ << " (expected (" << ia[row] << ", " << ia[row+1] << ")");
+	return (ja[j_] < row) ? a[j_] : j_;
     }
+
+
+public:
+    LinkTypeCheb(const SkylineMatrix& A_) : A(A_), ia(A_.get_ia()), ja(A_.get_ja()) {
+	n = A.size();
+	row = uint(-1);
+
+	a.resize(ja.size());
+
+	uint j_ = 0;
+	for (uint i = 0; i < n; i++)
+	    /* Set upper half to the link status and lower half to reference upper half */
+	    for (j_ = ia[i]+1; j_ < ia[i+1]; j_++) {
+		uint j = ja[j_];
+		a[j_] = (j < i) ? index(j,i) : 2;
+	    }
+    }
+
+    void set_row(uint i)    { row = i; }
+
+    /* NOTE:
+     * for mark(j_), stat(j_), remove(j_)
+     * the general use case is the following:
+     * if one wants to check/mark links in one row he should
+     *	1. call set_row(row_index)
+     *	2. access elements with the offset in A.ja array
+     * Such procedure allows skip the search stage of index(i,j)
+     */
 
     /* Mark link as removed from one end. Returns whether the link can be removed from both ends */
-    LinkStatus mark(uint i, uint j) {
-	return (--a[index(i,j)] == 0) ? REMOVED : PRESENT;
-    }
-    /* Check whether the link was removed */
-    bool is_removed(uint i, uint j) const {
-	return a[index(i,j)] == 0;
-    }
+    LinkStatus mark(uint i, uint j)	    {   return (--a[index(i,j)] == 0) ? REMOVED : PRESENT;   }
+    LinkStatus mark(uint j_)		    {   return (--a[real_j_(j_)] == 0) ? REMOVED : PRESENT;   }
+
     /* Check link status */
-    LinkStatus stat(uint i, uint j) const {
-	return a[index(i,j)] ? PRESENT : REMOVED;
-    }
+    LinkStatus stat(uint i, uint j) const   {	return a[index(i,j)] ? PRESENT : REMOVED;   }
+    LinkStatus stat(uint j_) const	    {   return a[real_j_(j_)] ? PRESENT : REMOVED;   }
+
     /* Mark link as removed */
-    void remove(uint i, uint j) {
-	a[index(i,j)] = 0;
-    }
-    /* Find the remaining link (actually it finds the first one). Returns index in ja */
-    bool remove_remaining_link(uint i, uint& _j) {
-	ASSERT(i < n, "i = " << i << ", n = " << n);
-
-	const uvector<uint>& ia = A.get_ia();
-	const uvector<uint>& ja = A.get_ja();
-
-	for (_j = ia[i+1] - 1; _j >= ia[i]+1; _j--) {
-	    uint j = ja[_j];
-	    if (j > i && a[_j]) {
-		a[_j] = 0;
-		return true;
-	    }
-	    if (j < i) {
-		uint ind = index(i, j);
-		if (a[ind]) {
-		    a[ind] = 0;
-		    return true;
-		}
-	    }
-	}
-	return false;
-    }
+    void remove(uint i, uint j)		    {   a[index(i,j)] = 0;   }
+    void remove(uint j_)		    {   a[real_j_(j_)] = 0;	  }
 };
 
 #endif // __CHEB_MISC_H__

@@ -28,11 +28,12 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
 
 		    /* Find the remaining link */
 		    uint j_;
-		    for (j_ = A.ia[i0]+1; j_ < A.ia[i0+1]; j_++) {
-			i1 = A.ja[j_];
-			if (ltype.stat(i0, i1) == PRESENT)
+		    ltype.set_row(i0);
+		    for (j_ = A.ia[i0]+1; j_ < A.ia[i0+1]; j_++)
+			if (ltype.stat(j_) == PRESENT) {
+			    i1 = A.ja[j_];
 			    break;
-		    }
+			}
 		    ASSERT(j_ != A.ia[i0+1], "Could not find remaining link");
 
 		    ltype.remove(i0, i1);
@@ -54,7 +55,7 @@ void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uve
     }
 
 #if 1
-    /* Group 2 */
+    /* Group 2 : all nodes with two links */
     for (uint i = 0; i < N; i++)
 	if (marked[i] == 0 && nlinks[i] == 2) {
 	    map[pind++] = i;
