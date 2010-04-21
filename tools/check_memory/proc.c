@@ -144,7 +144,7 @@ proc_t * get_proc_stats(pid_t pid, proc_t *p) {
     p->utime      = pf.utime;
     p->stime      = pf.stime;
     p->start_time = pf.start_time;
-    p->rss        = pf.rss*(getpagesize() >> 10);
+    p->rss        = pf.rss*(getpagesize() >> 10);  /* KB */
 
     return p;
 }

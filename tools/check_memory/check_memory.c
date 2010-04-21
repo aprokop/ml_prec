@@ -42,10 +42,11 @@ int main(int argc, char *argv[]) {
     proc_t pstat;
     struct sigaction sa;
 
-    if (argc < 2) {
-	printf("Usage: %s <program_name> [<program_params>]\n", argv[0]);
+    if (argc < 3) {
+	printf("Usage: %s <max_memory_size_in_MB> <program_name> [<program_params>]\n", argv[0]);
 	exit(EXIT_SUCCESS);
     }
+    uint max_mem_mb = atoi(argv[1]);
 
     /* set signal handlers */
     do {
@@ -78,7 +79,6 @@ int main(int argc, char *argv[]) {
     }
     fprintf(fdstat, "0 0\n");
 
-
     /* fork process */
     cpid = fork();
     if (cpid == -1) {
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 	char *newenviron[] = { NULL };
 
 	// printf("Child PID is %ld\n", (long) getpid());
-	execve(argv[1], newargv, newenviron);
+	execve(argv[2], newargv, newenviron);
 
 	perror("execve");   /* execve() only returns on error */
 	exit(EXIT_FAILURE);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 	    if (w == -1) {
 		perror("waitpid");
 		exit(EXIT_FAILURE);
-	    }   
+	    }
 
 	    time += usec*1e-6;
 
@@ -113,11 +113,16 @@ int main(int argc, char *argv[]) {
 		break;
 	    }
 
-	    if (get_proc_stats(cpid, &pstat) == NULL) 
+	    if (get_proc_stats(cpid, &pstat) == NULL)
 		assert(0);
 
 	    rss = pstat.rss;
 	    fprintf(fdstat, "%.3f %ld\n", time, rss);
+
+	    if (rss > max_mem_mb*1024) {
+		kill(cpid, SIGKILL);
+		fprintf(stderr, "Maximum memory size (%dMB) exceeded, terminating...\n", max_mem_mb);
+	    }
 	};
     }
     fclose(fdstat);
