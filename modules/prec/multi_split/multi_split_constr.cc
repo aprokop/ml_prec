@@ -65,8 +65,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 	ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
 
-	for (uint _j = rstart+1; _j < rend; _j++) {
-	    uint j = A.ja[_j];
+	for (uint j_ = rstart+1; j_ < rend; j_++) {
+	    uint j = A.ja[j_];
 	    nlinks_in[j]++;
 	}
 
@@ -75,13 +75,13 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 	double s = li.q/(1 - li.q) * aux[i];
 	for (uint k = 0; k < nrz; k++) {
-	    uint _j = rstart+1 + sorted[k];
+	    uint j_ = rstart+1 + sorted[k];
 
-	    double aij = -A.a[_j];
+	    double aij = -A.a[j_];
 	    if (aij <= s) {
-		uint j = A.ja[_j];
+		uint j = A.ja[j_];
 
-		ltype.remove(i,j); /* mark outgoing link as removable */
+		ltype.remove(j_); /* mark outgoing link as removable */
 		nlinks_out[i]--;
 		nlinks_in[j]--;
 
@@ -117,12 +117,14 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 		     *	       or one incoming connection with the same point, as
 		     *	       outgoing
 		     */
-		    uint _j;
-		    if (!ltype.find_remaining_link(i0, _j)) {
-			THROW_EXCEPTION("Remaining link was not found");
-			break;
-		    }
-		    i1 = A.ja[_j];
+		    uint j_;
+		    for (j_ = A.ia[i0]+1; j_ < A.ia[i0+1]; j_++)
+			if (ltype.stat(j_) == PRESENT)
+			    break;
+		    if (j_ == A.ia[i0+1])
+			THROW_EXCEPTION("Row " << i0 << ": remaining link was not found");
+
+		    i1 = A.ja[j_];
 
 		    bool aji_present = (ltype.stat(i1,i0) == PRESENT);
 		    if (!( nlinks_in[i0] == 0 ||
@@ -134,12 +136,12 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 			break;
 		    }
 
-		    ltype.remove(i0, i1);
+		    ltype.remove(j_);
 
 		    tn.index = i0;
 		    tn.a3 = -v; /* Old value */
 
-		    double aij = A.a[_j];   /* < 0 */
+		    double aij = A.a[j_];   /* < 0 */
 
 		    tn.a2  = 1/(aux[i0] - aij);
 		    tn.a1  = -aij*tn.a2;
@@ -228,11 +230,11 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	    nA.a[dind]  = aux[i];
 	    ind++;
 
-	    for (uint _j = A.ia[i]+1; _j < A.ia[i+1]; _j++) {
-		uint j = A.ja[_j];
-		if (ltype.stat(i,j) == PRESENT) {
+	    for (uint j_ = A.ia[i]+1; j_ < A.ia[i+1]; j_++) {
+		uint j = A.ja[j_];
+		if (ltype.stat(j_) == PRESENT) {
 		    /* Link goes to coarse level */
-		    double v = A.a[_j];
+		    double v = A.a[j_];
 
 		    nA.ja[ind]  =  j;
 		    nA.a[ind]   =  v;

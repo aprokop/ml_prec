@@ -32,18 +32,22 @@ public:
     }
 
     /* Check link status */
+    LinkStatus stat(uint _j) const {   return a[_j] ? PRESENT : REMOVED;   }
     LinkStatus stat(uint i, uint j) const {
 	uint ind = index(i,j);
 	if (ind == uint(-1))
 	    return ABSENT;
 	return a[ind] ? PRESENT : REMOVED;
     }
+
     /* Mark link as removed */
+    void remove(uint _j) {   a[_j] = 0;   }
     void remove(uint i, uint j) {
 	uint ind = index(i,j);
 	ASSERT(ind != uint(-1), "Cannot removed absent link: (" << i << "," << j << ")");
 	a[ind] = 0;
     }
+
     bool find_remaining_link(uint i, uint& _j) {
 	ASSERT(i < n, "i = " << i << ", n = " << n);
 
