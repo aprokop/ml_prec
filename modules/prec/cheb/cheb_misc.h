@@ -13,7 +13,8 @@
 
 enum LinkStatus {
     PRESENT,
-    REMOVED
+    REMOVED,
+    ABSENT
 };
 
 class LinkTypeCheb {
@@ -71,16 +72,29 @@ public:
      */
 
     /* Mark link as removed from one end. Returns whether the link can be removed from both ends */
-    LinkStatus mark(uint i, uint j)	    {   return (--a[index(i,j)] == 0) ? REMOVED : PRESENT;   }
     LinkStatus mark(uint j_)		    {   return (--a[real_j_(j_)] == 0) ? REMOVED : PRESENT;   }
+    LinkStatus mark(uint i, uint j) {
+	uint ind = index(i,j);
+	ASSERT(ind != uint(-1), "Cannot mark absent link: (" << i << "," << j << ")");
+	return (--a[ind] == 0) ? REMOVED : PRESENT;
+    }
 
     /* Check link status */
-    LinkStatus stat(uint i, uint j) const   {	return a[index(i,j)] ? PRESENT : REMOVED;   }
     LinkStatus stat(uint j_) const	    {   return a[real_j_(j_)] ? PRESENT : REMOVED;   }
+    LinkStatus stat(uint i, uint j) const {
+	uint ind = index(i,j);
+	if (ind == uint(-1))
+	    return ABSENT;
+	return a[ind] ? PRESENT : REMOVED;
+    }
 
     /* Mark link as removed */
-    void remove(uint i, uint j)		    {   a[index(i,j)] = 0;   }
     void remove(uint j_)		    {   a[real_j_(j_)] = 0;	  }
+    void remove(uint i, uint j) {
+	uint ind = index(i,j);
+	ASSERT(ind != uint(-1), "Cannot removed absent link: (" << i << "," << j << ")");
+	a[ind] = 0;
+    }
 };
 
 #endif // __CHEB_MISC_H__
