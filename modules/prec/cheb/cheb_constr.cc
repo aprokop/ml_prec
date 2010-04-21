@@ -132,9 +132,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     nA.ia.push_back(0);   nA.nrow = n;      nA.ncol = n;
 
     /* Reserve some space */
-    // L.ja.reserve(2*(N-Md));       L.a.reserve(2*(N-Md));
-    // U.ja.reserve(3*M);		  U.a.reserve(3*M);
-    // nA.ja.reserve(5*(N-M-Md));    nA.a.reserve(5*(N-M-Md));
+    L.ja.reserve(2*(N-Md));       L.a.reserve(2*(N-Md));
+    U.ja.reserve(3*M);		  U.a.reserve(3*M);
+    nA.ja.reserve(5*(N-M-Md));    nA.a.reserve(5*(N-M-Md));
 
     /* TODO: deal with M = 0 */
     /* i corresponds to a permuted index */
