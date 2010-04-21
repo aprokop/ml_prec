@@ -84,7 +84,7 @@ private:
 	return true;
     }
 
-    void construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
+    void construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& ltype, uvector<int>& nlinks,
 			       uint& Md, uint& M, uvector<uint>& map) const;
 
     /* ViTE framework */

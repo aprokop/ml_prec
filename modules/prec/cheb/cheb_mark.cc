@@ -5,9 +5,16 @@
 
 DEFINE_LOGGER("Prec");
 
-void Prec::construct_permutation(const SkylineMatrix& A, LinkTypeCheb ltype, uvector<int>& nlinks,
+void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& ltype_, uvector<int>& nlinks,
 				 uint& Md, uint& M, uvector<uint>& map) const {
     uint N = A.size();
+
+    /*
+     * We make a copy 'cause we might modify during the construction
+     * Takes about 2-3% of total time
+     */
+    LinkTypeCheb ltype(ltype_);
+
 
     uint pind = 0;
 

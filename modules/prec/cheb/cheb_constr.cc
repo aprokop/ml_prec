@@ -137,9 +137,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     nA.ja.reserve(5*(N-M-Md));    nA.a.reserve(5*(N-M-Md));
 
     /* TODO: deal with M = 0 */
-    /* i corresponds to a permuted index */
     log_state("LU");
-    for (uint i = 0; i < N-Md; i++) {
+    for (uint i = 0; i < N-Md; i++) { /* i corresponds to a permuted index */
 	/* Step 0: clear tmp values */
 	unsigned jwn = jw.size();
 	for (uint k = 0; k < jwn; k++)
