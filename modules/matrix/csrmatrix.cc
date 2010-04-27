@@ -12,6 +12,7 @@
 #include <numeric>
 #include <algorithm>
 #include <limits>
+#include <typeinfo>
 
 DEFINE_LOGGER("CSRMatrix");
 
@@ -160,50 +161,9 @@ std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
     return os.str();
 }
 
-void CSRMatrix::dump(const std::string& filename, bool ascii) const THROW {
-    TIME_INIT();
-    TIME_START();
-    if (ascii == false) {
-	std::ofstream os(filename.c_str(), std::ofstream::binary);
-
-	os.write(reinterpret_cast<const char*>(&nrow), sizeof(uint));
-	os.write(reinterpret_cast<const char*>(&ncol), sizeof(uint));
-	os.write(reinterpret_cast<const char*>(ia.data()), (nrow+1)*sizeof(uint));
-
-	uint nnz = ia[nrow];
-	os.write(reinterpret_cast<const char*>(ja.data()), nnz*sizeof(uint));
-	os.write(reinterpret_cast<const char*>(a.data()),  nnz*sizeof(double));
-    } else {
-	std::ofstream os(filename.c_str());
-
-	if (!os.good())
-	    THROW_EXCEPTION("Could not open \"" << filename << "\" for write");
-
-	if (!nrow)
-	    THROW_EXCEPTION("Trying to dump not initialized matrix");
-	uint nnz = ia[nrow];
-
-	os << "# rows cols nonzeros" << std::endl;
-	os << nrow << " " << ncol << " " << nnz << std::endl;
-	os << "# row_ptr" << std::endl;
-	for (uint i = 0; i <= nrow; i++)
-	    os << ia[i] << std::endl;
-	os << "# col_ind" << std::endl;
-	for (uint j = 0; j < nnz; j++)
-	    os << ja[j] << std::endl;
-	os << "# value" << std::endl;
-	os << std::setprecision(std::numeric_limits<double>::digits10 + 1) << std::scientific;
-	for (uint j = 0; j < nnz; j++)
-	    os << a[j] << std::endl;
-    }
-    LOG_DEBUG(TIME_INFO("Dump time"));
-}
-
-void CSRMatrix::load(const std::string& filename, bool ascii) THROW {
+void CSRMatrix::load(const std::string& filename, DumpType type) THROW {
     uint nnz;
-    TIME_INIT();
-    TIME_START();
-    if (ascii == false) {
+    if (type == BINARY) {
 	std::ifstream is(filename.c_str(), std::ifstream::binary);
 
 	if (!is.good())
@@ -220,7 +180,7 @@ void CSRMatrix::load(const std::string& filename, bool ascii) THROW {
 	a.resize(nnz);
 	is.read(reinterpret_cast<char*>(&ja[0]), nnz*sizeof(uint));
 	is.read(reinterpret_cast<char*>(&a[0]),  nnz*sizeof(double));
-    } else {
+    } else if (type == ASCII) {
 	std::ifstream is(filename.c_str());
 	ASSERT(is.good(), "Problem reading file \"" << filename  << "\"");
 
@@ -247,10 +207,11 @@ void CSRMatrix::load(const std::string& filename, bool ascii) THROW {
 	a.resize(nnz);
 	for (uint i  = 0; i < nnz; i++)
 	    is >> a[i];
+    } else if (type == HYPRE) {
+	THROW_EXCEPTION("Loading format HYPRE is not applicable to CSRMatrix");
     }
 
     LOG_INFO("Loaded matrix: sizes = " << sizes() << ", nnz = " << nnz);
-    LOG_DEBUG(TIME_INFO("Loading time"));
 }
 
 std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
@@ -305,4 +266,55 @@ void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) T
     multiply(A, x, r);
     for (int i = 0; i < n; i++)
 	r[i] = b[i] - r[i];
+}
+
+void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW {
+    if (type == BINARY) {
+	std::ofstream os(filename.c_str(), std::ofstream::binary);
+
+	os.write(reinterpret_cast<const char*>(&A.nrow), sizeof(uint));
+	os.write(reinterpret_cast<const char*>(&A.ncol), sizeof(uint));
+	os.write(reinterpret_cast<const char*>(A.ia.data()), (A.nrow+1)*sizeof(uint));
+
+	uint nnz = A.ia.back();
+	os.write(reinterpret_cast<const char*>(A.ja.data()), nnz*sizeof(uint));
+	os.write(reinterpret_cast<const char*>(A.a.data()),  nnz*sizeof(double));
+    } else if (type == ASCII) {
+	std::ofstream os(filename.c_str());
+
+	if (!os.good()) THROW_EXCEPTION("Could not open \"" << filename << "\" for write");
+	if (!A.nrow)	THROW_EXCEPTION("Trying to dump not initialized matrix");
+
+	uint nnz = A.ia.back();
+
+	os << "# rows cols nonzeros" << std::endl;
+	os << A.nrow << " " << A.ncol << " " << nnz << std::endl;
+	os << "# row_ptr" << std::endl;
+	for (uint i = 0; i <= A.nrow; i++)
+	    os << A.ia[i] << std::endl;
+	os << "# col_ind" << std::endl;
+	for (uint j = 0; j < nnz; j++)
+	    os << A.ja[j] << std::endl;
+	os << "# value" << std::endl;
+	os << std::scientific << std::setprecision(15);
+	for (uint j = 0; j < nnz; j++)
+	    os << A.a[j] << std::endl;
+    } else if (type == HYPRE) {
+	try {
+	    const SkylineMatrix& A_ = dynamic_cast<const SkylineMatrix&>(A);
+	} catch (std::bad_cast) {
+	    THROW_EXCEPTION("Dumping matrix in HYPRE format is not supported for CSRMatrix");
+	}
+
+	std::ofstream os(filename.c_str());
+	if (!os.good()) THROW_EXCEPTION("Could not open \"" << filename << "\" for write");
+	if (!A.nrow)	THROW_EXCEPTION("Trying to dump not initialized matrix");
+
+	uint nnz = A.ia.back();
+	os << "0 " << A.nrow-1 << " 0 " << A.ncol-1 << std::endl;
+	os << std::scientific << std::setprecision(15);
+	for (uint i = 0; i < A.nrow; i++)
+	    for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
+		os << i << " " << A.ja[j] << " " << A.a[j] << std::endl;
+    }
 }

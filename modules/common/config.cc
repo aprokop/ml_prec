@@ -19,6 +19,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     } else {
 	os << "Matrix file      : " << cfg.matrix << std::endl;
     }
+    os << "Dump data        : " << (cfg.dump_data ? "true" : "false") << std::endl;
 
     /* Run parameters */
     os << "Number of tests  : " << cfg.ntests << std::endl;

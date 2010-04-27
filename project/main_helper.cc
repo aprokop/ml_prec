@@ -31,6 +31,7 @@ static void usage() {
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -p|--prec={uh_cheb|amg|diag|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
+    std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -50,6 +51,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
 
+    cfg.dump_data      = false;
+
     static struct option long_options[] = {
 	{"sigmas",		required_argument,  NULL, 's'},
 	{"niters",		required_argument,  NULL, 'b'},
@@ -59,16 +62,17 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"ny",			required_argument,  NULL, 'y'},
 	{"nz",			required_argument,  NULL, 'z'},
 	{"solver",		required_argument,  NULL, 'o'},
-	{"use-tails",		required_argument,  NULL, 't'},
+	{"use_tails",		required_argument,  NULL, 't'},
 	{"optimize-storage",	required_argument,  NULL, 'S'},
 	{"matrix",		required_argument,  NULL, 'm'},
 	{"ntests",		required_argument,  NULL, 'a'},
 	{"prec",		required_argument,  NULL, 'p'},
+	{"dump",		no_argument,	    NULL, 'd'},
 	{0, 0, 0, 0}
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:u", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:ud", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -134,6 +138,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
 	    case 'u': cfg.unsym_matrix = true; break;
+	    case 'd': cfg.dump_data = true; break;
 	    case '?':
 	    default:
 		      abort();

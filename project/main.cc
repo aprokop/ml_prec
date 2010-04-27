@@ -48,6 +48,13 @@ int main (int argc, char * argv[]) {
 	bool transform = true;
 	A.load(cfg.matrix, transform);
     }
+    Vector b(A.size(), 0.);
+
+    if (cfg.dump_data) {
+	dump("matrix_hypre.dat", A, HYPRE);
+	dump("vector_hypre.dat", b, HYPRE);
+	exit(0);
+    }
 
     PrecBase * B_ = NULL;
 
@@ -94,7 +101,6 @@ int main (int argc, char * argv[]) {
 
     double eps = 1e-6;
 
-    Vector b(A.size(), 0.);
     Vector x(A.size());
     /* =====  Solution phase  ===== */
     for (uint i = 0; i < cfg.ntests; i++) {

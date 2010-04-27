@@ -185,8 +185,7 @@ public:
     virtual double& operator()(uint i, uint j) THROW;
     virtual bool    exist(uint i, uint j) const THROW;
 
-    virtual void dump(const std::string& filename, bool ascii = false) const THROW;
-    virtual void load(const std::string& filename, bool ascii = false) THROW;
+    virtual void load(const std::string& filename, DumpType type = BINARY) THROW;
 
     virtual bool is_symmetric() const;
     virtual std::string stat(bool ignore_pos_offdiagonal) const;
@@ -211,6 +210,7 @@ public:
     friend void	multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
+    friend void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
 
     friend void get_matrix_part(const SkylineMatrix& A, SkylineMatrix& lA, uint start, uint end);
     friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA,
@@ -227,7 +227,7 @@ public:
 
     void optimize_storage(char type = 's');
 
-    void load(const std::string& filename, bool transform, bool ascii = false) THROW;
+    void load(const std::string& filename, bool transform, DumpType type = BINARY) THROW;
 
     void permute(const std::vector<uint>& perm) THROW;
 
@@ -237,7 +237,9 @@ public:
 };
 void sym_multiply(const SkylineMatrix& A, const Vector& v, Vector& res) THROW;
 
-// r = b - Ax
+void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
+
+/* r = b - Ax */
 void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) THROW;
 
 #endif // #ifndef __MATRIX_H__

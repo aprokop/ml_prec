@@ -2,6 +2,7 @@
 #include "include/logger.h"
 #include "include/exception.h"
 #include "include/tools.h"
+#include "include/time.h"
 
 #include <algorithm>
 
@@ -26,8 +27,8 @@ uint SkylineMatrix::index(uint i, uint j) const {
     return uint(-1);
 }
 
-void SkylineMatrix::load(const std::string& filename, bool transform, bool ascii) THROW {
-    CSRMatrix::load(filename, ascii);
+void SkylineMatrix::load(const std::string& filename, bool transform, DumpType type) THROW {
+    CSRMatrix::load(filename, type);
 
     if (transform) {
 	/* Transform matrix from CSR to Skyline */
