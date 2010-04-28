@@ -51,8 +51,8 @@ int main (int argc, char * argv[]) {
     Vector b(A.size(), 0.);
 
     if (cfg.dump_data) {
-	dump("matrix_hypre.dat", A, HYPRE);
-	dump("vector_hypre.dat", b, HYPRE);
+	dump("matrix_hypre.dat.00000", A, HYPRE);
+	dump("vector_hypre.dat.00000", b, HYPRE);
 	exit(0);
     }
 

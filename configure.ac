@@ -8,7 +8,8 @@ AC_LANG([C++])
 
 # Check for programs
 AC_PROG_CC()
-AC_PROG_CXX([g++])
+# AC_PROG_CXX([g++])
+AC_PROG_CXX([mpicxx g++])
 # AC_PROG_F77([gfortran])
 AC_PROG_F77
 AC_PROG_LIBTOOL
@@ -27,7 +28,7 @@ AC_C_INLINE
 FFLAGS="-O3"
 CFLAGS="-O3"
 # CXXFLAGS="-W -Wall -Wno-unused -pedantic -ansi -pthread"
-CXXFLAGS="-W -Wall -Wno-unused -pthread"
+CXXFLAGS="-W -Wall -Wno-unused"
 
 # DEBUG
 AC_MSG_CHECKING([wish for debug])
@@ -88,6 +89,20 @@ AC_ARG_ENABLE(vite,
 AC_MSG_RESULT($enable_vite)
 if test x$enable_vite = xyes; then
     AC_DEFINE([USE_VITE], [1], [Output tracing info in Paje format])
+fi
+
+# HYPRE
+AC_MSG_CHECKING([wish for HYPRE])
+AC_ARG_ENABLE(hypre,
+    [AC_HELP_STRING([--enable-hypre],
+		    [enable HYPRE framework @<:@default=yes@:>@])],
+    enable_hypre=$withval,
+    enable_hypre="yes")
+AC_MSG_RESULT($enable_hypre)
+AM_CONDITIONAL([HYPRE], [test x$enable_hypre = xyes])
+if test x$enable_hypre = xyes; then
+    ACX_MPI
+    LIBS="$LIBS $MPILIBS"
 fi
 
 # gprof
