@@ -14,7 +14,9 @@ spe_prec_LDADD = \
 	$(top_builddir)/modules/libmodules.a \
 	-lrt
 
-hypre_LDADD = -lHYPRE -lrt
+hypre_LDADD = \
+	$(top_builddir)/modules/libmodules.a \
+	-lHYPRE -lrt
 
 all: prereq spe_prec $(HYP)
 

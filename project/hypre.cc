@@ -2,6 +2,7 @@
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
 
+#include "modules/matrix/matrix.h"
 #include "include/uvector.h"
 #include "include/time.h"
 
@@ -40,15 +41,42 @@ int main (int argc, char *argv[]) {
 	}
     }
 
-    /* Read the matrix from file */
     HYPRE_IJMatrix A;
     HYPRE_ParCSRMatrix parcsr_A;
-
-    HYPRE_IJMatrixRead("matrix_hypre.dat", MPI_COMM_WORLD, HYPRE_PARCSR, &A);
-    HYPRE_IJMatrixGetObject(A, (void**) &parcsr_A);
-
     int ilower, iupper, jlower, jupper;
+
+    double ltime = pclock();
+#if 0
+    /* Read ASCII HYPRE matrix from file */
+    HYPRE_IJMatrixRead("matrix_hypre.dat", MPI_COMM_WORLD, HYPRE_PARCSR, &A);
     HYPRE_IJMatrixGetLocalRange(A, &ilower, &iupper, &jlower, &jupper);
+#else
+    /* Read BINARY matrix from file */
+    SkylineMatrix read_A;
+    read_A.load("matrix_hypre.dat", false);
+
+    int n = read_A.size();
+
+    ilower = jlower = 0;
+    iupper = jupper = n-1;
+
+    HYPRE_IJMatrixCreate(MPI_COMM_WORLD, ilower, iupper, ilower, iupper, &A);
+    HYPRE_IJMatrixSetObjectType(A, HYPRE_PARCSR);
+    HYPRE_IJMatrixInitialize(A);
+
+    const uvector<uint>& ia = read_A.get_ia();
+    const uvector<uint>& ja = read_A.get_ja();
+    const uvector<double>& a = read_A.get_a();
+    for (int i = 0; i < n; i++) {
+	int nnz = ia[i+1] - ia[i];
+	HYPRE_IJMatrixSetValues(A, 1, &nnz, &i, reinterpret_cast<const int*>(&ja[ia[i]]),
+				reinterpret_cast<const double*>(&a[ia[i]]));
+    }
+    HYPRE_IJMatrixAssemble(A);
+#endif
+    ltime = pclock() - ltime;
+
+    HYPRE_IJMatrixGetObject(A, (void**) &parcsr_A);
 
     /* Read the vector from file */
     HYPRE_IJVector b;
@@ -97,7 +125,7 @@ int main (int argc, char *argv[]) {
 	HYPRE_BoomerAMGSetRelaxType(solver, 3);   /* G-S/Jacobi hybrid relaxation */
 	HYPRE_BoomerAMGSetNumSweeps(solver, 1);   /* Sweeeps on each level */
 	HYPRE_BoomerAMGSetMaxLevels(solver, 20);  /* maximum number of levels */
-	HYPRE_BoomerAMGSetTol(solver, 1e-7);      /* conv. tolerance */
+	HYPRE_BoomerAMGSetTol(solver, 1e-6);      /* conv. tolerance */
 
 	/* Now setup and solve! */
 	ctime = pclock();
@@ -308,6 +336,7 @@ int main (int argc, char *argv[]) {
 	std::cout << "Invalid solver id specified." << std::endl;
     }
 
+    std::cout << "Load time        : " << ltime << std::endl;
     std::cout << "Construction time: " << ctime << std::endl;
     std::cout << "Solution time    : " << stime << std::endl;
 

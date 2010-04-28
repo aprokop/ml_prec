@@ -42,7 +42,7 @@ int main (int argc, char * argv[]) {
 	if (!cfg.unsym_matrix)
 	    mesh.construct_matrix(A, cfg.c);
 	else
-	    mesh.construct_matrix_unsym(A, cfg.c, 0.1);
+	    mesh.construct_matrix_unsym(A, cfg.c, 0.5);
     } else {
 	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
 	bool transform = true;
@@ -51,7 +51,11 @@ int main (int argc, char * argv[]) {
     Vector b(A.size(), 0.);
 
     if (cfg.dump_data) {
+#if 0
 	dump("matrix_hypre.dat.00000", A, HYPRE);
+#else
+	dump("matrix_hypre.dat", A, BINARY);
+#endif
 	dump("vector_hypre.dat.00000", b, HYPRE);
 	exit(0);
     }
