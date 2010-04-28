@@ -13,7 +13,6 @@ colors = { 0:'r', 1:'g', 2:'c', 3:'m', 4:'y', 5:'k', 6:'w' }
 
 ax.plot(norms[:,1], '-')
 for i in range(0, shape(norms)[0]):
-    # ax.plot(i, norms[i][1], colors[norms[i][0]] + 'o')
     ax.plot(i, norms[i][1], 'o', color = colors[norms[i][0]])
 
 ax.set_yscale('log')

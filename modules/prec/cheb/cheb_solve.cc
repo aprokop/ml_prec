@@ -6,7 +6,6 @@
 
 DEFINE_LOGGER("Prec");
 
-#define LOG_NORM
 void Prec::solve(Vector& f, Vector& x) THROW {
     solve(0, f, x);
 }
@@ -15,8 +14,10 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const Level& li = levels[level];
     const Level& ln = levels[level+1];
 
-#ifdef LOG_NORM
-    (*norm_oss) << level << " " << dnrm2(f) << std::endl;
+#if 0
+    /* Log norm */
+    if (level < 6)
+	(*norm_oss) << level << " " << dnrm2(f) << std::endl;
 #endif
 
     uint N  = li.N;
@@ -117,8 +118,4 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	uint j = map[(N-Md) + i];
 	x[j] = dval[i]*f[j];
     }
-
-#ifdef LOG_NORM
-    /* We would like to output the final residual, but can't as we cannot multiply by $\widehat{B}$ */
-#endif
 }
