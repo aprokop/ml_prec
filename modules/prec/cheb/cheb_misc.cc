@@ -13,7 +13,7 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 	uint n = levels[level].A.size();
 	const Level& lp = levels[level-1];
 
-	/* Construct map */
+	/* Construct map: indices on the level -> indices in the original (level 0) matrix */
 	map.resize(n);
 	memcpy(&map[0], &lp.map[lp.M], (lp.N - lp.M - lp.Md)*sizeof(uint));
 
@@ -23,6 +23,7 @@ void Prec::graph_planes(const std::string& filename, uint level, char plane, con
 		map[i] = li.map[li.M + map[i]];
 	}
 
+	/* Call the plotting procedure */
 	::graph_planes(filename, levels[level].A, map, plane, mesh);
     } else {
 	uint n = level0_A.size();
@@ -89,6 +90,7 @@ void Prec::dump_norm_trace() const {
     fos.close();
 }
 
+/* Print Paje header */
 void print_vite_header(std::ofstream& fos) {
     fos << "\
 %EventDef PajeDefineContainerType 1\n\

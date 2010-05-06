@@ -46,6 +46,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uint N = li.N;
 
     uvector<int> nlinks(N, 0);
+
+    /* Initialize LinkType; the status of each link is PRESENT */
     LinkType ltype(A);
 
     uvector<double>& aux = li.aux;
@@ -79,10 +81,11 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    double v = A.a[rstart+1 + sorted[_j]];
 
 	    if (to_remove(aux[i], v, li.beta, s)) {
-		/* The link is marked as free to remove from i-th end */
+		/* It is possible to remove the link from i-th end */
 		uint j_ = rstart+1 + sorted[_j];
 		uint j = A.ja[j_];
 
+		/* Mark the link for removal from i-th end; the new link status is returned */
 		if (ltype.mark(j_) == REMOVED) {
 		    /* This link is marked as removable from both ends so it is removed */
 		    nlinks[i]--;
@@ -103,6 +106,13 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     map.resize(N);
     log_state("P");
+    /*
+     * Construct node perumutation.
+     * All nodes are divided into three groups:
+     *	0, ..., M-1   : Nodes which are connected to some nodes and which will be excluded
+     *  M, ..., N-Md  : Nodes which go to the next level
+     *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
+     */
     construct_permutation(A, ltype, nlinks, Md, M, map);
     log_state("d");
 
@@ -117,11 +127,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
     uvector<int> jr(N, -1);
-#if 0
-    typedef std::set<uint> container;
-#else
+    /* Sorted vector seems to work much faster than the set container */
     typedef svector<uint> container;
-#endif
+
     container jw;
     uvector<double> w;
     uint max_num;
@@ -139,7 +147,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     /* TODO: deal with M = 0 */
     log_state("LU");
     for (uint i = 0; i < N-Md; i++) { /* i corresponds to a permuted index */
-	/* Step 0: clear tmp values */
+	/* Step 0: clear tmp values filled on previous iteration */
 	unsigned jwn = jw.size();
 	for (uint k = 0; k < jwn; k++)
 	    jr[jw[k]] = -1;
@@ -161,12 +169,14 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 	    uint j = A.ja[j_];
 
 	    if (ltype.stat(j_) == PRESENT) {
+		/* Translate original indices into permuted */
 		uint new_j = rmap[j];   /* permuted index */
 
 		jr[new_j] = max_num++;
 		jw.insert(new_j);
 
-		double z = A.a[j_] / li.beta;   /* scale the element */
+		/* Scale elements: required by our preconditioner theory. See report */
+		double z = A.a[j_] / li.beta;
 
 		w.push_back(z);
 		w[0] -= z;       /* update diagonal */
@@ -199,6 +209,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 		}
 	    }
 
+	    /* Find next index in the buffer, i.e. next element of L */
 	    k = *(jw.upper_bound(k));
 	}
 	L.ia.push_back(L.ja.size());
@@ -213,7 +224,9 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
 	    U.ia.push_back(U.ja.size());
 	} else {
-	    /* Update A_{level+1} */
+	    /* Update A_{level+1}
+	     * Note that the process is a bit more difficult than updating U as A is a SkylineMatrix
+	     * but elements added are sorted (i.e. the diagonal element is somewhere in the middle */
 	    uint adind = nA.ja.size();
 	    nA.ja.push_back(i-M);
 	    nA.a.push_back(w[0]);
@@ -234,6 +247,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uvector<double>& dval = li.dval;
     dval.resize(Md);
     for (uint i = 0; i < Md; i++)
+	/* Instead of keeping diagonal, keep its reciprocal */
 	dval[i] = 1./aux[map[i+(N-Md)]];
     log_state("d");
 
@@ -283,10 +297,18 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
     }
 
     SkylineMatrix* Asym;
-    if (!cfg.unsym_matrix)
+    if (!cfg.unsym_matrix) {
+	/* Given matrix is described as symmetric. Do nothing */
 	Asym = const_cast<SkylineMatrix*>(&A);
-    else {
-	/* Symmetrize the matrix */
+    } else {
+	/*
+	 * "Symmetrize" the matrix
+	 * That means that we set Asym(i,j) = max(A(i,j), A(j,i))
+	 * In other words we increase some offdiagonal elements to achive symmtery. Theory
+	 * says that such action results in the M-matrix if the original matrix was an M-matrix
+	 * Our hope is that the preconditioner for the symmetrized matrix would be a good
+	 * preconditioner for the original matrix
+	 */
 	/* NOTE: level0_A reference WILL BE incorrect, as it references the unsymmetric matrix */
 	Asym = new SkylineMatrix(A);
 
@@ -304,6 +326,7 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
 	    }
     }
 
+    /* Construct preconditioner */
     construct_level(0, *Asym);
 
     /* Set number of Chebyshev iterations per level */

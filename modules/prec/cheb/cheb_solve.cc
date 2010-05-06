@@ -57,7 +57,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	double alpha, beta;
 
 	Vector& u1 = li.u1;
-	// ===============    STEP 1    ===============
+	/* ===============    STEP 1    =============== */
 	alpha = 2/(lmax + lmin);
 
 	if (ncheb > 1) {
@@ -68,7 +68,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	    dscal(alpha, x2);
 	}
 
-	// ===============    STEP 2    ===============
+	/* ===============    STEP 2    =============== */
 	if (ncheb > 1) {
 	    /* x2 = (1 + beta)*u1 - alpha*solve(A*u1 - F, level+1) */
 	    alpha = 4/(lmax - lmin) * cheb(eta, 1)/cheb(eta, 2);
@@ -81,7 +81,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	    daxpy(1 + beta, u1, x2);
 	}
 
-	// ===============    STEPS 3+    ===============
+	/* ===============    STEPS 3+    =============== */
 	Vector& u0 = li.u0;
 	for (uint i = 3; i <= ncheb; i++) {
 	    /* Use little hack to avoid copying and allocating new memory */
@@ -104,6 +104,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	    x[map[i+M]] = x2[i];
     }
 
+    /* Complete solution of the U system */
     for (int i = M-1; i >= 0; i--) {
 	double z = w[i];
 
@@ -113,6 +114,7 @@ void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
 	x[map[i]] = z / U.a[U.ia[i]];
     }
 
+    /* Solve diagonal subsystem */
     const uvector<double>& dval = li.dval;
     for (uint i = 0; i < Md; i++) {
 	uint j = map[(N-Md) + i];

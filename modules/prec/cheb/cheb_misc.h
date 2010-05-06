@@ -12,17 +12,17 @@
 #include <vector>
 
 enum LinkStatus {
-    PRESENT,
-    REMOVED,
-    ABSENT
+    PRESENT,	/* Link is present */
+    REMOVED,	/* Link is marked as removed */
+    ABSENT	/* Link (i,j) was not in the original matrix */
 };
 
 class LinkTypeCheb {
 private:
     uint n;
-    const SkylineMatrix& A;
-    const uvector<uint>& ia;
-    const uvector<uint>& ja;
+    const SkylineMatrix& A;	/* we need index() function */
+    const uvector<uint>& ia;    /* reference to A.ia */
+    const uvector<uint>& ja;	/* reference to A.ja */
     uvector<uint> a;
 
     uint row;
@@ -38,6 +38,8 @@ private:
 	return A.index(i,j);
     }
 
+    /* Returns j_ if j_ is index of an element in ja in row-th row of A and it is in the upper diagonal.
+     * If it is in a lower diagonal, returns the summetric element in the upper diagonal, via a[] reference */
     uint real_j_(uint j_) const {
 	ASSERT(ia[row] < j_ && j_ < ia[row+1], "Wrong j_: " << j_ << " (expected (" << ia[row] << ", " << ia[row+1] << ")");
 	return (ja[j_] < row) ? a[j_] : j_;

@@ -15,9 +15,9 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
      */
     LinkTypeCheb ltype(ltype_);
 
-
     uint pind = 0;
 
+    /* Set the marking of all nodes to default */
     uvector<uint> marked(N, 0);
 
     /* Group 1: all tails */
@@ -30,6 +30,7 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
 		i0 = i;
 
 		do {
+		    /* Mark node and set new index */
 		    map[pind++] = i0;
 		    marked[i0]  = 1;
 
@@ -43,6 +44,7 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
 			}
 		    ASSERT(j_ != A.ia[i0+1], "Could not find remaining link");
 
+		    /* Mark the link as removed */
 		    ltype.remove(i0, i1);
 
 		    nlinks[i0] = -1;
@@ -62,7 +64,8 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
     }
 
 #if 1
-    /* Group 2 : all nodes with two links */
+    /* Group 2 : all nodes with two links
+     * NOTE: we don't mark links as removed, as we assume that this is the last step */
     for (uint i = 0; i < N; i++)
 	if (marked[i] == 0 && nlinks[i] == 2) {
 	    map[pind++] = i;
@@ -74,6 +77,7 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
 
     M = pind;
 
+    /* Mark the diagonal nodes last */
     uint eind = N-1;
     for (uint i = 0; i < N; i++)
 	if (marked[i] == 0) {

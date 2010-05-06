@@ -16,28 +16,29 @@ private:
 
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-	uint M;                     /* Size of the excluded block */
+	uint M;                     /* Size of the excluded block (not including diagonal block) */
 
 	double alpha, beta;	    /* Spectral constants used for the level */
 	double lmin, lmax;	    /* Spectral boundaries for the level */
 	uint ncheb;		    /* Number of Chebyshev iterations on the level */
 
 	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
-	CSRMatrix     L;
-	SkylineMatrix U;
+	CSRMatrix     L;	    /* L factor for the level (N x N) */
+	SkylineMatrix U;	    /* U factor for the level (M x N) */
 
-	uvector<uint> map;	    /* permuted -> original */
-	uvector<uint> rmap;	    /* original -> permuted */
+	uvector<uint> map;	    /* Indices map: permuted -> original */
+	uvector<uint> rmap;	    /* Indices map: original -> permuted */
 
-	uint Md;
-	uvector<double> dval;
+	uint Md;		    /* Size of the excluded diagonal block */
+	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
 	mutable
-	Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Gauss */
+	Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Schur */
 
 	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
-				       used in tail elimination */
+				       used in tail elimination. Don't actually need to keep it */
     };
+
     uint nlevels;
     std::vector<Level> levels;
 
@@ -118,6 +119,7 @@ public:
     void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
+    /* If the outer procedure is Chebyshev, it needs these values */
     double lmin() const { return levels[0].lmin; }
     double lmax() const { return levels[0].lmax; }
 
