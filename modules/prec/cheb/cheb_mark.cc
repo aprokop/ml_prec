@@ -63,11 +63,12 @@ void Prec::construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& lty
 	    }
     }
 
-#if 1
+#if 0
     /* Group 2 : all nodes with two links
      * NOTE: we don't mark links as removed, as we assume that this is the last step */
+    const int max_links = 2;
     for (uint i = 0; i < N; i++)
-	if (marked[i] == 0 && nlinks[i] == 2) {
+	if (marked[i] == 0 && nlinks[i] <= max_links) {
 	    map[pind++] = i;
 	    nlinks[i] = -1;
 
