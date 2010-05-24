@@ -25,10 +25,11 @@ static void usage() {
     std::cout << "  -z|--nz                         Number of points in z direction for SPE" << std::endl;
     std::cout << "  -o|--solver={cheb|pcg}          Outer solver type" << std::endl;
     std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
-    std::cout << "  -S|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
+    std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
+    std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
     std::cout << "  -p|--prec={uh_cheb|amg|diag|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
@@ -44,10 +45,11 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.nz               = 85;
 
     cfg.unsym_matrix	 = false;
+    cfg.unsym_shift	 = 0.1;
 
     cfg.ntests           = 1;
-    cfg.use_tails        = 1;
-    cfg.optimize_storage = 1;
+    cfg.use_tails        = true;
+    cfg.optimize_storage = true;
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
 
@@ -63,16 +65,17 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"nz",			required_argument,  NULL, 'z'},
 	{"solver",		required_argument,  NULL, 'o'},
 	{"use_tails",		required_argument,  NULL, 't'},
-	{"optimize-storage",	required_argument,  NULL, 'S'},
+	{"optimize-storage",	required_argument,  NULL, 'O'},
 	{"matrix",		required_argument,  NULL, 'm'},
 	{"ntests",		required_argument,  NULL, 'a'},
 	{"prec",		required_argument,  NULL, 'p'},
 	{"dump",		no_argument,	    NULL, 'd'},
+	{"unsym-shift",		required_argument,  NULL, 'S'},
 	{0, 0, 0, 0}
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:S:t:c:x:y:z:to:m:a:p:ud", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:a:p:uS:d", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -104,7 +107,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      else
 			  THROW_EXCEPTION("Unknown use-tails option \"" << optarg << "\"");
 		      break;
-	    case 'S': if (!strcmp(optarg, "yes"))
+	    case 'O': if (!strcmp(optarg, "yes"))
 			  cfg.optimize_storage = true;
 		      else if (!strcmp(optarg, "no"))
 			  cfg.optimize_storage = false;
@@ -138,6 +141,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
 	    case 'u': cfg.unsym_matrix = true; break;
+	    case 'S': cfg.unsym_shift = atof(optarg); break;
 	    case 'd': cfg.dump_data = true; break;
 	    case '?':
 	    default:

@@ -42,7 +42,7 @@ int main (int argc, char * argv[]) {
 	if (!cfg.unsym_matrix)
 	    mesh.construct_matrix(A, cfg.c);
 	else
-	    mesh.construct_matrix_unsym(A, cfg.c, 0.5);
+	    mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
     } else {
 	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
 	bool transform = true;
@@ -90,7 +90,7 @@ int main (int argc, char * argv[]) {
     if (cfg.prec == UH_CHEB_PREC) {
 	Prec& Bcheb = static_cast<Prec&>(B);
 	LOG_INFO(Bcheb);
-#if 0
+#if 1
 	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
 	return 0;
 #endif
