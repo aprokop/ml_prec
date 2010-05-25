@@ -197,14 +197,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     return os;
 }
 
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
-    os << " size = " << v.size() << std::endl;
-    for (typename uvector<T>::const_iterator it = v.begin(); it != v.end(); it++)
-	os << " " << it - v.begin() << ": " << *it << std::endl;
-    return os;
-}
-
 template<typename T1,typename T2>
 std::ostream& operator<<(std::ostream& os, const std::pair<T1,T2>& p) {
     return os << "(" << p.first << "," << p.second << ")";
