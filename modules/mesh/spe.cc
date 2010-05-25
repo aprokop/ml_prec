@@ -47,6 +47,51 @@ SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
 		nodes[ind].z = k*hz;
 	    }
     LEAVE_MESSAGE("Nodes constructed");
+
+#if 0 /* Save tensors? */
+#if 0
+    /* Txt mode */
+    std::ofstream os;
+
+    /* K_{xy} */
+    os.open("kx.txt");
+    os << std::scientific;
+    for (uint i = 0; i < N; i++)
+	os << log(kx[i])/log(10) << std::endl;
+    os.close();
+
+    /* K_z */
+    os.open("kz.txt");
+    for (uint i = 0; i < N; i++)
+	os << log(kz[i])/log(10) << std::endl;
+    os.close();
+
+#else
+    /* Binary mode */
+    std::ofstream os;
+
+    /* K_{xy} */
+    os.open("kx.bin", std::ofstream::binary);
+    for (uint i = 0; i < N; i++) {
+	double d = kx[i];
+	d = log(d)/log(10);
+	os.write(reinterpret_cast<const char*>(&d), sizeof(double));
+    }
+    os.close();
+
+    /* K_z */
+    os.open("kz.bin", std::ofstream::binary);
+    for (uint i = 0; i < N; i++) {
+	double d = kz[i];
+	d = log(d)/log(10);
+	os.write(reinterpret_cast<const char*>(&d), sizeof(double));
+    }
+    os.close();
+#endif
+
+    exit(1);
+#endif
+
 }
 
 void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
