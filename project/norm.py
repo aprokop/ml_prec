@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Plot graph showing residual norms for each level
 from numpy import loadtxt
 from pylab import *
 import matplotlib.pyplot as pyplot
