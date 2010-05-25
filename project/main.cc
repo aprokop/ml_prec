@@ -19,6 +19,8 @@
 
 DEFINE_LOGGER("Main");
 
+#define TEST_FADING
+
 int main (int argc, char * argv[]) {
 #ifndef NO_LOGGER
     // Initialize logger
@@ -48,7 +50,19 @@ int main (int argc, char * argv[]) {
 	bool transform = true;
 	A.load(cfg.matrix, transform);
     }
+
     Vector b(A.size(), 0.);
+#ifdef TEST_FADING
+    const double IV = 1000; /* Initial value */
+
+#define INDEX(i,j,k) ((k)*220*60 + (j)*60 + (i))
+    /* Place several probes to some points */
+    b[INDEX(13,65,55)]  =
+    b[INDEX(48,77,55)]  =
+    b[INDEX(48,77,10)]  =
+    b[INDEX(17,150,55)] = cfg.c*IV;
+#undef INDEX
+#endif
 
     if (cfg.dump_data) {
 #if 0
@@ -90,7 +104,7 @@ int main (int argc, char * argv[]) {
     if (cfg.prec == UH_CHEB_PREC) {
 	Prec& Bcheb = static_cast<Prec&>(B);
 	LOG_INFO(Bcheb);
-#if 1
+#if 0
 	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
 	return 0;
 #endif
@@ -104,6 +118,9 @@ int main (int argc, char * argv[]) {
     }
 
     double eps = 1e-6;
+#ifdef TEST_FADING
+    eps = 1e-13;
+#endif
 
     Vector x(A.size());
     /* =====  Solution phase  ===== */
@@ -132,6 +149,23 @@ int main (int argc, char * argv[]) {
     LLL_INFO("Avg total time       : " << ctime + stime);
 
     delete B_;
+
+#ifdef TEST_FADING
+    std::ofstream os("vector.bin", std::ofstream::binary);
+    uint n = x.size();
+    for (uint i = 0; i < n; i++) {
+	double d = x[i];
+	if (d < 0) {
+	    LOG_WARN("x[" << i << "] = " << x[i]);
+	    x[i] = 0;
+	}
+	// d /= IV;
+	d = log(x[i]/IV + 1e-15)/log(10);
+	os.write(reinterpret_cast<const char*>(&d), sizeof(double));
+    }
+    os.close();
+#endif
+
 
     return 0;
 }
