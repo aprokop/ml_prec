@@ -30,5 +30,6 @@ enum DumpType {
 
 std::ostream& operator<<(std::ostream& os, const Vector& v);
 void dump(const std::string& filename, const Vector& v, DumpType type) THROW;
+void load(Vector& v, const std::string& filename, DumpType type) THROW;
 
 #endif // #ifndef __VECTOR_H__

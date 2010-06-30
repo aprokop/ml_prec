@@ -44,7 +44,7 @@ void dump(const std::string& filename, const Vector& v, DumpType type) THROW {
     }
 }
 
-void load(Vector& v, const std::string& filename, DumpType type) {
+void load(Vector& v, const std::string& filename, DumpType type) THROW {
     uint n;
     switch (type) {
 	case ASCII : {
