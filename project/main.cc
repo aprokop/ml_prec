@@ -41,17 +41,26 @@ int main (int argc, char * argv[]) {
 
     SPEMesh mesh(cfg.nx, cfg.ny, cfg.nz);
     if (cfg.matrix.empty()) {
+	/* Construct the matrix */
 	if (!cfg.unsym_matrix)
 	    mesh.construct_matrix(A, cfg.c);
 	else
 	    mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
     } else {
-	/* Whether we read matrix in CSR format (transform = true) or already in Skyline (false) */
+	/*
+	 * Read the matrix.
+	 * If matrix is writtent in CSR format we'll need to convert it to Skyline (transform = true)
+	 */
 	bool transform = true;
 	A.load(cfg.matrix, transform);
     }
 
     Vector b(A.size(), 0.);
+    if (!cfg.vector.empty()) {
+	/* By default, we load vector in ASCII mode, cause binary is not implemented yet */
+	load(b, cfg.vector, ASCII);
+    }
+
 #ifdef TEST_FADING
     const double IV = 1000; /* Initial value */
 

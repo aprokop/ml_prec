@@ -27,6 +27,7 @@ static void usage() {
     std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
     std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
+    std::cout << "  -v|--vector                     Vector input file" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
@@ -67,6 +68,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"use_tails",		required_argument,  NULL, 't'},
 	{"optimize-storage",	required_argument,  NULL, 'O'},
 	{"matrix",		required_argument,  NULL, 'm'},
+	{"vector",		required_argument,  NULL, 'v'},
 	{"ntests",		required_argument,  NULL, 'a'},
 	{"prec",		required_argument,  NULL, 'p'},
 	{"dump",		no_argument,	    NULL, 'd'},
@@ -75,7 +77,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:a:p:uS:d", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:d", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -126,6 +128,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
 	    case 'm': cfg.matrix = std::string(optarg); break;
+	    case 'v': cfg.vector = std::string(optarg); break;
 	    case 'a': cfg.ntests = uint(atoi(optarg)); break;
 	    case 'p': if (!strcmp(optarg, "uh_cheb"))
 			  cfg.prec = UH_CHEB_PREC;

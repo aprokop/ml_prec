@@ -43,6 +43,7 @@ struct Config {
     bool   dump_data;
 
     std::string matrix;
+    std::string vector;
 
     friend std::ostream& operator<<(std::ostream& os, const Config& config);
 };
