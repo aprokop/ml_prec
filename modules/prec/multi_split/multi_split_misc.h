@@ -48,6 +48,11 @@ public:
 	a[ind] = 0;
     }
 
+    /*
+     * Find the remaining link from a point (actually it finds the first one).
+     * Returns index in ja
+     * The caller must be sure that only one link remains
+     */
     bool find_remaining_link(uint i, uint& _j) {
 	ASSERT(i < n, "i = " << i << ", n = " << n);
 
@@ -61,8 +66,11 @@ public:
 	return false;
     }
 
-    /* Find the remaining link (actually it finds the first one).
-     * Returns index in ja */
+    /*
+     * Remove remaining link from a point
+     * As in find_remaining_link, it actually removes the first one
+     * The caller must be sure that only one link remains
+     */
     bool remove_remaining_link(uint i, uint& _j) {
 	bool ret = find_remaining_link(i, _j);
 	if (ret)
