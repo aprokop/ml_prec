@@ -117,20 +117,20 @@ void mark_set_nodes(const MeshBase& mesh, char plane, uint ind, const uvector<ui
     std::map<uint,uint>::const_iterator it;
     switch (plane) {
 	case 'x':
-	    for (uint j = 0; j <= ny; j++)
-		for (uint k = 0; k <= nz; k++)
+	    for (uint j = 0; j < ny; j++)
+		for (uint k = 0; k < nz; k++)
 		    if ((it = rmap.find(mesh.index(ind, j, k))) != rmap.end())
 			marked[it->second] = 1;
 	    break;
 	case 'y':
-	    for (uint i = 0; i <= nx; i++)
-		for (uint k = 0; k <= nz; k++)
+	    for (uint i = 0; i < nx; i++)
+		for (uint k = 0; k < nz; k++)
 		    if ((it = rmap.find(mesh.index(i, ind, k))) != rmap.end())
 			marked[it->second] = 1;
 	    break;
 	case 'z':
-	    for (uint i = 0; i <= nx; i++)
-		for (uint j = 0; j <= ny; j++)
+	    for (uint i = 0; i < nx; i++)
+		for (uint j = 0; j < ny; j++)
 		    if ((it = rmap.find(mesh.index(i, j, ind))) != rmap.end())
 			marked[it->second] = 1;
 	    break;
