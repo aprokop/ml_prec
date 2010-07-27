@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <stack>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -36,7 +37,8 @@
 
 namespace log4cxx {
     class SysLogger;
-    /// ostringstream wrapper for SysLogger
+
+    /* ostringstream wrapper for SysLogger */
     class LoggerStream {
     private:
 	SysLogger* logger;
@@ -47,49 +49,49 @@ namespace log4cxx {
 	LoggerStream(const LevelPtr& p, SysLogger* l);
 	~LoggerStream();
 
-	// to output class must support smth like
-	// ostringstream& operator<<(ostringstream&)
+	/* To output class must support smth like ostringstream& operator<<(ostringstream&) */
 	template<class T>
-	    LoggerStream& operator<<(const T& t) {
-		if (buf)
-		    (*buf) << t;
-		return (*this);
-	    }
+	LoggerStream& operator<<(const T& t) {
+	    if (buf)
+		(*buf) << t;
+	    return (*this);
+	}
 
-	/// manipulators std::hex, etc
+	/* Manipulators std::hex, etc */
 	template<typename X, typename Y>
-	    LoggerStream& operator<<(X& (*__pf)(Y&)) {
-		if (buf)
-		    (*buf) << __pf;
-		return (*this);
-	    }
+	LoggerStream& operator<<(X& (*__pf)(Y&)) {
+	    if (buf)
+		(*buf) << __pf;
+	    return (*this);
+	}
     };
 
-    // macro for Logger.info(char* fmt, ...), etc
-#define __LOG_FUNC(fn_name, fn_prio) \
-    void fn_name(char* fmt, ...)\
-    {\
-	va_list vl; va_start(vl, fmt);\
-	valog(Level::fn_prio, fmt, vl);\
-	va_end(vl);\
-    }
 
     class SysLogger : public LoggerPtr {
     private:
-	void valog(const LevelPtr& p, char *fmt, va_list vl);
+	void valog(const LevelPtr& p, const char *fmt, va_list vl);
     public:
-	void logf(const LevelPtr& p, char* fmt, ...);
+	void logf(const LevelPtr& p, const char* fmt, ...);
 
-	__LOG_FUNC(fatal, FATAL);
-	__LOG_FUNC(error, ERROR);
-	__LOG_FUNC(warn, WARN);
-	__LOG_FUNC(info, INFO);
-	__LOG_FUNC(debug, DEBUG);
+	/* macro for Logger.info(char* fmt, ...), etc */
+#define __LOG_FUNC(fn_name, fn_prio) \
+	void fn_name(char* fmt, ...) \
+	{ \
+	    va_list vl; va_start(vl, fmt); \
+	    valog(Level::get##fn_prio(), fmt, vl); \
+	    va_end(vl); \
+	}
+	__LOG_FUNC(fatal, Fatal);
+	__LOG_FUNC(error, Error);
+	__LOG_FUNC(warn,  Warn);
+	__LOG_FUNC(info,  Info);
+	__LOG_FUNC(debug, Debug);
+#undef __LOG_FUNC
 
 	SysLogger(const LoggerPtr& b) : LoggerPtr(b) {
 	}
 
-	const LevelPtr & getLogLevel() const {
+	LevelPtr getLogLevel() const {
 	    return (*this)->getLevel();
 	}
 
@@ -97,29 +99,28 @@ namespace log4cxx {
 	    (*this)->setLevel(level);
 	}
 
-	void addAppender( AppenderPtr newAppender){
+	void addAppender(AppenderPtr newAppender) {
 	    (*this)->addAppender(newAppender);
 	}
 
-	void removeAllAppenders(){
+	void removeAllAppenders() {
 	    (*this)->removeAllAppenders();
 	}
 
-	LoggerStream operator <<(const LevelPtr& p) {
+	LoggerStream operator<<(const LevelPtr& p) {
 	    return LoggerStream(p, this);
 	}
     };
 
-#undef __LOG_FUNC
 
-    inline void SysLogger::logf(const LevelPtr& p, char* fmt, ...) {
+    inline void SysLogger::logf(const LevelPtr& p, const char* fmt, ...) {
 	va_list vl; va_start(vl, fmt);
 	valog(p, fmt, vl);
 	va_end(vl);
     }
 
     /// First it dumps fmt+vl to some string. But it is only for standart objects, all implemented classes should suppor <<
-    inline void SysLogger::valog(const LevelPtr& p_level, char* fmt, va_list vl) {
+    inline void SysLogger::valog(const LevelPtr& p_level, const char* fmt, va_list vl) {
 	int size = 1024;
 	char* buf = new char[size];
 
@@ -154,30 +155,40 @@ namespace log4cxx {
 	    buf = NULL;
 	}
     }
-} // namespace log4cxx
+} /* namespace log4cxx */
 
-// Some useful macro for the case we have one instance of logger for the module
+/* Some useful macro for the case we have one instance of logger for the module */
 #define DEFINE_LOGGER(l)	static log4cxx::SysLogger logger = log4cxx::Logger::getLogger(l)
-#define _LOG(lvl,v)		logger << log4cxx::Level::lvl << __func__ << " " << v
-#define _LOG_P(lvl,fmt,v)	logger.logf(log4cxx::Level::lvl, fmt, v)
+#define _LOG_DEBUG(lvl,v)	logger << log4cxx::Level::getDebug() << __func__ << " " << v
+#define _LOG_INFO(lvl,v)	logger << log4cxx::Level::getInfo () << __func__ << " " << v
+#define _LOG_WARN(lvl,v)	logger << log4cxx::Level::getWarn () << __func__ << " " << v
+#define _LOG_ERROR(lvl,v)	logger << log4cxx::Level::getError() << __func__ << " " << v
+#define _LOG_FATAL(lvl,v)	logger << log4cxx::Level::getFatal() << __func__ << " " << v
+
+#define _LOG_DEBUG_P(fmt,...)	logger.logf(log4cxx::Level::getDebug(), fmt, __VA_ARGS__)
 
 #else // #ifndef NO_LOGGER
 
 #define DEFINE_LOGGER(l)	static int ____logger____
 #define _LOG(lvl,v)		std::cout << #lvl " : " << __func__ << " : " << v << std::endl
-#define _LOG_P(fmt,v)		printf("DEBUG : " fmt, v)
+#define _LOG_DEBUG(lvl,v)	std::cout << "DEBUG : " << __func__ << " " << v
+#define _LOG_INFO (lvl,v)	std::cout << "INFO : " << __func__ << " " << v
+#define _LOG_WARN (lvl,v)	std::cout << "WARN : " << __func__ << " " << v
+#define _LOG_ERROR(lvl,v)	std::cout << "ERROR : " << __func__ << " " << v
+#define _LOG_FATAL(lvl,v)	std::cout << "FATAL : " << __func__ << " " << v
+
+#define _LOG_DEBUG_P(fmt,...)	printf("DEBUG : " fmt, __VA_ARGS__)
 
 #endif // #ifndef NO_LOGGER
 
-#define LOG_DEBUG(v)		_LOG(DEBUG,v)
-#define LOG_INFO(v)		_LOG(INFO,v)
-#define LOG_WARN(v)		_LOG(WARN,v)
-#define LOG_ERROR(v)		_LOG(ERROR,v)
-#define LOG_FATAL(v)		_LOG(FATAL,v)
+#define LOG_DEBUG(v)		_LOG_DEBUG(DEBUG,v)
+#define LOG_INFO(v)		_LOG_INFO(INFO,v)
+#define LOG_WARN(v)		_LOG_WARN(WARN,v)
+#define LOG_ERROR(v)		_LOG_ERROR(ERROR,v)
+#define LOG_FATAL(v)		_LOG_FATAL(FATAL,v)
 
-#define LOG_DEBUG_P(fmt,v)	_LOG_P(DEBUG, fmt, v)
+#define LOG_DEBUG_P(fmt,...)	_LOG_DEBUG_P(fmt, __VA_ARGS__)
 
-#define LOG_VARIABLE(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 #define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 
 #ifndef NO_LOGGER
@@ -188,7 +199,7 @@ namespace log4cxx {
 #define LLL_DEBUG(v) LOG_DEBUG(v)
 #endif
 
-// Some other staff
+/* Logging of some common classes */
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << " size = " << v.size() << std::endl;;
@@ -213,6 +224,19 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& s) {
     for (typename std::set<T>::const_iterator it = s.begin(); it != s.end(); it++)
 	os << " " << *it;
+    return os;
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, std::stack<T> s) {
+    std::vector<T> v;
+    while (!s.empty()) {
+	v.push_back(s.top());
+	s.pop();
+    }
+    os << " size = " << v.size() << std::endl;;
+    for (int i = v.size()-1; i >= 0; i--)
+	os << " " << v.size()-1-i << ": " << v[i] << std::endl;
     return os;
 }
 
