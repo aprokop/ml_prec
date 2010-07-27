@@ -16,7 +16,7 @@ DEFINE_LOGGER("Main");
 static void usage() {
     std::cout << "Usage: ./spe_prec [options]" << std::endl;
     std::cout << "Options:" << std::endl;
-    std::cout << "  -s|--sigmas                     Level sigmas" << std::endl;
+    std::cout << "  -s|--sigmas                     Level sigmas (for cheb prec, > 1) or q (for multi-split prec, < 1)" << std::endl;
     std::cout << "  -b|--niters                     Number of iterations per level" << std::endl;
     std::cout << "  -h|--help                       Display help" << std::endl;
     std::cout << "  -c                              Value of reaction coefficient" << std::endl;
