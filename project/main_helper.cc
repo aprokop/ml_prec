@@ -190,3 +190,41 @@ double avg_time(const std::vector<double>& times) {
     /* We ignore two largest ts and 1 smallest and average the rest */
     return std::accumulate(ts.begin() + 1, ts.end() - 2, 0.) / (n-3);
 }
+
+void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) {
+    if (cfg.matrix.empty()) {
+	/* Construct the matrix */
+	if (!cfg.unsym_matrix)
+	    mesh.construct_matrix(A, cfg.c);
+	else
+	    mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
+    } else {
+	/*
+	 * Read the matrix.
+	 * If matrix is written in CSR format we'll need to convert it to Skyline (transform = true)
+	 */
+	bool transform = true;
+
+	/* By default, we load matrix in BINARY mode, because it's much faster */
+	A.load(cfg.matrix, transform);
+	// A.load(cfg.matrix, transform, ASCII);
+    }
+}
+
+void construct_vector(const Config& cfg, Vector& b) {
+    if (!cfg.vector.empty()) {
+	/* By default, we load vector in ASCII mode, cause binary is not implemented yet */
+	load(b, cfg.vector, ASCII);
+    }
+}
+
+void dump_data(const SkylineMatrix& A, const Vector& b) {
+#if 0
+    /* Dump matrix in the HYPRE format for further running of HYPRE */
+    dump("matrix_hypre.dat.00000", A, HYPRE);
+#else
+    /* Dump matrix in the BINARY format */
+    dump("matrix_hypre.dat", A, BINARY);
+#endif
+    dump("vector_hypre.dat.00000", b, HYPRE);
+}
