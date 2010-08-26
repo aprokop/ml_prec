@@ -10,6 +10,7 @@
 #define TIME_INFO(msg) "TIME: " << msg << " : " << \
 	std::fixed << std::setprecision(3) << double(clock() - timer)/CLOCKS_PER_SEC
 
+/* High precision clock (up to nanoseconds) */
 inline double pclock() {
     timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);

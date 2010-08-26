@@ -16,23 +16,8 @@
 
 #ifndef NO_LOGGER
 
-// TODO: maybe there is a better way to fix this bug
-#undef PACKAGE
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
-#undef PACKAGE_BUGREPORT
-#undef VERSION
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/logger.h>
-#undef PACKAGE
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
-#undef PACKAGE_BUGREPORT
-#undef VERSION
 
 
 namespace log4cxx {
@@ -172,8 +157,8 @@ namespace log4cxx {
 #define DEFINE_LOGGER(l)	static int ____logger____
 #define _LOG(lvl,v)		std::cout << #lvl " : " << __func__ << " : " << v << std::endl
 #define _LOG_DEBUG(lvl,v)	std::cout << "DEBUG : " << __func__ << " " << v
-#define _LOG_INFO (lvl,v)	std::cout << "INFO : " << __func__ << " " << v
-#define _LOG_WARN (lvl,v)	std::cout << "WARN : " << __func__ << " " << v
+#define _LOG_INFO(lvl,v)	std::cout << "INFO : " << __func__ << " " << v
+#define _LOG_WARN(lvl,v)	std::cout << "WARN : " << __func__ << " " << v
 #define _LOG_ERROR(lvl,v)	std::cout << "ERROR : " << __func__ << " " << v
 #define _LOG_FATAL(lvl,v)	std::cout << "FATAL : " << __func__ << " " << v
 

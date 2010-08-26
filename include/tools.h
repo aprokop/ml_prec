@@ -19,6 +19,11 @@
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
+/*
+ * Because of floating numbers are approximations to real numbers, we do not
+ * use strict comparison for double. Instead, we allow to numbers to be declared
+ * the same if their difference is small enough
+ */
 inline bool is_equal(double x, double y) {
     return (fabs(x-y) <= epsilon) ? true : false;
 }
@@ -27,12 +32,22 @@ inline bool is_not_equal(double x, double y) {
     return (fabs(x-y) > epsilon) ? true : false;
 }
 
+/*
+ * Create a random number of type T in the interval [i0, i1].
+ * NOTE: random(-1,1) would return an integer; to get double call random(-1.0,1.0)
+ */
 template<typename T>
 inline T random(T i0, T i1) {
     assert(i0 < i1);
     return i0 + (i1-i0)*(double(random())/RAND_MAX);
 }
 
+/*
+ * Create std::vector from a list of scalars of type T.
+ * The first argument is the number of variables in the list.
+ * Typical use:
+ *	std::vector<double> x = std_vector(5, 1.0, 0.0, -2, 4);
+ */
 template<typename T>
 const std::vector<T> std_vector(uint n, T t1, ...) {
     std::vector<T> v(n);
@@ -47,6 +62,7 @@ const std::vector<T> std_vector(uint n, T t1, ...) {
     return v;
 }
 
+/* The same as std_vector but for uvector */
 template<typename T>
 const uvector<T> new_uvector(uint n, T t1, ...) {
     uvector<T> v(n);
@@ -61,18 +77,23 @@ const uvector<T> new_uvector(uint n, T t1, ...) {
     return v;
 }
 
-
+/* Compute the square of x */
 template<typename T>
 inline T pow2(const T& x) {
     return x*x;
 }
 
+/* Check if a number is NaN */
 template<typename T>
 inline bool is_nan(const T& x) {
     return (((x) != (x)) || (((x) < (x))));
 }
 
 #if 0
+/*
+ * Macros to be used when wants to measure memory output.
+ * Throws SIGUSR1 signal to be caught by the runner
+ */
 #define LEAVE_MESSAGE(msg) { \
     pid_t ppid = getppid(); \
     std::ofstream os(".msg"); \
