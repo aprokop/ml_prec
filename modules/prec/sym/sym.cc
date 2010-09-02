@@ -1,14 +1,14 @@
 #include "include/logger.h"
 #include "include/tools.h"
-#include "sym.h"
+#include "sym_prec.h"
 #include "modules/solvers/solvers.h"
 
 DEFINE_LOGGER("SymPrec");
 
-void SymPrec::solve(Vector& f, Vector& x) THROW {
+void SymPrec::solve(Vector& f, Vector& x) const THROW {
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
-    PCGSolver(Asym, f, *B, x, eps, true);
+    PCGSolver(Asym, f, *B, x, eps, NORM_L2, true);
 }
 
 SymPrec::SymPrec(const SkylineMatrix& A, const Config& cfg) {

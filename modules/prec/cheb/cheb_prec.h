@@ -116,7 +116,7 @@ public:
     Prec(const SkylineMatrix& A, const Config& cfg);
     ~Prec();
 
-    void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
+    void solve(Vector& f, Vector& x) const THROW; /* Wrapper for solve(level,f,x) */
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     /* If the outer procedure is Chebyshev, it needs these values */

@@ -27,29 +27,29 @@ private:
 
 	AMGConfig();
     };
-    AMGConfig amg_config;
+    mutable AMGConfig amg_config;
 
     // ***************************************************************
     // Note: we use FORTRAN index enumeration
     // Matrix is stored in skyline format (CSR with diagonal first)
     // ***************************************************************
-    uvector<int> ia, ja;
-    uvector<int> ig;
-    uvector<double> a;
+    mutable uvector<int> ia, ja;
+    mutable uvector<int> ig;
+    mutable uvector<double> a;
 
-    int n, nnz;
+    mutable int n, nnz;
 
-    int nda;
-    int ndia;
-    int ndja;
-    int ndu;
-    int ndf;
-    int ndig;
+    mutable int nda;
+    mutable int ndia;
+    mutable int ndja;
+    mutable int ndu;
+    mutable int ndf;
+    mutable int ndig;
 
 public:
     AMGPrec(const SkylineMatrix& A);
 
-    void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x) const THROW;
 };
 
 #endif // __AMG_PREC_H__

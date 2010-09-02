@@ -11,7 +11,7 @@ private:
 public:
     DiagPrec(const SkylineMatrix& A);
 
-    void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x) const THROW;
 };
 
 #endif // __DIAG_PREC_H__

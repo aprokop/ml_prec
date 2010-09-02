@@ -49,7 +49,7 @@ public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);
     ~MultiSplitPrec() { }
 
-    void solve(Vector& f, Vector& x) THROW; /* Wrapper for solve(level,f,x) */
+    void solve(Vector& f, Vector& x) const THROW; /* Wrapper for solve(level,f,x) */
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     friend std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p);

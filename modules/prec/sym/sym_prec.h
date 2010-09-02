@@ -23,7 +23,7 @@ public:
     void set_eps(double eps_) {
 	eps = eps_;
     }
-    void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x) const THROW;
 };
 
 #endif // __SYM_H__

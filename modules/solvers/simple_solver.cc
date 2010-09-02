@@ -5,11 +5,13 @@
 
 DEFINE_LOGGER("SimpleSolver");
 
-void SimpleSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x,
-		  double eps, bool silent) THROW {
+void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x,
+		  double eps, NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
+    if (norm_type != NORM_L2)
+	THROW_EXCEPTION("One must only use L2 norm in simple solver");
 
     uint   n = b.size();
     Vector r(n), z(n);
@@ -18,10 +20,14 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x,
     double  mult = 0,  inv = 0,  cstr = 0, delta;
     int	   nmult = 0, ninv = 0;
 
+#if 1
     generate_x0(x);
+#else
+    memset(&x[0], 0, x.size()*sizeof(double));
+#endif
     residual(A, b, x, r);
 
-    norm = init_norm = dnrm2(r);
+    norm = init_norm = calculate_norm(r, A, B, norm_type);
 
     int niter = 0;
 #ifdef ABSOLUTE_NORM
@@ -48,7 +54,7 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x,
 	mult += pclock() - delta;
 	nmult++;
 
-	norm = dnrm2(r);
+	norm = calculate_norm(r, A, B, norm_type);
 
 	niter++;
     }

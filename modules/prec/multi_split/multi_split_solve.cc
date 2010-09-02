@@ -45,7 +45,7 @@ void MultiSplitPrec::solve_diagonal(uint level, const Vector& f, Vector& x) cons
     }
 }
 
-void MultiSplitPrec::solve(Vector& f, Vector& x) THROW {
+void MultiSplitPrec::solve(Vector& f, Vector& x) const THROW {
     solve(0, f, x);
 }
 

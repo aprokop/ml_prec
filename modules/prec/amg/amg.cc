@@ -12,15 +12,8 @@ extern "C" {
 			 int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr);
 }
 
-void AMGPrec::solve(Vector& f, Vector& x) THROW {
+void AMGPrec::solve(Vector& f, Vector& x) const THROW {
     ASSERT((int)f.size() == n && (int)x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
-
-#if 0
-    srandom(time(NULL));
-    for (int i = 0; i < n; i++) {
-	x[i] = 100*(random() - 0.5*RAND_MAX)/RAND_MAX;
-    }
-#endif
 
     x.resize(ndu);
     f.resize(ndf);

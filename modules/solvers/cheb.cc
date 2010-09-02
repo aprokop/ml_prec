@@ -5,8 +5,8 @@
 
 DEFINE_LOGGER("ChebSolver");
 
-void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, PrecBase& B, Vector& x,
-		double eps, bool silent) THROW {
+void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, const PrecBase& B, Vector& x,
+		double eps, NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
@@ -22,7 +22,7 @@ void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, P
 
     generate_x0(x);
     residual(A, b, x, r);
-    norm = init_norm = dnrm2(r);
+    norm = init_norm = calculate_norm(r, A, B, norm_type);
 
     int niter = 1;
 #ifdef ABSOLUTE_NORM
@@ -69,7 +69,7 @@ void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, P
 	residual(A, b, x, r);
 	mult += pclock() - delta;
 	nmult++;
-	norm = dnrm2(r);
+	norm = calculate_norm(r, A, B, norm_type);
 
 	niter++;
     }

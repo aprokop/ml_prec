@@ -24,9 +24,9 @@ libmodules_a_SOURCES = \
 		       prec/amg/amg.cc \
 		       prec/amg/amg_prec.h \
 		       prec/diag/diag.cc \
-		       prec/diag/diag.h \
+		       prec/diag/diag_prec.h \
 		       prec/sym/sym.cc \
-		       prec/sym/sym.h \
+		       prec/sym/sym_prec.h \
 		       prec/multi_split/multi_split_constr.cc \
 		       prec/multi_split/multi_split_misc.cc \
 		       prec/multi_split/multi_split_solve.cc \

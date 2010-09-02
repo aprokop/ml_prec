@@ -6,7 +6,7 @@
 
 DEFINE_LOGGER("Prec");
 
-void Prec::solve(Vector& f, Vector& x) THROW {
+void Prec::solve(Vector& f, Vector& x) const THROW {
     solve(0, f, x);
 }
 

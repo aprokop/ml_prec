@@ -5,7 +5,8 @@
 
 DEFINE_LOGGER("PCG");
 
-void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, double eps, bool silent) THROW {
+void PCGSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, double eps,
+	       NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
@@ -22,18 +23,7 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
 
     generate_x0(x);
     residual(A, b, x, r);
-    norm = init_norm = dnrm2(r);
-
-#if 0
-    // w-Jacobi relaxation (w = 0.5)
-    double w = 0.5;
-    for (uint i = 0; i < n; i++)
-	x[i] += r[i] / (w*A.get(i,i));
-    residual(A, b, x, r);
-    for (uint i = 0; i < n; i++)
-	x[i] += r[i] / (w*A.get(i,i));
-    residual(A, b, x, r);
-#endif
+    norm = init_norm = calculate_norm(r, A, B, norm_type);
 
     delta = pclock();
     B.solve(r, z);
@@ -66,7 +56,7 @@ void PCGSolver(const CSRMatrix& A, const Vector& b, PrecBase& B, Vector& x, doub
 	daxpy(alpha, p, x);
 	daxpy(-alpha, Ap, r);
 
-	norm = dnrm2(r);
+	norm = calculate_norm(r, A, B, norm_type);
 
 	delta = pclock();
 	B.solve(r, z);

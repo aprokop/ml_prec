@@ -2,10 +2,10 @@
 #include "config/config.h"
 #include "include/time.h"
 #include "modules/prec/amg/amg_prec.h"
-#include "modules/prec/diag/diag.h"
+#include "modules/prec/diag/diag_prec.h"
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
-#include "modules/prec/sym/sym.h"
+#include "modules/prec/sym/sym_prec.h"
 #include "modules/prec/multi_split/multi_split_prec.h"
 #include "modules/solvers/solvers.h"
 
