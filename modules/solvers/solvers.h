@@ -20,5 +20,6 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector
 
 void generate_x0(Vector& x);
 double calculate_norm(const Vector& r, const CSRMatrix& A, const PrecBase& B, NormType norm_type);
+void check_and_replace_eps(double init_norm, double& eps);
 
 #endif // __SOLVERS_H__

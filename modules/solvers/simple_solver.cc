@@ -32,6 +32,8 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector
     int niter = 0;
 #ifdef ABSOLUTE_NORM
     init_norm = 1;
+#else
+    check_and_replace_eps(init_norm, eps);
 #endif
 
     while (norm/init_norm > eps) {

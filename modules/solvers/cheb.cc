@@ -27,6 +27,8 @@ void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, c
     int niter = 1;
 #ifdef ABSOLUTE_NORM
     init_norm = 1;
+#else
+    check_and_replace_eps(init_norm, eps);
 #endif
 
     // ===============    STEP 1    ===============

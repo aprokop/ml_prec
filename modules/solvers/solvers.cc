@@ -1,7 +1,10 @@
 #include "solvers.h"
+#include "include/logger.h"
 
 #include <cstdlib>
 #include <cmath>
+
+DEFINE_LOGGER("Solvers");
 
 void generate_x0(Vector& x) {
 #if 0
@@ -40,4 +43,16 @@ double calculate_norm(const Vector& r, const CSRMatrix& A, const PrecBase& B, No
     }
 
     THROW_EXCEPTION(" One must not be here");
+}
+
+/* Check if the stop criteria uses too small epsilon */
+const double MIN_EPS = 1e-14;
+void check_and_replace_eps(double init_norm, double& eps) {
+    if (init_norm*eps < MIN_EPS) {
+	LOG_INFO("==========================    WARNING    ==========================");
+	LOG_INFO("Bad stop criteria: ||r|| < " << init_norm*eps);
+	eps = MIN_EPS/init_norm;
+	LOG_INFO("New stop criteria: ||r|| < " << MIN_EPS << ".     eps = " << eps);
+	LOG_INFO("==========================    WARNING    ==========================");
+    }
 }
