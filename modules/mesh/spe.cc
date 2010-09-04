@@ -18,25 +18,20 @@ SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
     size_y = ny*hy;
     size_z = nz*hz;
 
-    std::ifstream spe("spe_perm.dat");
-    ASSERT(spe.good(), "Could not open spe");
-
     kx.resize(kN);
     ky.resize(kN);
     kz.resize(kN);
 
-    TIME_INIT();
-    TIME_START();
-    for (uint i = 0; i < kN; i++)
-	spe >> kx[i];
-    for (uint i = 0; i < kN; i++)
-	spe >> ky[i];
-    for (uint i = 0; i < kN; i++)
-	spe >> kz[i];
-    LOG_DEBUG(TIME_INFO("Reading SPE file"));
-    LEAVE_MESSAGE("SPEMesh read");
+    std::ifstream is("spe_perm.dat", std::ifstream::binary);
 
-    // nodes
+    if (!is.good())
+	THROW_EXCEPTION("Problem reading file \"spe_perm.dat\"");
+
+    is.read(reinterpret_cast<char*>(&kx[0]),  kN*sizeof(double));
+    is.read(reinterpret_cast<char*>(&ky[0]),  kN*sizeof(double));
+    is.read(reinterpret_cast<char*>(&kz[0]),  kN*sizeof(double));
+
+    /* Construct nodes */
     nodes.resize(N);
     for (uint k = 0; k < nz; k++)
 	for (uint j = 0; j < ny; j++)
@@ -91,7 +86,6 @@ SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
 
     exit(1);
 #endif
-
 }
 
 void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
