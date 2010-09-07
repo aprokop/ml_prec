@@ -125,121 +125,8 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     SkylineMatrix&  U = li.U;
     CSRMatrix&      L = li.L;
 
-    /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
-    uvector<int> jr(N, -1);
-    /* Sorted vector seems to work much faster than the set container */
-    typedef svector<uint> container;
-
-    container jw;
-    uvector<double> w;
-    uint max_num;
-
-    uint n = N-M-Md;
-    L.ia.push_back(0);     L.nrow = N-Md;    L.ncol = N-Md;
-    U.ia.push_back(0);     U.nrow = M;       U.ncol = N-Md;
-    nA.ia.push_back(0);   nA.nrow = n;      nA.ncol = n;
-
-    /* Reserve some space */
-    L.ja.reserve(2*(N-Md));       L.a.reserve(2*(N-Md));
-    U.ja.reserve(3*M);		  U.a.reserve(3*M);
-    nA.ja.reserve(5*(N-M-Md));    nA.a.reserve(5*(N-M-Md));
-
-    /* TODO: deal with M = 0 */
     log_state("LU");
-    for (uint i = 0; i < N-Md; i++) { /* i corresponds to a permuted index */
-	/* Step 0: clear tmp values filled on previous iteration */
-	unsigned jwn = jw.size();
-	for (uint k = 0; k < jwn; k++)
-	    jr[jw[k]] = -1;
-	jw.clear();
-	w.clear();
-
-	uint arow = map[i];	/* Index of a row in A */
-
-	/* Step 1: create buffer with permuted row of A */
-	/* Add diagonal element to buffer */
-	jr[i] = 0;
-	jw.insert(i);
-	w.push_back(aux[map[i]]);    /* w[0] is the value of the diagonal element */
-
-	/* Add off-diagonal elements to buffer */
-	max_num = 1;
-	ltype.set_row(arow);
-	for (uint j_ = A.ia[arow]+1; j_ < A.ia[arow+1]; j_++) {
-	    uint j = A.ja[j_];
-
-	    if (ltype.stat(j_) == PRESENT) {
-		/* Translate original indices into permuted */
-		uint new_j = rmap[j];   /* permuted index */
-
-		jr[new_j] = max_num++;
-		jw.insert(new_j);
-
-		/* Scale elements: required by our preconditioner theory. See report */
-		double z = A.a[j_] / li.beta;
-
-		w.push_back(z);
-		w[0] -= z;       /* update diagonal */
-	    }
-	}
-
-	/* Step 2: perform sparse gaussian elimination */
-	uint m = std::min(i, M);
-
-	uint k = *(jw.begin());
-	while (k < m) {
-	    double lik = w[jr[k]] / U(k,k);
-
-	    /* Update L */
-	    L.ja.push_back(k);
-	    L.a.push_back(lik);
-
-	    /* Update buffer using k-th row of U */
-	    for (uint j_ = U.ia[k]+1; j_ < U.ia[k+1]; j_++) {
-		uint j = U.ja[j_];      /* j is a permuted index */
-
-		if (jr[j] != -1) {
-		    /* Element already exists in the buffer => update */
-		    w[jr[j]] -= lik*U.a[j_];
-		} else {
-		    /* Element does not exist in the buffer => create */
-		    jr[j] = max_num++;
-		    jw.insert(j);
-		    w.push_back(-lik*U.a[j_]);
-		}
-	    }
-
-	    /* Find next index in the buffer, i.e. next element of L */
-	    k = *(jw.upper_bound(k));
-	}
-	L.ia.push_back(L.ja.size());
-
-	/* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
-	if (i < M) {
-	    /* Update U */
-	    for (container::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
-		U.ja.push_back(*it);
-		U.a.push_back(w[jr[*it]]);
-	    }
-
-	    U.ia.push_back(U.ja.size());
-	} else {
-	    /* Update A_{level+1}
-	     * Note that the process is a bit more difficult than updating U as A is a SkylineMatrix
-	     * but elements added are sorted (i.e. the diagonal element is somewhere in the middle */
-	    uint adind = nA.ja.size();
-	    nA.ja.push_back(i-M);
-	    nA.a.push_back(w[0]);
-
-	    for (container::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
-		if (*it != i) {
-		    nA.ja.push_back(*it-M);
-		    nA.a.push_back(w[jr[*it]]);
-		}
-
-	    nA.ia.push_back(nA.ja.size());
-	}
-    }
+    construct_sparse_lu(A, map, rmap, Md, M, ltype, li.beta, aux, nA, U, L);
     log_state("d");
 
     /* Process diagonal block */
@@ -253,6 +140,7 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
 
     li.w.resize(N);
 
+    uint n = nA.size();
     if (n) {
 	/* Allocate space for Chebyshev vectors */
 	li.tmp.resize(n);

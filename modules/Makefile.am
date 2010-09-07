@@ -32,6 +32,7 @@ libmodules_a_SOURCES = \
 		       prec/multi_split/multi_split_solve.cc \
 		       prec/multi_split/multi_split_misc.h \
 		       prec/multi_split/multi_split_prec.h \
+		       prec/misc/sparse_lu.cc \
 		       prec/misc/misc.cc \
 		       prec/misc/misc.h \
 		       prec/prec_base.h \

@@ -171,6 +171,10 @@ public:
 
     virtual uint index(uint i, uint j) const;
 
+    uvector<uint>& get_ia() { return ia; }
+    uvector<uint>& get_ja() { return ja; }
+    uvector<double>& get_a() { return a; }
+
     const uvector<uint>& get_ia() const { return ia; }
     const uvector<uint>& get_ja() const { return ja; }
     const uvector<double>& get_a() const { return a; }
@@ -180,6 +184,8 @@ public:
 	multiply(*this, v, x);
 	return x;
     }
+
+    void set_size(uint r, uint c) { nrow = r; ncol = c; }
 
     virtual double  operator()(uint i, uint j) const THROW;
     virtual double& operator()(uint i, uint j) THROW;

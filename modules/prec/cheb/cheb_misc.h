@@ -6,18 +6,13 @@
 #include "include/time.h"
 #include "include/uvector.h"
 #include "modules/matrix/matrix.h"
+#include "modules/prec/misc/misc.h"
 
 #include <algorithm>
 #include <map>
 #include <vector>
 
-enum LinkStatus {
-    PRESENT,	/* Link is present */
-    REMOVED,	/* Link is marked as removed */
-    ABSENT	/* Link (i,j) was not in the original matrix */
-};
-
-class LinkTypeCheb {
+class LinkTypeCheb : public LinkTypeBase {
 private:
     uint n;
     const SkylineMatrix& A;	/* we need index() function */
@@ -25,7 +20,7 @@ private:
     const uvector<uint>& ja;	/* reference to A.ja */
     uvector<uint> a;
 
-    uint row;
+    mutable uint row;
 
     /* Checks indices i and j (with ASSERT) and returns index in a */
     uint index(uint i, uint j) const THROW {
@@ -61,8 +56,9 @@ public:
 		a[j_] = (j < i) ? index(j,i) : 2;
 	    }
     }
+    ~LinkTypeCheb() { }
 
-    void set_row(uint i)    { row = i; }
+    void set_row(uint i) const { row = i; }
 
     /* NOTE:
      * for mark(j_), stat(j_), remove(j_)

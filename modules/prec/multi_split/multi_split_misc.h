@@ -7,12 +7,6 @@
 #include "include/uvector.h"
 #include "modules/matrix/matrix.h"
 
-enum LinkStatus {
-    PRESENT,
-    REMOVED,
-    ABSENT
-};
-
 class LinkTypeMultiSplit {
 private:
     uint n;
@@ -37,7 +31,7 @@ public:
 	uint ind = index(i,j);
 	if (ind == uint(-1))
 	    return ABSENT;
-	return a[ind] ? PRESENT : REMOVED;
+	return stat(ind);
     }
 
     /* Mark link as removed */
