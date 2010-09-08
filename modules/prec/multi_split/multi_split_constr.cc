@@ -87,7 +87,11 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 		s -= aij;
 	    } else {
-		/* We exhausted available value of c. No other adjoint links can be removed */
+		/*
+		 * We exhausted available value of c.
+		 * No other adjoint links can be removed
+		 * One could split (if s > 0) but we don't do it now
+		 */
 		break;
 	    }
 	}
@@ -197,9 +201,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     for (uint i = 0; i < N; i++)
 	if (nlinks_out[i] > 0 || nlinks_in[i] > 0) {
 	    n++;
-	    nnz += nlinks_out[i];
+	    nnz += nlinks_out[i]+1;
 	}
-    nnz += n;
 
     /*
      * Construct next level local matrix
@@ -223,7 +226,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	if (nlinks_out[i] > 0 || nlinks_in[i] > 0) {
 	    /* The node goes to the next level */
 
-	    /* Calculate the position of the diagonal element */
+	    /* Save the position of the diagonal element */
 	    uint dind = ind;
 
 	    nA.ja[dind] = i;
