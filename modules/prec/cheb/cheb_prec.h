@@ -17,6 +17,7 @@ private:
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
 	uint M;                     /* Size of the excluded block (not including diagonal block) */
+	uint Md;		    /* Size of the excluded diagonal block */
 
 	double alpha, beta;	    /* Spectral constants used for the level */
 	double lmin, lmax;	    /* Spectral boundaries for the level */
@@ -29,7 +30,6 @@ private:
 	uvector<uint> map;	    /* Indices map: permuted -> original */
 	uvector<uint> rmap;	    /* Indices map: original -> permuted */
 
-	uint Md;		    /* Size of the excluded diagonal block */
 	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
 	mutable
