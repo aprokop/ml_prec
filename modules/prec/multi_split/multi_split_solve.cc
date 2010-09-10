@@ -6,42 +6,47 @@
 
 DEFINE_LOGGER("MultiSplitPrec");
 
-void MultiSplitPrec::truncate_tails(uint level, Vector& f) const THROW {
-    const std::vector<Tail>& tails = levels[level].tails;
-
-    for (uint i = 0; i < tails.size(); i++) {
-	const Tail& tail = tails[i];
-	f[tail[0].index] *= tail[0].a2;
-
-	for (uint j = 1; j < tail.size(); j++) {
-	    const TailNode& tn = tail[j];
-	    f[tn.index] = tn.a2*f[tn.index] + tn.a3*f[tail[j-1].index];
-	}
-    }
-}
-
-void MultiSplitPrec::restore_tails(uint level, const Vector& f, Vector& x) const THROW {
-    const std::vector<Tail>& tails = levels[level].tails;
-
-    for (int i = tails.size()-1; i >= 0; i--) {
-	const Tail& tail = tails[i];
-	if (tail.end_type == 'f')
-	    x[tail.back().index] = f[tail.back().index];
-	for (int j = tail.size() - 2; j >= 0; j--) {
-	    const TailNode& tn = tail[j];
-	    x[tn.index] = tn.a1*x[tail[j+1].index] + f[tn.index];
-	}
-    }
-}
-
+/* Solve diagonal subsystem */
 void MultiSplitPrec::solve_diagonal(uint level, const Vector& f, Vector& x) const THROW {
-    const Level& li                = levels[level];
-    const uvector<uint>& dtr       = li.dtr;
-    const uvector<double>& dtr_val = li.dtr_val;
+    const Level& li             = levels[level];
+    const uvector<uint>& map	= li.map;
+    const uvector<double>& dval = li.dval;
+    uint Md = li.Md;
+    uint N  = li.N;
+    for (uint i = 0; i < Md; i++) {
+	uint j = map[(N-Md) + i];
+	x[j] = dval[i]*f[j];
+    }
+}
 
-    for (uint i_ = 0; i_ < dtr.size(); i_++) {
-	uint i = dtr[i_];
-	x[i] = f[i] * dtr_val[i_];
+/* Solve L*w = f */
+void MultiSplitPrec::solve_L(uint level, const Vector& f, Vector& w) const {
+    const Level& li = levels[level];
+    uint N = li.N, Md = li.Md;
+    const uvector<uint>& map = li.map;
+    const CSRMatrix& L = li.L;
+
+    for (uint i = 0; i < N-Md; i++) { /* i is a permuted index */
+	w[i] = f[map[i]];
+	for (uint j_ = L.ia[i]; j_ < L.ia[i+1]; j_++)
+	    w[i] -= L.a[j_] * w[L.ja[j_]];
+    }
+}
+
+/* Solve U*x = w */
+void MultiSplitPrec::solve_U(uint level, const Vector& w, Vector& x) const {
+    const Level& li = levels[level];
+    uint N = li.N, Md = li.Md, M = li.M;
+    const uvector<uint>& map = li.map;
+    const SkylineMatrix& U = li.U;
+
+    for (int i = M-1; i >= 0; i--) {
+	double z = w[i];
+
+	for (uint j_ = U.ia[i]+1; j_ < U.ia[i+1]; j_++)
+	    z -= U.a[j_] * x[map[U.ja[j_]]];
+
+	x[map[i]] = z / U.a[U.ia[i]];
     }
 }
 
@@ -53,57 +58,54 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const Level& li = levels[level];
 
     uint N = li.N;
+    uint M = li.M;
     uint n = (level < nlevels-1) ? levels[level+1].N : 0;
 
-    const uvector<uint>& tr  = li.tr;
     uint niter = li.niter;
 
     const CSRMatrix& A = levels[level].A;
+    const uvector<uint>& map = li.map;
 
     Vector& r  = li.r;
+    Vector& w  = li.w;
     Vector& u0 = li.u0;
-    Vector& u1 = li.u1;
-    Vector& r1 = li.r1;
-
-    /* Copy f into modifiable vector */
-    r = f;
+    Vector& x2 = li.x2;
+    Vector& F  = li.F;
 
     /* ===============    STEP 1    =============== */
     /*
      * x1 = x0 + solve(f1 - A*x0)
      * But x0 = 0, so x1 = solve(f1)
      */
-    truncate_tails(level, r);
+    r = f;
+    solve_L(level, r, w);
     if (level < nlevels-1) {
-	for (uint i = 0; i < n; i++)
-	    r1[i] = r[tr[i]];
+	memcpy(&F[0], &w[M], n*sizeof(double));
 
-	solve(level+1, r1, u1);
+	solve(level+1, F, x2);
 
 	for (uint i = 0; i < n; i++)
-	    x[tr[i]] = u1[i];
+	    x[map[i+M]] = x2[i];
     }
+    solve_U(level, w, x);
     solve_diagonal(level, r, x);
-    restore_tails(level, r, x);
 
     /* ===============    STEP 2+    =============== */
     /* x^{k+1} = x^k + solve(f1 - A*x^k) */
     for (uint i = 2; i < niter; i++) {
 	residual(A, f, x, r);
 
-	truncate_tails(level, r);
+	solve_L(level, r, w);
 	if (level < nlevels-1) {
-	    for (uint i = 0; i < n; i++)
-		r1[i] = r[tr[i]];
+	    memcpy(&F[0], &w[M], n*sizeof(double));
 
-	    solve(level+1, r1, u1);
+	    solve(level+1, F, x2);
 
 	    for (uint i = 0; i < n; i++)
-		u0[tr[i]] = u1[i];
+		u0[map[i+M]] = x2[i];
 	}
-
+	solve_U(level, w, u0);
 	solve_diagonal(level, r, u0);
-	restore_tails(level, r, u0);
 
 	daxpy(1., u0, x);
     }

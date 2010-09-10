@@ -28,6 +28,7 @@ libmodules_a_SOURCES = \
 		       prec/sym/sym.cc \
 		       prec/sym/sym_prec.h \
 		       prec/multi_split/multi_split_constr.cc \
+		       prec/multi_split/multi_split_mark.cc \
 		       prec/multi_split/multi_split_misc.cc \
 		       prec/multi_split/multi_split_solve.cc \
 		       prec/multi_split/multi_split_misc.h \

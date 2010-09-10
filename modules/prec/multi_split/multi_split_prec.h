@@ -9,26 +9,30 @@
 
 #include <iostream>
 
+class LinkTypeMultiSplit;
 class MultiSplitPrec : public PrecBase {
 private:
     bool use_tails;
 
     struct Level {
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-	double q;		    /* Convergence factor */
+	uint M;                     /* Size of the excluded block (not including diagonal block) */
+	uint Md;		    /* Size of the excluded diagonal block */
 
+	double q;		    /* Convergence factor */
 	uint niter;		    /* Number of iterations on the level */
 
 	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
+	CSRMatrix     L;	    /* L factor for the level (N x N) */
+	SkylineMatrix U;	    /* U factor for the level (M x N) */
+
+	uvector<uint> map;	    /* Indices map: permuted -> original */
+	uvector<uint> rmap;	    /* Indices map: original -> permuted */
+
+	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
 	mutable
-	Vector r, r1, u0, u1;	    /* Some auxilary vectors for internal iterations */
-
-	uvector<uint> tr;	    /* C-indices */
-	uvector<uint> dtr;	    /* F-indices */
-	uvector<double> dtr_val;    /* Value of diagonal for F-nodes */
-
-	std::vector<Tail> tails;    /* Tridiagonal matrices */
+	Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
     };
 
     uint nlevels;
@@ -41,9 +45,13 @@ private:
 
     void solve(uint level, const Vector& f, Vector& x) const THROW;
 
-    void truncate_tails(uint level, Vector& f) const THROW;
-    void restore_tails(uint level, const Vector& f, Vector& x) const THROW;
+    void solve_U(uint level, const Vector& w, Vector& x) const;
+    void solve_L(uint level, const Vector& f, Vector& w) const;
     void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
+
+    void construct_permutation(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_,
+			       uvector<int>& nlinks_in, uvector<int>& nlinks_out,
+			       uint& Md, uint& M, uvector<uint>& map) const;
 
 public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);

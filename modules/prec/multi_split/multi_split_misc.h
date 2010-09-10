@@ -7,7 +7,7 @@
 #include "include/uvector.h"
 #include "modules/matrix/matrix.h"
 
-class LinkTypeMultiSplit {
+class LinkTypeMultiSplit : public LinkTypeBase {
 private:
     uint n;
     const SkylineMatrix& A;
@@ -33,6 +33,9 @@ public:
 	    return ABSENT;
 	return stat(ind);
     }
+
+    /* Extra function not used here */
+    void set_row(uint i) const { }
 
     /* Mark link as removed */
     void remove(uint _j) {   a[_j] = 0;   }

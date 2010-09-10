@@ -44,15 +44,9 @@ public:
 
     virtual void set_row(uint i) const = 0;
 
-    /* Mark link as removed from one end. Returns whether the link can be removed from both ends */
-    virtual LinkStatus mark(uint i, uint j) = 0;
-
     /* Check link status */
     virtual LinkStatus stat(uint i, uint j) const = 0;
     virtual LinkStatus stat(uint j_) const = 0;
-
-    /* Mark link as removed */
-    virtual void remove(uint i, uint j) = 0;
 };
 
 void construct_sparse_lu(const SkylineMatrix& A, const uvector<uint>& map, const uvector<uint>& rmap,
