@@ -143,8 +143,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	li.x2.resize(n);
 	li.F.resize(n);
 
-	if (level+1 >= nlevels)
-	    THROW_EXCEPTION("Too many levels: " << level+1);
+	if (level == nlevels-2)
+	    THROW_EXCEPTION("Too many levels: " << nlevels);
 
 	construct_level(level+1, nA);
     } else {
