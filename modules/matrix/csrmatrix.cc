@@ -124,65 +124,6 @@ bool CSRMatrix::is_symmetric() const {
     return true;
 }
 
-std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
-    std::ostringstream os;
-    os << std::scientific;
-#if 0
-    const int N = 16;
-    double ticks[N] = {-10e6,-10e3, -100, -10, -1, -0.1 -0.01, -0.001, 0, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10e6};
-    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    double s, pos = 0, neg = 0;
-    for (uint i = 0; i < nrow; i++) {
-	s = 0;
-	for (uint j = ia[i]; j < ia[i+1]; j++) {
-	    if (ja[j] != i) {
-		// off-diagonal element
-		bins[std::lower_bound(ticks, ticks+N, a[j]) - ticks]++;
-
-		if (a[j] > 0) {
-		    if (ignore_pos_offdiagonal == false)
-			LOG_DEBUG("Positive element: (" << i << "," << ja[j] << ") : " << a[j]);
-		    pos++;
-		} else if (a[j] < 0) {
-		    neg++;
-		}
-		s += a[j];
-	    } else {
-		if (a[j] < 0)
-		    os << "Negative diagonal element: " << i << " : " << a[j] << std::endl;
-		s += a[j];
-	    }
-	}
-	if (s < -1e-8)
-	    os << "Negative row sum: " << i << " : " << s << std::endl;
-    }
-    os << 100*pos/(pos+neg) << "% off-diagonal are positive" << std::endl;
-    for (int i = 0; i < N-1; i++)
-	os << "[" << ticks[i] << "," << ticks[i+1] << "] : " << bins[i] << std::endl;
-#else
-    /* Some other statistics */
-    const uint N = 14;
-    double ticks[N] = { 0, 1e-15, 1e-12, 1e-6, 1e-4, 1e-2, 1e-1, 0.2, 0.3, 0.5, 0.9, 0.999, 1, 1.1 };
-    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    double sum, mod;
-    for (uint i = 0; i < nrow; i++) {
-	sum = mod = 0;
-	for (uint j = ia[i]; j < ia[i+1]; j++) {
-	    sum += a[j];
-	    mod += fabs(a[j]);
-	}
-	if (sum < 0 && sum > -1e-16)
-	    sum = 0;
-	bins[std::upper_bound(ticks, ticks+N, sum/mod) - (ticks+1)]++;
-    }
-    for (uint i = 0; i+1 < N; i++)
-	os << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
-#endif
-
-    return os.str();
-}
-
 void CSRMatrix::load(const std::string& filename, DumpType type) THROW {
     uint nnz;
     if (type == BINARY) {
@@ -339,4 +280,72 @@ void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW 
 	    for (uint j = A.ia[i]; j < A.ia[i+1]; j++)
 		os << i << " " << A.ja[j] << " " << A.a[j] << std::endl;
     }
+}
+
+void scale_c(CSRMatrix& A, double alpha) {
+    const uvector<uint>& ia = A.get_ia();
+    const uvector<uint>& ja = A.get_ja();
+    uvector<double>& a = A.get_a();
+    uint n = A.rows();
+
+    for (uint i = 0; i < n; i++) {
+	double c = std::accumulate(&a[ia[i]], &a[ia[i+1]], 0.0);
+	A(i,i) += (alpha-1)*c;
+    }
+}
+
+std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
+    std::ostringstream os;
+    os << std::scientific;
+#if 0
+    const int N = 16;
+    double ticks[N] = {-10e6,-10e3, -100, -10, -1, -0.1 -0.01, -0.001, 0, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10e6};
+    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    double s, pos = 0, neg = 0;
+    for (uint i = 0; i < nrow; i++) {
+	s = 0;
+	for (uint j = ia[i]; j < ia[i+1]; j++) {
+	    if (ja[j] != i) {
+		// off-diagonal element
+		bins[std::lower_bound(ticks, ticks+N, a[j]) - ticks]++;
+
+		if (a[j] > 0) {
+		    if (ignore_pos_offdiagonal == false)
+			LOG_DEBUG("Positive element: (" << i << "," << ja[j] << ") : " << a[j]);
+		    pos++;
+		} else if (a[j] < 0) {
+		    neg++;
+		}
+		s += a[j];
+	    } else {
+		if (a[j] < 0)
+		    os << "Negative diagonal element: " << i << " : " << a[j] << std::endl;
+		s += a[j];
+	    }
+	}
+	if (s < -1e-8)
+	    os << "Negative row sum: " << i << " : " << s << std::endl;
+    }
+    os << 100*pos/(pos+neg) << "% off-diagonal are positive" << std::endl;
+    for (int i = 0; i < N-1; i++)
+	os << "[" << ticks[i] << "," << ticks[i+1] << "] : " << bins[i] << std::endl;
+#else
+    /* Some other statistics */
+    const uint N = 14;
+    double ticks[N] = { 0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.9, 1, 1.0000001 };
+    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    double sum, d;
+    for (uint i = 0; i < nrow; i++) {
+	sum = 0;
+	d = a[ia[i]];
+	for (uint j = ia[i]; j < ia[i+1]; j++)
+	    sum += a[j];
+	bins[std::upper_bound(ticks, ticks+N, 1-sum/d) - (ticks+1)]++;
+    }
+    for (uint i = 0; i+1 < N; i++)
+	os << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+#endif
+
+    return os.str();
 }

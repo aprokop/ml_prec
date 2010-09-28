@@ -222,6 +222,7 @@ public:
     friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA,
 				       std::vector<uint>& r, uint my_rank, uint ncpus);
 };
+void scale_c(CSRMatrix& A, double alpha);
 
 class SkylineMatrix : public CSRMatrix {
     uvector<uint> iasym, jasym;
