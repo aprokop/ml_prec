@@ -11,6 +11,8 @@ config/*
 autom4te.cache
 .deps/
 .libs/
+out/
+*/out/
 *.bak
 *~
 *.log
