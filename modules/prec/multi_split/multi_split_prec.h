@@ -49,7 +49,7 @@ private:
     void solve_L(uint level, const Vector& f, Vector& w) const;
     void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
 
-    void construct_permutation(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_,
+    void construct_permutation(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
 			       uvector<int>& nlinks_in, uvector<int>& nlinks_out,
 			       uint& Md, uint& M, uvector<uint>& map) const;
 

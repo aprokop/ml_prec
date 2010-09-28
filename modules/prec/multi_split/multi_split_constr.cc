@@ -113,7 +113,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
      *  M, ..., N-Md  : Nodes which go to the next level
      *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
      */
-    construct_permutation(A, ltype, nlinks_in, nlinks_out, Md, M, map);
+    construct_permutation(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map);
 
     /* Construct reverse map */
     rmap.resize(N);
