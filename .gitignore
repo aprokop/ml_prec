@@ -35,3 +35,6 @@ project/hypre
 tools/check_memory/check_memory
 project/fading/*.bin
 project/fading/*.txt
+*.crs
+*.dat
+*.rhs
