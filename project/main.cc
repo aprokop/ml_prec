@@ -35,6 +35,8 @@ int main (int argc, char * argv[]) {
 
     SkylineMatrix A;
     construct_matrix(cfg, mesh, A);
+    // scale_c(A, 0.001);
+    // std::cout << A.stat(true) << std::endl;
 
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
