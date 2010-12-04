@@ -14,9 +14,9 @@ std::ostream& operator<<(std::ostream& os, const Point& p);
 
 class MeshBase {
 protected:
-    uint   nx,	 ny,	 nz,	N;
-    double hx,	 hy, 	 hz;
-    float  size_x, size_y, size_z; /* Needed for graph_planes */
+    uint   nx,	 ny,	 nz,	N;  /* Mesh dimensions */
+    double hx,	 hy, 	 hz;	    /* Mesh steps */
+    float  size_x, size_y, size_z;  /* Real mesh sizes */
 
     std::vector<Point> nodes;
 
@@ -51,7 +51,7 @@ public:
 // #define ZXY
 class SPEMesh : public MeshBase {
 private:
-    std::vector<double> kx, ky, kz;
+    std::vector<double> kx, ky, kz;	    /* Diffusion coefficients */
     uint knx, kny, knz,	kN;
 
     uint index_k(uint i, uint j, uint k) const {

@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-
+/* Chebyshev polynomial function */
 double cheb(double x, uint k) {
     ASSERT(x >= 1, "x = " << x);
 

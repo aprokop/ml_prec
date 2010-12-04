@@ -23,27 +23,27 @@ enum PrecType {
 
 struct Config {
     /* Chebyshev iterations parameters */
-    std::vector<uint>   niters;
-    std::vector<double> sigmas;
+    std::vector<uint>   niters;		/* Number of level iterations */
+    std::vector<double> sigmas;		/* Level sigmas (or q for unsymmetric) */
 
     /* Mesh parameters */
-    double c;
-    uint   nx, ny, nz;
+    double c;				/* Reaction coefficient */
+    uint   nx, ny, nz;			/* Mesh dimensions */
 
     /* Run parameters */
-    uint   ntests;
-    bool   use_tails;
-    bool   optimize_storage;
-    bool   unsym_matrix;
-    double unsym_shift;
-    SolverType solver;
-    PrecType prec;
+    uint   ntests;			/* Number of tests for averaging */
+    bool   use_tails;			/* Optional use of tail elimination */
+    bool   optimize_storage;		/* Storage optimization for symmetric matrices */
+    bool   unsym_matrix;		/* Symmetricity of the matrix */
+    double unsym_shift;			/* Degree of the generated unsymmetry */
+    SolverType solver;			/* External solver */
+    PrecType prec;			/* Preconditioner */
 
     /* Other */
-    bool   dump_data;
+    bool   dump_data;			/* Dumping matrix and rhs */
 
-    std::string matrix;
-    std::string vector;
+    std::string matrix;			/* Mesh file */
+    std::string vector;			/* Vector file */
 
     friend std::ostream& operator<<(std::ostream& os, const Config& config);
 };
