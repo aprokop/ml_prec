@@ -56,3 +56,16 @@ void check_and_replace_eps(double init_norm, double& eps) {
 	LOG_INFO("==========================    WARNING    ==========================");
     }
 }
+
+std::ostream& operator<<(std::ostream& os, const SolverStats& stats) {
+    os << std::fixed << std::setprecision(3);
+    os << std::endl;
+    os << "Residual time       :  avg = " << stats.t_resid << "\t total = " << stats.t_resid_total << std::endl;
+    os << "Prec inversion time :  avg = " << stats.t_prec  << "\t total = " << stats.t_prec_total << std::endl;
+    if (stats.t_const)
+	os << "Time of (possible) construction: " << stats.t_const << std::endl;
+    os << "Number of iter      : " << stats.niter << std::endl;
+    os << "Time of solution    : " << stats.t_sol << std::endl;
+
+    return os;
+}

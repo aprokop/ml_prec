@@ -5,7 +5,7 @@
 
 DEFINE_LOGGER("SimpleSolver");
 
-void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x,
+void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
 		  double eps, NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
@@ -62,21 +62,27 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector
     }
     gtime = pclock() - gtime;
 
-    if (!silent) {
-	LLL_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+    if (ninv) {
+	stats.t_resid = mult/nmult;
+	stats.t_prec  = inv/ninv;
+	stats.t_const = 0;
 
-	LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult/nmult << "\t total = " << mult);
-	if (ninv) {
-	    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv/ninv << "\t total = " << inv);
-	    double cstr_pos = cstr - inv/ninv;
-	    if (cstr_pos > 1e-1) {
-		LLL_DEBUG(std::fixed << std::setprecision(3) <<
-			  "Time of (possible) construction: " << cstr_pos);
-		LLL_DEBUG(std::fixed << std::setprecision(3) <<
-			  "Time of (possible) solution    : " << gtime - cstr_pos);
-	    }
+	stats.niter         = niter;
+	stats.t_resid_total = mult;
+	stats.t_prec_total  = inv;
+	stats.t_sol         = gtime;
+
+	double cstr_pos = cstr - stats.t_prec;
+	if (cstr_pos > 1.05*stats.t_prec) {
+	    stats.t_const  = cstr_pos;
+	    stats.t_sol   -= cstr_pos;
 	}
     } else {
-	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+	THROW_EXCEPTION("No need to iterate");
     }
+
+    if (!silent)
+	LLL_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+    else
+	LOG_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 }

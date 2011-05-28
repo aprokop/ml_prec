@@ -23,6 +23,19 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     }
     os << "Dump data        : " << (cfg.dump_data ? "true" : "false") << std::endl;
 
+    if (cfg.analysis != ANAL_NONE) {
+	os << "Analysis         : ";
+	switch(cfg.analysis) {
+	    case ANAL_HISTOGRAMM: os << "histogramm"; break;
+	    case ANAL_QDROPPED  : os << "qdropped"; break;
+	    case ANAL_Q_REM_FIXED_ROW: os << "q_rem_fixed_row"; break;
+	    default 		: THROW_EXCEPTION("Unknown AnalType");
+	}
+	os << std::endl;
+
+	return os;
+    }
+
     /* Run parameters */
     os << "Number of tests  : " << cfg.ntests << std::endl;
     os << "Use tails        : " << (cfg.use_tails ? "true" : "false") << std::endl;

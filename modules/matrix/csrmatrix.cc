@@ -299,7 +299,7 @@ std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
     os << std::scientific;
 #if 0
     const int N = 16;
-    double ticks[N] = {-10e6,-10e3, -100, -10, -1, -0.1 -0.01, -0.001, 0, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10e6};
+    double ticks[N] = {-1e6,-1e3, -100, -10, -1, -0.1 -0.01, -0.001, 0, 0.001, 0.01, 0.1, 1, 10, 100, 1e3, 1e6};
     int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     double s, pos = 0, neg = 0;
     for (uint i = 0; i < nrow; i++) {
@@ -329,22 +329,6 @@ std::string CSRMatrix::stat(bool ignore_pos_offdiagonal) const {
     os << 100*pos/(pos+neg) << "% off-diagonal are positive" << std::endl;
     for (int i = 0; i < N-1; i++)
 	os << "[" << ticks[i] << "," << ticks[i+1] << "] : " << bins[i] << std::endl;
-#else
-    /* Some other statistics */
-    const uint N = 14;
-    double ticks[N] = { 0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.9, 1, 1.0000001 };
-    int bins[N] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    double sum, d;
-    for (uint i = 0; i < nrow; i++) {
-	sum = 0;
-	d = a[ia[i]];
-	for (uint j = ia[i]; j < ia[i+1]; j++)
-	    sum += a[j];
-	bins[std::upper_bound(ticks, ticks+N, 1-sum/d) - (ticks+1)]++;
-    }
-    for (uint i = 0; i+1 < N; i++)
-	os << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
 #endif
 
     return os.str();

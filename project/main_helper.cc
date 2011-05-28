@@ -10,6 +10,11 @@
 #include <getopt.h>
 #include <iterator>
 #include <numeric>
+#include <fstream>
+
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 DEFINE_LOGGER("Main");
 
@@ -34,6 +39,9 @@ static void usage() {
     std::cout << "  -p|--prec={uh_cheb|amg|diag|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
+    std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row}" << std::endl;
+    std::cout << "                                  Matrix analysis to perform" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -55,6 +63,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.prec             = UH_CHEB_PREC;
 
     cfg.dump_data      = false;
+    cfg.dir	       = std::string("results");
+    cfg.analysis       = ANAL_NONE;
 
     static struct option long_options[] = {
 	{"sigmas",		required_argument,  NULL, 's'},
@@ -73,11 +83,13 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"prec",		required_argument,  NULL, 'p'},
 	{"dump",		no_argument,	    NULL, 'd'},
 	{"unsym-shift",		required_argument,  NULL, 'S'},
+	{"dir",			required_argument,  NULL, 'D'},
+	{"analysis",		required_argument,  NULL, 'A'},
 	{0, 0, 0, 0}
     };
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:d", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -146,6 +158,18 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'u': cfg.unsym_matrix = true; break;
 	    case 'S': cfg.unsym_shift = atof(optarg); break;
 	    case 'd': cfg.dump_data = true; break;
+	    case 'D': cfg.dir = std::string(optarg); break;
+	    case 'A': if (!strcmp(optarg, "qdropped"))
+			  cfg.analysis = ANAL_QDROPPED;
+		      else if (!strcmp(optarg, "none"))
+			  cfg.analysis = ANAL_NONE;
+		      else if (!strcmp(optarg, "histogramm"))
+			  cfg.analysis = ANAL_HISTOGRAMM;
+		      else if (!strcmp(optarg, "q_rem_fixed_row"))
+			  cfg.analysis = ANAL_Q_REM_FIXED_ROW;
+		      else
+			  THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
+		      break;
 	    case '?':
 	    default:
 		      abort();
@@ -174,6 +198,12 @@ int set_params(int argc, char * argv[], Config& cfg) {
 
     if (cfg.unsym_matrix == true)
 	cfg.solver = SIMPLE_SOLVER;
+
+    /* Create directory for results */
+    // if (mkdir("res", 0700) == -1) {
+	// THROW_EXCEPTION("Cannot create directory \"" << cfg.dir << "\" (" << strerror(errno) << ")");
+	// return 1;
+    // }
 
     return 0;
 }
@@ -206,8 +236,8 @@ void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) 
 	bool transform = true;
 
 	/* By default, we load matrix in BINARY mode, because it's much faster */
-	A.load(cfg.matrix, transform);
-	// A.load(cfg.matrix, transform, ASCII);
+	// A.load(cfg.matrix, transform);
+	A.load(cfg.matrix, transform, ASCII);
     }
 }
 
@@ -227,4 +257,170 @@ void dump_data(const SkylineMatrix& A, const Vector& b) {
     dump("matrix_hypre.dat", A, BINARY);
 #endif
     dump("vector_hypre.dat.00000", b, HYPRE);
+}
+
+/*
+ * Insertion sort of vector sorted with respect to absolute values in vector a
+ * NOTE: later if for some matrices we would get many elements in a row we could
+ * replace this sort with a faster one (think heapsort)
+ * T must support fabs and < operators
+ */
+static void psort(const double *a, uint n, uvector<uint>& sorted) {
+    sorted[0] = 0;
+    double v;
+    int j;
+    for (uint i = 1; i < n; i++) {
+	v = fabs(a[i]);
+	for (j = i-1; j >= 0 && fabs(a[sorted[j]]) > v; j--)
+	    sorted[j+1] = sorted[j];
+	sorted[j+1] = i;
+    }
+}
+
+void GlobalStats::dump(const std::string& dir) const {
+    std::ofstream ofs_const((dir + "t_const").c_str()); ofs_const << std::fixed << std::setprecision(3) << t_const; ofs_const.close();
+    std::ofstream ofs_prec((dir + "t_prec").c_str());   ofs_prec  << std::fixed << std::setprecision(3) << t_prec;  ofs_prec.close();
+    std::ofstream ofs_sol((dir + "t_sol").c_str());     ofs_sol   << std::fixed << std::setprecision(3) << t_sol;   ofs_sol.close();
+    std::ofstream ofs_total((dir + "t_total").c_str()); ofs_total << std::fixed << std::setprecision(3) << t_total; ofs_total.close();
+    std::ofstream ofs_niter((dir + "niter").c_str());   ofs_niter << std::fixed << std::setprecision(3) << niter;   ofs_niter.close();
+}
+
+void examine(const SkylineMatrix& A, AnalType analysis) {
+    uint N = A.size();
+    const uvector<uint>& ia = A.get_ia();
+    const uvector<uint>& ja = A.get_ja();
+    const uvector<double>& a = A.get_a();
+
+    if (analysis == ANAL_Q_REM_FIXED_ROW) {
+	/* Find qs to remove a fixed number of links from each row */
+	uint MAX_QS = 4;
+	uvector<double> qs(MAX_QS, 0);
+
+	uint IQ = 1;
+	std::ofstream ofs("iq.dat");
+
+	uvector<uint> sorted(1000);
+	double c, d;
+	double beta = 0.1;
+	for (uint i = 0; i < N; i++) {
+	    uint rstart = ia[i];		/* Row start */
+	    uint rend   = ia[i+1];		/* Row end */
+	    uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+
+	    d = a[rstart]; // diagonal element
+	    c = 0;
+	    for (uint j_ = rstart; j_ < rend; j_++)
+		c += a[j_];
+
+	    if (1-c/d > 1-beta)
+		continue;
+
+	    /* Sort off-diagonal elements wrt their abs values */
+	    psort(&a[0] + rstart+1, nrz, sorted);
+
+	    double s = 0;
+	    uint k;
+	    for (k = 0; k < nrz && k < MAX_QS; k++) {
+		uint j_ = rstart+1 + sorted[k];
+
+		double aij = -a[j_];
+		s += aij;
+
+		double q = s/(c+s);
+
+		// if (k == IQ-1 && q > 0.0001)
+		    // ofs << i << " " << q << std::endl;
+
+		if (q > qs[k])
+		    qs[k] = q;
+	    }
+	    if (k == nrz)
+		for (; k < MAX_QS; k++) {
+		    double q = s/(c+s);
+		    if (q > qs[k])
+			qs[k] = q;
+		}
+	}
+	std::cout << std::fixed << std::setprecision(3);
+	for (uint k = 0; k < MAX_QS; k++)
+	    std::cout << "To remove " << k+1 << " element from each line we need q = " << qs[k] << std::endl;
+    }
+    if (analysis == ANAL_QDROPPED) {
+	/* Show number of dropped links for each value of q */
+	uvector<uint> sorted(1000);
+	double c, d;
+	double beta = 0.00;
+
+	std::ofstream ofs("qdropped.dat");
+
+	ofs << "0 0 " << std::endl;
+	for (double q = 0.01; q < 0.99; q += 0.01) {
+	    std::cout << "q = " << q << std::endl;
+	    uint dropped = 0;
+
+	    for (uint i = 0; i < N; i++) {
+		uint rstart = ia[i];		    /* Row start */
+		uint rend   = ia[i+1];		    /* Row end */
+		uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+
+		d = a[rstart]; // diagonal element
+		c = 0;
+		for (uint j_ = rstart; j_ < rend; j_++)
+		    c += a[j_];
+
+		if (1-c/d > 1-beta)
+		    continue;
+
+		/* Sort off-diagonal elements wrt their abs values */
+		psort(&a[0] + rstart+1, nrz, sorted);
+
+		double s = q/(1-q)*c;
+		for (uint k = 0; k < nrz; k++) {
+		    uint j_ = rstart+1 + sorted[k];
+
+		    double aij = -a[j_];
+		    if (aij <= s) {
+			s -= aij;
+			dropped++;
+		    }
+		}
+	    }
+	    ofs << q << " " << dropped << std::endl;
+	}
+	ofs << "1.0 " << ia[N]-N << std::endl;
+    }
+    if (0) {
+	uvector<uint> sorted(1000);
+	double min = 1e50, max = 0;
+	for (uint i = 0; i < N; i++) {
+	    uint rstart = ia[i];		    /* Row start */
+	    uint rend   = ia[i+1];		    /* Row end */
+	    uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+
+	    /* Sort off-diagonal elements wrt their abs values */
+	    psort(&a[0] + rstart+1, nrz, sorted);
+
+	    double ratio = a[rstart+1+sorted[nrz-1]]/a[rstart+1+sorted[0]];
+	    if (ratio < min) min = ratio;
+	    if (ratio > max) max = ratio;
+	    std::cout << i << ": " << ratio<< std::endl;
+	}
+	std::cout << "Ratio: [" << min << "," << max << "]\n";
+    }
+    if (analysis == ANAL_HISTOGRAMM) {
+	const uint n = 14;
+	double ticks[n] = { 0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.9, 1, 1.0000001 };
+	int bins[n] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	double sum, d;
+	for (uint i = 0; i < N; i++) {
+	    sum = 0;
+	    d = a[ia[i]];
+	    for (uint j = ia[i]; j < ia[i+1]; j++)
+		sum += a[j];
+	    bins[std::upper_bound(ticks, ticks+n, 1-sum/d) - (ticks+1)]++;
+	}
+	for (uint i = 0; i+1 < n; i++)
+	    std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+    }
 }

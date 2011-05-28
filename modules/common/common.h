@@ -21,6 +21,13 @@ enum PrecType {
     MULTI_SPLIT_PREC
 };
 
+enum AnalType {
+    ANAL_NONE,
+    ANAL_HISTOGRAMM,
+    ANAL_QDROPPED,
+    ANAL_Q_REM_FIXED_ROW
+};
+
 struct Config {
     /* Chebyshev iterations parameters */
     std::vector<uint>   niters;		/* Number of level iterations */
@@ -41,6 +48,8 @@ struct Config {
 
     /* Other */
     bool   dump_data;			/* Dumping matrix and rhs */
+    std::string dir;			/* Directory to dump the results */
+    AnalType analysis;			/* Type of matrix analysis */
 
     std::string matrix;			/* Mesh file */
     std::string vector;			/* Vector file */
