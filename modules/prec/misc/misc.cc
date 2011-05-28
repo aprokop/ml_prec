@@ -41,7 +41,13 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 
     uint N = A.size();
 
-    for (uint k = 0; k < n; k += 7) {
+// #define REGION_ONLY
+#ifndef REGION_ONLY
+    for (uint k = 0; k < n3; k += 7) {
+#else
+    uint k = 63; {
+#endif
+
 	/* Start page */
 	ofs << "%%Page: " << ++pages << std::endl;
 	// ofs << "0 setlinewidth\n";
@@ -79,6 +85,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 
 	/* Need to return scale to (1,1) as we'll have ellipses using /a if not */
 	ofs << "grestore\n";
+#if 0
 	for (uint i = 0; i < N; i++)
 	    if (marked[i]) {
 		switch (orth[i]) {
@@ -98,6 +105,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 		    case 'z': ofs << mult_x*a.x << " " << mult_y*a.y << " a\n"; break;
 		}
 	    }
+#endif
     }
 
     /* Add footer */
@@ -113,6 +121,11 @@ void mark_set_nodes(const MeshBase& mesh, char plane, uint ind, const uvector<ui
     std::map<uint,uint> rmap;
     for (uint i = 0; i < n; i++)
 	rmap[map[i]] = i;
+
+#ifdef REGION_ONLY
+    uint n1min = 44, n1max = 60;
+    uint n2min = 50, n2max = 100;
+#endif
 
     std::map<uint,uint>::const_iterator it;
     switch (plane) {
@@ -130,9 +143,14 @@ void mark_set_nodes(const MeshBase& mesh, char plane, uint ind, const uvector<ui
 	    break;
 	case 'z':
 	    for (uint i = 0; i < nx; i++)
-		for (uint j = 0; j < ny; j++)
+		for (uint j = 0; j < ny; j++) {
+#ifdef REGION_ONLY
+		    if (i < n1min || i > n1max || j < n2min || j > n2max)
+			continue;
+#endif
 		    if ((it = rmap.find(mesh.index(i, j, ind))) != rmap.end())
 			marked[it->second] = 1;
+		}
 	    break;
     }
 }

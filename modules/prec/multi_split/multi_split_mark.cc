@@ -87,7 +87,7 @@ void MultiSplitPrec::construct_permutation(const SkylineMatrix& A, const LinkTyp
 	    }
     }
 
-#if 1
+#if 0
     /* Group 2 : all nodes with very small c */
     uint c_marked = 0;
     for (uint i = 0; i < N; i++)
