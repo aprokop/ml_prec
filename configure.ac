@@ -8,8 +8,8 @@ AC_LANG([C++])
 
 # Check for programs
 AC_PROG_CC()
-# AC_PROG_CXX([g++])
-AC_PROG_CXX([mpicxx g++])
+AC_PROG_CXX([g++])
+# AC_PROG_CXX([mpicxx g++])
 # AC_PROG_F77([gfortran])
 AC_PROG_F77
 AC_PROG_LIBTOOL
@@ -95,9 +95,9 @@ fi
 AC_MSG_CHECKING([wish for HYPRE])
 AC_ARG_ENABLE(hypre,
     [AC_HELP_STRING([--enable-hypre],
-		    [enable HYPRE framework @<:@default=yes@:>@])],
+		    [enable HYPRE framework @<:@default=no@:>@])],
     enable_hypre=$withval,
-    enable_hypre="yes")
+    enable_hypre="no")
 AC_MSG_RESULT($enable_hypre)
 AM_CONDITIONAL([HYPRE], [test x$enable_hypre = xyes])
 if test x$enable_hypre = xyes; then
