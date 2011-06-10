@@ -164,8 +164,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 	levels[l].q = (l >= cfg.sigmas.size() ? cfg.sigmas.back() : cfg.sigmas[l]);
 
     /* Set number of iterations per level */
-    levels[0].niter = 1;
-    for (uint l = 1; l < nlevels; l++)
+    for (uint l = 0; l < nlevels; l++)
 	levels[l].niter = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
 
     construct_level(0, A);

@@ -92,7 +92,7 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
 
     /* ===============    STEP 2+    =============== */
     /* x^{k+1} = x^k + solve(f1 - A*x^k) */
-    for (uint i = 2; i < niter; i++) {
+    for (uint i = 2; i <= niter; i++) {
 	residual(A, f, x, r);
 
 	solve_L(level, r, w);
