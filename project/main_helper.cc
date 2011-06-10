@@ -62,9 +62,9 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
 
-    cfg.dump_data      = false;
-    cfg.dir	       = std::string("results");
-    cfg.analysis       = ANAL_NONE;
+    cfg.dump_data       = false;
+    cfg.dir	        = std::string("results/");
+    cfg.analysis        = ANAL_NONE;
 
     static struct option long_options[] = {
 	{"sigmas",		required_argument,  NULL, 's'},
