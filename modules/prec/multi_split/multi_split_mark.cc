@@ -110,6 +110,20 @@ void MultiSplitPrec::construct_permutation(const SkylineMatrix& A, const LinkTyp
     LOG_INFO("Excluded using small c criteria: " << c_marked);
 #endif
 
+#if 0
+    /* Group 2 : all nodes with two links
+     * NOTE: we don't mark links as removed, as we assume that this is the last step */
+    const int max_links = 2;
+    for (uint i = 0; i < N; i++)
+	if (marked[i] == 0 && (nlinks_in[i] <= max_links || nlinks_out[i] <= max_links)) {
+	    map[pind++] = i;
+	    nlinks_in[i] = 0;
+	    nlinks_out[i] = -1;
+
+	    marked[i] = 1;
+	}
+#endif
+
     M = pind;
 
     /* Mark the diagonal nodes last */
