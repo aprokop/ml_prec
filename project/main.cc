@@ -58,6 +58,7 @@ int main (int argc, char * argv[]) {
 	// std::cout << A.stat(false) << std::endl;
 	return 0;
     }
+    // analysis(A);
 
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
@@ -109,8 +110,8 @@ int main (int argc, char * argv[]) {
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
 	MultiSplitPrec& Bms = static_cast<MultiSplitPrec&>(B);
 	LOG_INFO(Bms);
-#if 1
-	Bms.graph_planes("grids.ps", 2, 'z', mesh);
+#if 0
+	Bms.graph_planes("grids.ps", 4, 'z', mesh);
 	return 0;
 #endif
     }

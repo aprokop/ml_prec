@@ -7,7 +7,7 @@ else
 endif
 
 bin_PROGRAMS = spe_prec $(HYP) convert
-spe_prec_SOURCES = main.cc main_helper.cc
+spe_prec_SOURCES = main.cc main_helper.cc analysis.cc
 hypre_SOURCES = hypre.cc
 
 spe_prec_LDADD = \
