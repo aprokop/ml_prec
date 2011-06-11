@@ -6,7 +6,7 @@
 class DiagPrec: public PrecBase {
 private:
     uint n;
-    std::vector<double> d;
+    uvector<double> d;	/* d containce inverse of the diagonal */
 
 public:
     DiagPrec(const SkylineMatrix& A);

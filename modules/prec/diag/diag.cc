@@ -16,11 +16,8 @@ DiagPrec::DiagPrec(const SkylineMatrix& A) {
     n = A.rows();
 
     d.resize(n);
-    double v;
     for (uint i = 0; i < n; i++) {
-	v = A(i,i);
-	if (v <= 0)
-	    THROW_EXCEPTION("Something is very strange: (" << i << ") has " << v << " on diagonal, aborting...");
-	d[i] = 1./v;
+	ASSERT(A(i,i) > 0, "Something is very strange: (" << i << ") has " << A(i,i) << " on diagonal, aborting...");
+	d[i] = 1./A(i,i);
     }
 }
