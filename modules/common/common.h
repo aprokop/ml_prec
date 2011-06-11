@@ -14,11 +14,12 @@ enum SolverType {
 };
 
 enum PrecType {
-    UH_CHEB_PREC,
-    AMG_PREC,
-    DIAG_PREC,
-    SYM_SPLIT_PREC,
-    MULTI_SPLIT_PREC
+    UH_CHEB_PREC,	// Kuznetsov-Prokopenko
+    AMG_PREC,		// AMG (Stüben)
+    DIAG_PREC,		// Jacobi
+    GS_PREC,		// Gauss-Seidel
+    SYM_SPLIT_PREC,	// Kuznetsov-Prokopenko for symmetrized matrix
+    MULTI_SPLIT_PREC	// Kuznetsov-Prokopenko (nested iterations for unsymmetric matrix)
 };
 
 enum AnalType {

@@ -3,6 +3,7 @@
 #include "include/time.h"
 #include "modules/prec/amg/amg_prec.h"
 #include "modules/prec/diag/diag_prec.h"
+#include "modules/prec/gs/gs_prec.h"
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
 #include "modules/prec/sym/sym_prec.h"
@@ -87,6 +88,7 @@ int main (int argc, char * argv[]) {
 	    case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
 	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
+	    case GS_PREC          : B_ = new GSPrec(A);			break;
 	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
 	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
 	}
