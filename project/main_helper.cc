@@ -235,16 +235,15 @@ void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) 
 	 */
 	bool transform = true;
 
-	/* By default, we load matrix in BINARY mode, because it's much faster */
-	// A.load(cfg.matrix, transform);
-	A.load(cfg.matrix, transform, ASCII);
+	DumpType type = ((strstr(cfg.matrix.c_str(), ".crs") ? true : false)) ? ASCII : BINARY;
+	A.load(cfg.matrix, transform, type);
     }
 }
 
 void construct_vector(const Config& cfg, Vector& b) {
     if (!cfg.vector.empty()) {
-	/* By default, we load vector in ASCII mode, cause binary is not implemented yet */
-	load(b, cfg.vector, ASCII);
+	DumpType type = ((strstr(cfg.vector.c_str(), ".crs") ? true : false)) ? ASCII : BINARY;
+	load(b, cfg.vector, type);
     }
 }
 
