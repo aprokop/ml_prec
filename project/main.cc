@@ -124,23 +124,31 @@ int main (int argc, char * argv[]) {
     /* =====  Solution phase (preconditioner)  ===== */
     for (uint i = 0; i < cfg.ntests; i++) {
 	SolverStats stats;
-	if (!cfg.unsym_matrix) {
-	    /* The matrix is symmetric */
-	    if (cfg.solver == PCG_SOLVER)
+	switch (cfg.solver) {
+	    case PCG_SOLVER : {
+		if (cfg.unsym_matrix)
+		    LOG_WARN("Applying PCGSolver for unsymmetric matrix");
 		PCGSolver(A, b, B, x, eps);
-	    else {
-		/* ChebSolver requires lower and upper bounds on eigenvalues. Thus
-		 * it is applicable only to Chebyshev preconditioner */
-		Prec& Bcheb = static_cast<Prec&>(B);
-		ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
+		break;
 	    }
-	} else {
-	    /*
-	     * The matrix is unsymmetric
-	     * Works only with a simple solver (exterior) for now. In the future,
-	     * we could use them with GMRES of BiCGStab
-	     */
-	    SimpleSolver(A, b, B, x, stats, eps);
+	    case CHEB_SOLVER : {
+		/*
+		 * ChebSolver requires lower and upper bounds on eigenvalues. Thus
+		 * it is applicable only to Chebyshev preconditioner
+		 */
+		Prec& Bcheb = dynamic_cast<Prec&>(B);
+		ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
+		break;
+	    }
+	    case SIMPLE_SOLVER : {
+		SimpleSolver(A, b, B, x, stats, eps);
+		break;
+	    }
+	    case DIRECT_SOLVER : {
+		void *Symbolic = NULL, *Numeric = NULL;
+		DirectSolver(A, b, x, Symbolic, Numeric, stats);
+		break;
+	    }
 	}
 	stimes.push_back(stats.t_sol);
 

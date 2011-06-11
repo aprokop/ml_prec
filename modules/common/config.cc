@@ -46,6 +46,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	case PCG_SOLVER    : os << "pcg"; break;
 	case CHEB_SOLVER   : os << "cheb"; break;
 	case SIMPLE_SOLVER : os << "simple"; break;
+	case DIRECT_SOLVER : os << "direct"; break;
 	default		: THROW_EXCEPTION("Unknown SolverType");
     }
     os << std::endl;

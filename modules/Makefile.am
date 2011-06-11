@@ -42,6 +42,7 @@ libmodules_a_SOURCES = \
 		       solvers/pcg.cc \
 		       solvers/cheb.cc \
 		       solvers/simple_solver.cc \
+		       solvers/umfpack.cc \
 		       solvers/amg1r6.f \
 		       solvers/solvers.cc \
 		       solvers/solvers.h

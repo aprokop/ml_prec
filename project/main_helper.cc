@@ -28,7 +28,8 @@ static void usage() {
     std::cout << "  -x|--nx                         Number of points in x direction for SPE" << std::endl;
     std::cout << "  -y|--ny                         Number of points in y direction for SPE" << std::endl;
     std::cout << "  -z|--nz                         Number of points in z direction for SPE" << std::endl;
-    std::cout << "  -o|--solver={cheb|pcg}          Outer solver type" << std::endl;
+    std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
+    std::cout << "                                  Outer solver type" << std::endl;
     std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
     std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
@@ -136,6 +137,10 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.solver = PCG_SOLVER;
 		      else if (!strcmp(optarg, "cheb"))
 			  cfg.solver = CHEB_SOLVER;
+		      else if (!strcmp(optarg, "simple"))
+			  cfg.solver = SIMPLE_SOLVER;
+		      else if (!strcmp(optarg, "direct"))
+			  cfg.solver = DIRECT_SOLVER;
 		      else
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
