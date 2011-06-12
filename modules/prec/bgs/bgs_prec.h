@@ -3,10 +3,11 @@
 
 #include "modules/prec/prec_base.h"
 
-// #define MSPLIT_SUBST
+// #define PREC_SUBST
 
-#ifdef MSPLIT_SUBST
+#ifdef PREC_SUBST
 #include "modules/prec/multi_split/multi_split_prec.h"
+#include "modules/prec/diag/diag_prec.h"
 #endif
 
 class BGSPrec: public PrecBase {
@@ -15,8 +16,8 @@ private:
     SkylineMatrix A1, A2;
     CSRMatrix A21;
 
-#ifdef MSPLIT_SUBST
-    MultiSplitPrec *B1, *B2;
+#ifdef PREC_SUBST
+    PrecBase *B1, *B2;
 #endif
 
     /* UMFPACK factorization of the diagonal blocks */

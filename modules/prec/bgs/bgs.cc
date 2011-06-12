@@ -22,7 +22,7 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
 
     /* Solve A1 system */
     Vector x1(n1);
-#ifndef MSPLIT_SUBST
+#ifndef PREC_SUBST
     DirectSolver(A1, f1, x1, A1_symbolic, A1_numeric, stats);
 #else
     // SimpleSolver(A1, f1, *B1, x1, stats, 1e-2, NORM_L2, true);
@@ -33,7 +33,7 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
     Vector r(n2);
     residual(A21, f2, x1, r);
     Vector x2(n2);
-#ifndef MSPLIT_SUBST
+#ifndef PREC_SUBST
     DirectSolver(A2, r, x2, A2_symbolic, A2_numeric, stats);
 #else
     // SimpleSolver(A2, r, *B2, x2, stats, 1e-2, NORM_L2, true);
@@ -121,13 +121,18 @@ BGSPrec::BGSPrec(const SkylineMatrix& A) {
     A1_symbolic = A1_numeric = NULL;
     A2_symbolic = A2_numeric = NULL;
 
-#ifdef MSPLIT_SUBST
+#ifdef PREC_SUBST
     Config cfg;
     cfg.use_tails = true;
     cfg.niters = std_vector<uint>(2, 1, 1);
     cfg.sigmas.push_back(0.98);
 
+#if 0
     B1 = new MultiSplitPrec(A1, cfg);
     B2 = new MultiSplitPrec(A2, cfg);
+#else
+    B1 = new DiagPrec(A1);
+    B2 = new DiagPrec(A2);
+#endif
 #endif
 }
