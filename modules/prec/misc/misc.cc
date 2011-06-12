@@ -43,7 +43,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 
 // #define REGION_ONLY
 #ifndef REGION_ONLY
-    for (uint k = 0; k < n3; k += 7) {
+    for (uint k = 0; k < n; k += 7) {
 #else
     uint k = 63; {
 #endif
