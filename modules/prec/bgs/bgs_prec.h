@@ -3,7 +3,7 @@
 
 #include "modules/prec/prec_base.h"
 
-#define MSPLIT_SUBST
+// #define MSPLIT_SUBST
 
 #ifdef MSPLIT_SUBST
 #include "modules/prec/multi_split/multi_split_prec.h"
@@ -20,8 +20,8 @@ private:
 #endif
 
     /* UMFPACK factorization of the diagonal blocks */
-    void *A1_symbolic, *A1_numeric;
-    void *A2_symbolic, *A2_numeric;
+    mutable void *A1_symbolic, *A1_numeric;
+    mutable void *A2_symbolic, *A2_numeric;
 
 public:
     BGSPrec(const SkylineMatrix& A);
