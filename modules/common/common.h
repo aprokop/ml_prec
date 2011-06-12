@@ -19,6 +19,7 @@ enum PrecType {
     AMG_PREC,		// AMG (Stüben)
     DIAG_PREC,		// Jacobi
     GS_PREC,		// Gauss-Seidel
+    BGS_PREC,		// block Gauss-Seidel
     SYM_SPLIT_PREC,	// Kuznetsov-Prokopenko for symmetrized matrix
     MULTI_SPLIT_PREC	// Kuznetsov-Prokopenko (nested iterations for unsymmetric matrix)
 };

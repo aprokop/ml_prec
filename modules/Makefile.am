@@ -27,6 +27,8 @@ libmodules_a_SOURCES = \
 		       prec/diag/diag_prec.h \
 		       prec/gs/gs.cc \
 		       prec/gs/gs_prec.h \
+		       prec/bgs/bgs.cc \
+		       prec/bgs/bgs_prec.h \
 		       prec/sym/sym.cc \
 		       prec/sym/sym_prec.h \
 		       prec/multi_split/multi_split_constr.cc \

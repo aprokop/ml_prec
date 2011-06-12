@@ -37,7 +37,7 @@ static void usage() {
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|sym_split|multi_split}" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|bgs|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
@@ -155,6 +155,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.prec = DIAG_PREC;
 		      else if (!strcmp(optarg, "gs"))
 			  cfg.prec = GS_PREC;
+		      else if (!strcmp(optarg, "bgs"))
+			  cfg.prec = BGS_PREC;
 		      else if (!strcmp(optarg, "sym_split"))
 			  cfg.prec = SYM_SPLIT_PREC;
 		      else if (!strcmp(optarg, "multi_split"))
