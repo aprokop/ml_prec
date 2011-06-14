@@ -17,6 +17,7 @@ void dump_data(const SkylineMatrix& A, const Vector& b);
 
 void examine(const SkylineMatrix& A, AnalType analysis);
 void analysis(const SkylineMatrix& A);
+void analysis_1D_Jacobi(const SkylineMatrix& A);
 
 struct GlobalStats {
     double t_resid;	    /* Residual calculation time */

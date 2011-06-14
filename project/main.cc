@@ -61,6 +61,8 @@ int main (int argc, char * argv[]) {
 	return 0;
     }
     // analysis(A);
+    analysis_1D_Jacobi(A);
+    exit(0);
 
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
