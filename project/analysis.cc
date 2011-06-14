@@ -75,9 +75,19 @@ void analysis_1D_Jacobi(const SkylineMatrix& A) {
 	    }
 	    Az.set_size(nz,nz);
 
-	    std::ostringstream os;
-	    os << "matrix_i" << i << "_j" << j << ".dat";
-	    dump(os.str(), Az, BINARY);
+	    {
+		/* Dump matrix in MatrixMarket ASCII format */
+		std::ostringstream oss;
+		oss << "z_matrices/matrix_i" << i << "_j" << j << ".mm";
+		std::ofstream os(oss.str().c_str());
+		os << std::fixed << std::setprecision(15);
+
+		os << "%%MatrixMarket matrix coordinate real general" << std::endl;
+		os << nz << " " << nz << " " << ind << std::endl;
+		for (uint p = 0; p < nz; p++)
+		    for (uint q = z_ia[p]; q < z_ia[p+1]; q++)
+			os << p+1 << " " << z_ja[q]+1 << " " << z_a[q] << std::endl;
+	    }
 
 #if 0
 	    /* Check matrix */
