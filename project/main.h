@@ -4,7 +4,7 @@
 #include "include/define.h"
 #include "modules/mesh/mesh.h"
 #include "modules/matrix/matrix.h"
-#include "modules/common/common.h"
+#include "project/config.h"
 #include <iostream>
 #include <vector>
 

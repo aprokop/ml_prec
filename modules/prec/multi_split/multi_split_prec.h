@@ -2,7 +2,7 @@
 #define __MULTI_SPLIT_PREC_H__
 
 #include "config/config.h"
-#include "modules/common/common.h"
+#include "project/config.h"
 #include "modules/prec/prec_base.h"
 #include "modules/prec/misc/misc.h"
 #include "modules/mesh/mesh.h"

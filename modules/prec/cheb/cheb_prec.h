@@ -4,7 +4,7 @@
 #include "config/config.h"
 #include "include/time.h"
 #include "modules/prec/misc/misc.h"
-#include "modules/common/common.h"
+#include "project/config.h"
 #include "modules/prec/prec_base.h"
 #include "modules/mesh/mesh.h"
 #include <iostream>

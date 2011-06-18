@@ -12,9 +12,6 @@ libmodules_a_SOURCES = \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
-		       common/common.cc \
-		       common/config.cc \
-		       common/common.h \
 		       prec/cheb/cheb_constr.cc \
 		       prec/cheb/cheb_mark.cc \
 		       prec/cheb/cheb_misc.cc \

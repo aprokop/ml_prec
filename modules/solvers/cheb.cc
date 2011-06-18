@@ -1,5 +1,6 @@
 #include "solvers.h"
-#include "modules/common/common.h"
+#include "project/config.h"
+#include "modules/prec/misc/misc.h"
 #include "include/logger.h"
 #include "include/time.h"
 

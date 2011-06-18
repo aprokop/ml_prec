@@ -11,6 +11,8 @@
 #include <vector>
 #include <map>
 
+double cheb(double x, uint k);
+
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const uvector<uint>& map,
 		  char plane, const MeshBase& mesh);
 
