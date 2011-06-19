@@ -216,12 +216,12 @@ public:
     friend void	multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type = 'o') THROW;
     friend void transpose(const CSRMatrix& A, CSRMatrix& B);
     friend std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm);
-    friend void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
 
     friend void get_matrix_part(const SkylineMatrix& A, SkylineMatrix& lA, uint start, uint end);
     friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA,
 				       std::vector<uint>& r, uint my_rank, uint ncpus);
 };
+void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
 void scale_c(CSRMatrix& A, double alpha);
 
 class SkylineMatrix : public CSRMatrix {

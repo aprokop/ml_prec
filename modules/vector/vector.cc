@@ -39,7 +39,7 @@ void dump(const std::string& filename, const Vector& v, DumpType type) THROW {
 		os << i << " " << v[i] << std::endl;
 	    break;
 	}
-	case BINARY:
+	default:
 	    THROW_EXCEPTION("Not implemented");
     }
 }
@@ -65,9 +65,7 @@ void load(Vector& v, const std::string& filename, DumpType type) THROW {
 		is >> v[i];
 	    break;
 	}
-	case HYPRE :
-	case BINARY:
-		    THROW_EXCEPTION("Not implemented");
+	default: THROW_EXCEPTION("Not implemented");
     }
     LOG_INFO("Loaded vector: size = " << n);
 }

@@ -25,7 +25,8 @@ Vector vector_product(const Vector& v1, const Vector& v2) THROW;
 enum DumpType {
     ASCII,
     BINARY,
-    HYPRE
+    HYPRE,
+    MATRIX_MARKET
 };
 
 std::ostream& operator<<(std::ostream& os, const Vector& v);
