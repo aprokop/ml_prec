@@ -37,7 +37,7 @@ static void usage() {
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|bgs|sym_split|multi_split}" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|bgs|rbgs|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
@@ -157,6 +157,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.prec = GS_PREC;
 		      else if (!strcmp(optarg, "bgs"))
 			  cfg.prec = BGS_PREC;
+		      else if (!strcmp(optarg, "rbgs"))
+			  cfg.prec = RBGS_PREC;
 		      else if (!strcmp(optarg, "sym_split"))
 			  cfg.prec = SYM_SPLIT_PREC;
 		      else if (!strcmp(optarg, "multi_split"))
@@ -324,6 +326,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	case DIAG_PREC        : os << "diag"; break;
 	case GS_PREC          : os << "gs"; break;
 	case BGS_PREC         : os << "bgs"; break;
+	case RBGS_PREC        : os << "rbgs"; break;
 	case SYM_SPLIT_PREC   : os << "sym_split"; break;
 	case MULTI_SPLIT_PREC : os << "multi_split"; break;
 	default           : THROW_EXCEPTION("Unknown PrecType");

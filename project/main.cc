@@ -5,6 +5,7 @@
 #include "modules/prec/diag/diag_prec.h"
 #include "modules/prec/gs/gs_prec.h"
 #include "modules/prec/bgs/bgs_prec.h"
+#include "modules/prec/rbgs/rbgs_prec.h"
 #include "modules/prec/cheb/cheb_prec.h"
 #include "modules/prec/relax/rel_prec.h"
 #include "modules/prec/sym/sym_prec.h"
@@ -60,9 +61,10 @@ int main (int argc, char * argv[]) {
 	// std::cout << A.stat(false) << std::endl;
 	return 0;
     }
+    // dump("a.mm", A, MATRIX_MARKET);
     // analysis(A);
-    analysis_1D_Jacobi(A);
-    exit(0);
+    // analysis_1D_Jacobi(A);
+    // exit(0);
 
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
@@ -93,6 +95,7 @@ int main (int argc, char * argv[]) {
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
 	    case BGS_PREC         : B_ = new BGSPrec(A);		break;
+	    case RBGS_PREC        : B_ = new RBGSPrec(A);		break;
 	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
 	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
 	}
