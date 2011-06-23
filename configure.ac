@@ -7,13 +7,14 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_LANG([C++])
 
 # Check for programs
-AC_PROG_CC()
+AC_PROG_CC
 AC_PROG_CXX([g++])
-# AC_PROG_CXX([mpicxx g++])
-# AC_PROG_F77([gfortran])
 AC_PROG_F77
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
+
+AC_F77_LIBRARY_LDFLAGS
+AC_F77_DUMMY_MAIN
 
 # Check for header files
 AC_HEADER_STDC
@@ -58,10 +59,10 @@ AC_ARG_ENABLE(blas,
     enable_blas="yes")
 AC_MSG_RESULT($enable_blas)
 if test x$enable_blas = xyes; then
-    ACX_BLAS
-    ACX_LAPACK
+    AX_BLAS
+    AX_LAPACK
 fi
-LIBS="$BLAS_LIBS $LAPACK_LIBS $LIBS"
+LIBS="$BLAS_LIBS $LAPACK_LIBS $LIBS $FLIBS"
 
 # Logger
 AC_MSG_CHECKING([wish for logger])
