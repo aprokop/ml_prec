@@ -7,11 +7,12 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_LANG([C++])
 
 # Check for programs
-AC_PROG_CC
 AC_PROG_CXX([g++])
 AC_PROG_F77
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
+# check for pkg-config itself so we don't try the m4 macro without pkg-config
+AC_CHECK_PROG(HAVE_PKG_CONFIG, pkg-config, yes)
 
 AC_F77_LIBRARY_LDFLAGS
 AC_F77_DUMMY_MAIN
@@ -50,7 +51,7 @@ AC_CHECK_HEADER([boost/version.hpp],
 		[AC_DEFINE([HAVE_BOOST], [1], [Define to 1 if you have the Boost library])],
 		[])
 
-# BLAS & LAPACK
+# BLAS
 AC_MSG_CHECKING([wish for blas])
 AC_ARG_ENABLE(blas,
     [AC_HELP_STRING([--enable-blas],
@@ -59,10 +60,15 @@ AC_ARG_ENABLE(blas,
     enable_blas="yes")
 AC_MSG_RESULT($enable_blas)
 if test x$enable_blas = xyes; then
-    AX_BLAS
-    AX_LAPACK
+    # If pkg-config is installed, ignore --with-blas argument of configure
+    if test x$HAVE_PKG_CONFIG = xyes &&
+	PKG_CHECK_EXISTS([blas], AC_DEFINE(HAVE_BLAS,1,[Define if you have a BLAS library.])); then
+	PKG_CHECK_MODULES([BLAS], [blas])
+    else
+	AX_BLAS
+    fi
 fi
-LIBS="$BLAS_LIBS $LAPACK_LIBS $LIBS $FLIBS"
+LIBS="$BLAS_LIBS $LIBS $FLIBS"
 
 # Logger
 AC_MSG_CHECKING([wish for logger])
@@ -102,7 +108,7 @@ AC_ARG_ENABLE(hypre,
 AC_MSG_RESULT($enable_hypre)
 AM_CONDITIONAL([HYPRE], [test x$enable_hypre = xyes])
 if test x$enable_hypre = xyes; then
-    ACX_MPI
+    AX_MPI
     LIBS="$LIBS $MPILIBS"
 fi
 
