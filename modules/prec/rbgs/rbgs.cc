@@ -8,9 +8,6 @@
 
 DEFINE_LOGGER("RBGSPrec");
 
-// #define lN (2*2)
-#define lN (20*20)
-
 void RBGSPrec::solve(Vector& f, Vector& x) const THROW {
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
@@ -22,9 +19,10 @@ void RBGSPrec::solve(Vector& f, Vector& x) const THROW {
 #endif
 }
 
-RBGSPrec::RBGSPrec(const SkylineMatrix& A) {
+RBGSPrec::RBGSPrec(const SkylineMatrix& A, uint lN_) {
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
     n = A.rows();
+    lN = lN_;
 
     const uvector<uint>&  ia = A.get_ia();
     const uvector<uint>&  ja = A.get_ja();

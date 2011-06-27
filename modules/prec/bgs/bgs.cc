@@ -7,9 +7,6 @@
 
 DEFINE_LOGGER("BGSPrec");
 
-// #define lN (2*2)
-#define lN (60*220)
-
 void BGSPrec::solve(Vector& f, Vector& x) const THROW {
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
@@ -45,8 +42,9 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
 	else	    memcpy(&x[z*lN], &x2[(z/2)*lN], lN*sizeof(double));
 }
 
-BGSPrec::BGSPrec(const SkylineMatrix& A) {
+BGSPrec::BGSPrec(const SkylineMatrix& A, uint lN_) {
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
+    lN = lN_;
     n = A.rows();
 
     const uvector<uint>&  ia = A.get_ia();

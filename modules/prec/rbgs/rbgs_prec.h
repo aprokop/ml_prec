@@ -10,12 +10,19 @@
 #include "modules/prec/diag/diag_prec.h"
 #endif
 
+/*
+ * Relaxed block Gauss-Seidel preconditioner
+ * Same assumptions as for block Gauss-Seidel preconditioner (file bgs_prec.h)
+ * The difference is that we allow some elements in the upper triangular block
+ */
 class RBGSPrec: public PrecBase {
 private:
     uint n;
     SkylineMatrix B;
 
-    static const double alpha = 0.95;
+    uint lN;
+
+    static const double alpha = 0.1;
 
 #ifdef PREC_SUBST
     PrecBase *Bprec;
@@ -25,7 +32,7 @@ private:
     mutable void *B_symbolic, *B_numeric;
 
 public:
-    RBGSPrec(const SkylineMatrix& A);
+    RBGSPrec(const SkylineMatrix& A, uint lN_);
 
     void solve(Vector& f, Vector& x) const THROW;
 };

@@ -95,8 +95,8 @@ int main (int argc, char * argv[]) {
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
 #ifdef HAVE_UMFPACK
-	    case BGS_PREC         : B_ = new BGSPrec(A);		break;
-	    case RBGS_PREC        : B_ = new RBGSPrec(A);		break;
+	    case BGS_PREC         : B_ = new BGSPrec(A, cfg.nx*cfg.ny);	break;
+	    case RBGS_PREC        : B_ = new RBGSPrec(A, cfg.nx*cfg.ny);break;
 #endif
 	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
 	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;

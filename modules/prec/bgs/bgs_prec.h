@@ -10,11 +10,19 @@
 #include "modules/prec/diag/diag_prec.h"
 #endif
 
+/*
+ * Block Gauss-Seidel preconditioner
+ * Matrix is assumed coming from a discretization on a cartesian mesh of size nx*ny*nz.
+ * The nodes are enumerated in red-black ordering corresponding to horizontal planes. The
+ * number of nodes on each plane is denoted by lN.
+ */
 class BGSPrec: public PrecBase {
 private:
     uint n, n1, n2;
     SkylineMatrix A1, A2;
     CSRMatrix A21;
+
+    uint lN;
 
 #ifdef PREC_SUBST
     PrecBase *B1, *B2;
@@ -25,7 +33,7 @@ private:
     mutable void *A2_symbolic, *A2_numeric;
 
 public:
-    BGSPrec(const SkylineMatrix& A);
+    BGSPrec(const SkylineMatrix& A, uint lN_);
 
     void solve(Vector& f, Vector& x) const THROW;
 };
