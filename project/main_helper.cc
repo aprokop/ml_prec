@@ -37,8 +37,13 @@ static void usage() {
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
+#ifdef HAVE_UMFPACK
     std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|bgs|rbgs|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
+#else
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|sym_split|multi_split}" << std::endl;
+    std::cout << "                                  Preconditioner type" << std::endl;
+#endif
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
     std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row}" << std::endl;
@@ -139,8 +144,10 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.solver = CHEB_SOLVER;
 		      else if (!strcmp(optarg, "simple"))
 			  cfg.solver = SIMPLE_SOLVER;
+#ifdef HAVE_UMFPACK
 		      else if (!strcmp(optarg, "direct"))
 			  cfg.solver = DIRECT_SOLVER;
+#endif
 		      else
 			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
@@ -155,10 +162,12 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.prec = DIAG_PREC;
 		      else if (!strcmp(optarg, "gs"))
 			  cfg.prec = GS_PREC;
+#ifdef HAVE_UMFPACK
 		      else if (!strcmp(optarg, "bgs"))
 			  cfg.prec = BGS_PREC;
 		      else if (!strcmp(optarg, "rbgs"))
 			  cfg.prec = RBGS_PREC;
+#endif
 		      else if (!strcmp(optarg, "sym_split"))
 			  cfg.prec = SYM_SPLIT_PREC;
 		      else if (!strcmp(optarg, "multi_split"))
@@ -314,7 +323,9 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	case PCG_SOLVER    : os << "pcg"; break;
 	case CHEB_SOLVER   : os << "cheb"; break;
 	case SIMPLE_SOLVER : os << "simple"; break;
+#ifdef HAVE_UMFPACK
 	case DIRECT_SOLVER : os << "direct"; break;
+#endif
 	default		: THROW_EXCEPTION("Unknown SolverType");
     }
     os << std::endl;
@@ -325,8 +336,10 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	case AMG_PREC         : os << "amg"; break;
 	case DIAG_PREC        : os << "diag"; break;
 	case GS_PREC          : os << "gs"; break;
+#ifdef HAVE_UMFPACK
 	case BGS_PREC         : os << "bgs"; break;
 	case RBGS_PREC        : os << "rbgs"; break;
+#endif
 	case SYM_SPLIT_PREC   : os << "sym_split"; break;
 	case MULTI_SPLIT_PREC : os << "multi_split"; break;
 	default           : THROW_EXCEPTION("Unknown PrecType");

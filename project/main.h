@@ -1,6 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#include "config/config.h"
 #include "include/define.h"
 #include "modules/mesh/mesh.h"
 #include "modules/matrix/matrix.h"

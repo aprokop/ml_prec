@@ -70,6 +70,14 @@ if test x$enable_blas = xyes; then
 fi
 LIBS="$BLAS_LIBS $LIBS $FLIBS"
 
+# UMFPACK
+AC_CHECK_HEADER([umfpack.h], [enable_umfpack="yes"], [enable_umfpack="no"])
+if test x$enable_umfpack = xyes; then
+    AC_DEFINE([HAVE_UMFPACK], [1], [Define to 1 if you have UMFPACK library])
+    LIBS="-lumfpack $LIBS"
+fi
+AM_CONDITIONAL([UMFPACK], [test x$enable_umfpack = xyes])
+
 # Logger
 AC_MSG_CHECKING([wish for logger])
 AC_ARG_ENABLE(logger,

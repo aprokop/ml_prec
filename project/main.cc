@@ -94,8 +94,10 @@ int main (int argc, char * argv[]) {
 	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
+#ifdef HAVE_UMFPACK
 	    case BGS_PREC         : B_ = new BGSPrec(A);		break;
 	    case RBGS_PREC        : B_ = new RBGSPrec(A);		break;
+#endif
 	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
 	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
 	}
@@ -151,11 +153,13 @@ int main (int argc, char * argv[]) {
 		SimpleSolver(A, b, B, x, stats, eps);
 		break;
 	    }
+#ifdef HAVE_UMFPACK
 	    case DIRECT_SOLVER : {
 		void *Symbolic = NULL, *Numeric = NULL;
 		DirectSolver(A, b, x, Symbolic, Numeric, stats);
 		break;
 	    }
+#endif
 	}
 	stimes.push_back(stats.t_sol);
 

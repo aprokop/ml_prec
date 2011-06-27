@@ -12,7 +12,6 @@ hypre_SOURCES = hypre.cc
 
 spe_prec_LDADD = \
 	$(top_builddir)/modules/libmodules.a \
-	-lumfpack \
 	-lrt
 
 hypre_LDADD = \
