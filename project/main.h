@@ -16,9 +16,7 @@ void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A);
 void construct_vector(const Config& cfg, Vector& b);
 void dump_data(const SkylineMatrix& A, const Vector& b);
 
-void examine(const SkylineMatrix& A, AnalType analysis);
-void analysis(const SkylineMatrix& A);
-void analysis_1D_Jacobi(const SkylineMatrix& A);
+void analysis(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis);
 
 struct GlobalStats {
     double t_resid;	    /* Residual calculation time */

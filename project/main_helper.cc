@@ -46,7 +46,7 @@ static void usage() {
 #endif
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
-    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row}" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi}" << std::endl;
     std::cout << "                                  Matrix analysis to perform" << std::endl;
 }
 
@@ -187,6 +187,10 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.analysis = ANAL_HISTOGRAMM;
 		      else if (!strcmp(optarg, "q_rem_fixed_row"))
 			  cfg.analysis = ANAL_Q_REM_FIXED_ROW;
+		      else if (!strcmp(optarg, "offdiag_ratios"))
+			  cfg.analysis = ANAL_OFFDIAGONAL_RATIOS;
+		      else if (!strcmp(optarg, "1D_jacobi"))
+			  cfg.analysis = ANAL_1D_JACOBI;
 		      else
 			  THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
 		      break;
@@ -303,10 +307,12 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     if (cfg.analysis != ANAL_NONE) {
 	os << "Analysis         : ";
 	switch(cfg.analysis) {
-	    case ANAL_HISTOGRAMM: os << "histogramm"; break;
-	    case ANAL_QDROPPED  : os << "qdropped"; break;
-	    case ANAL_Q_REM_FIXED_ROW: os << "q_rem_fixed_row"; break;
-	    default 		: THROW_EXCEPTION("Unknown AnalType");
+	    case ANAL_HISTOGRAMM         : os << "histogramm"; break;
+	    case ANAL_QDROPPED           : os << "qdropped"; break;
+	    case ANAL_Q_REM_FIXED_ROW    : os << "q_rem_fixed_row"; break;
+	    case ANAL_OFFDIAGONAL_RATIOS : os << "offdiag_ratios"; break;
+	    case ANAL_1D_JACOBI          : os << "1D_jacobi";
+	    case ANAL_NONE		 : break;
 	}
 	os << std::endl;
 

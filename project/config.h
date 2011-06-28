@@ -34,7 +34,9 @@ enum AnalType {
     ANAL_NONE,
     ANAL_HISTOGRAMM,
     ANAL_QDROPPED,
-    ANAL_Q_REM_FIXED_ROW
+    ANAL_Q_REM_FIXED_ROW,
+    ANAL_OFFDIAGONAL_RATIOS,
+    ANAL_1D_JACOBI
 };
 
 struct Config {

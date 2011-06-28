@@ -56,21 +56,17 @@ int main (int argc, char * argv[]) {
     SkylineMatrix A;
     construct_matrix(cfg, mesh, A);
     // scale_c(A, 0.001);
-    if (cfg.analysis != ANAL_NONE) {
-	examine(A, cfg.analysis);
-	// std::cout << A.stat(false) << std::endl;
-	return 0;
-    }
-    // dump("a.mm", A, MATRIX_MARKET);
-    // analysis(A);
-    // analysis_1D_Jacobi(A);
-    // exit(0);
 
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
 
     if (cfg.dump_data) {
 	dump_data(A, b);
+	return 0;
+    }
+
+    if (cfg.analysis != ANAL_NONE) {
+	analysis(A, b, cfg, cfg.analysis);
 	return 0;
     }
 
