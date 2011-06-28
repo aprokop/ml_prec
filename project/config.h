@@ -36,7 +36,8 @@ enum AnalType {
     ANAL_QDROPPED,
     ANAL_Q_REM_FIXED_ROW,
     ANAL_OFFDIAGONAL_RATIOS,
-    ANAL_1D_JACOBI
+    ANAL_1D_JACOBI,
+    ANAL_COL_DOMINANCE
 };
 
 struct Config {

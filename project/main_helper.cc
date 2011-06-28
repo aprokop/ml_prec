@@ -46,7 +46,7 @@ static void usage() {
 #endif
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
-    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi}" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance}" << std::endl;
     std::cout << "                                  Matrix analysis to perform" << std::endl;
 }
 
@@ -191,6 +191,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
 			  cfg.analysis = ANAL_OFFDIAGONAL_RATIOS;
 		      else if (!strcmp(optarg, "1D_jacobi"))
 			  cfg.analysis = ANAL_1D_JACOBI;
+		      else if (!strcmp(optarg, "col_dominance"))
+			  cfg.analysis = ANAL_COL_DOMINANCE;
 		      else
 			  THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
 		      break;
@@ -312,6 +314,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	    case ANAL_Q_REM_FIXED_ROW    : os << "q_rem_fixed_row"; break;
 	    case ANAL_OFFDIAGONAL_RATIOS : os << "offdiag_ratios"; break;
 	    case ANAL_1D_JACOBI          : os << "1D_jacobi";
+	    case ANAL_COL_DOMINANCE	 : os << "col_dominance"; break;
 	    case ANAL_NONE		 : break;
 	}
 	os << std::endl;

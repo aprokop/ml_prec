@@ -204,7 +204,7 @@ void anal_offdiagonal_ratios(const SkylineMatrix& A) {
 }
 
 /*
- * Mostly dumping procedure
+ * Mostly dumping procedure for raw values
  * For each row we calculate some quantity (for instance, 1-c/d, log10(c), c), and
  * then we dump it into "c_map.dat"
  */
@@ -332,6 +332,32 @@ void anal_1D_Jacobi_global(const SkylineMatrix& A) {
     dump("az.mm", Az, MATRIX_MARKET);
 }
 
+/*
+ * Calculate column dominance
+ */
+void anal_col_dominance(const SkylineMatrix& A) {
+    uint N = A.size();
+    const uvector<uint>& ia = A.get_ia();
+    const uvector<uint>& ja = A.get_ja();
+    const uvector<double>& a = A.get_a();
+
+    const uint n = 8;
+    double ticks[n] = { -1e6, -10, -1, 0, 1, 1.1, 10, 1e6};
+    int bins[n] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+    uvector<double> x(N, 0.0);
+    for (uint i = 0; i < N; i++)
+	for (uint j = ia[i]; j < ia[i+1]; j++)
+	    x[ja[j]] += a[j];
+    for (uint i = 0; i < N; i++) {
+	x[i] = 1 - x[i]/A(i,i);
+	bins[std::upper_bound(ticks, ticks+n, x[i]) - (ticks+1)]++;
+    }
+
+    for (uint i = 0; i+1 < n; i++)
+	std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+}
+
 
 void analysis(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
     switch (analysis) {
@@ -340,6 +366,7 @@ void analysis(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalTy
 	case ANAL_Q_REM_FIXED_ROW   : anal_q_rem_fixed_row(A); break;
 	case ANAL_OFFDIAGONAL_RATIOS: anal_offdiagonal_ratios(A); break;
 	case ANAL_1D_JACOBI	    : anal_1D_Jacobi_global(A); break;
+	case ANAL_COL_DOMINANCE	    : anal_col_dominance(A); break;
 	case ANAL_NONE		    : LOG_WARN("Calling analysis with ANAL_NONE"); break;
     }
 }
