@@ -115,6 +115,11 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 	}
 }
 
+double CSRMatrix::row_sum(uint i) const THROW {
+    ASSERT(nrow*ncol, "One of matrix dimensions is zero");
+    return std::accumulate(&a[ia[i]], &a[ia[i+1]], 0.0);
+}
+
 bool CSRMatrix::is_symmetric() const {
     ASSERT(nrow == ncol, "Matrix is not square: " << sizes());
     for (uint i = 0; i < nrow; i++)

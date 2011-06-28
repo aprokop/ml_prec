@@ -196,6 +196,8 @@ public:
     virtual bool is_symmetric() const;
     virtual std::string stat(bool ignore_pos_offdiagonal) const;
 
+    double row_sum(uint i) const THROW;
+
     virtual uint nnz() const { return ia.back(); }
 
     virtual void reserve(uint n, uint nnz) {
