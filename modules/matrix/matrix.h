@@ -133,6 +133,7 @@ public:
 	nrow = ncol = n;
 	data.resize(n);
     }
+    MapMatrix(const CSRMatrix& sm);
 
     double operator()(uint i, uint j) const THROW {
 	check_indices(i,j);

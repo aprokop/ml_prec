@@ -4,6 +4,17 @@
 
 DEFINE_LOGGER("MapMatrix");
 
+MapMatrix::MapMatrix(const CSRMatrix& sm) {
+    const uint n = sm.size();
+    const uvector<uint> &ia = sm.get_ia(), &ja = sm.get_ja();
+    const uvector<double> &a = sm.get_a();
+
+    data.resize(n);
+    for (uint i = 0; i < n; i++)
+	for (uint j = ia[i]; j < ia[i+1]; j++)
+	    data[i][ja[j]] = a[j];
+}
+
 std::ostream& operator<<(std::ostream& os, const MapMatrix& sm) {
     os << "Size: " << sm.nrow << "x" << sm.ncol << std::endl;
     for (uint i = 0; i < sm.nrow; i++) {
