@@ -88,6 +88,7 @@ int main (int argc, char * argv[]) {
 	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
+	    case ID_PREC	  : B_ = new IdPrec(A);			break;
 #ifdef HAVE_UMFPACK
 	    case BGS_PREC         : B_ = new BGSPrec(A, cfg.nx*cfg.ny);	break;
 	    case RBGS_PREC        : B_ = new RBGSPrec(A, cfg.nx*cfg.ny);break;

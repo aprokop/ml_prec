@@ -18,16 +18,17 @@ enum SolverType {
 };
 
 enum PrecType {
-    UH_CHEB_PREC,	// Kuznetsov-Prokopenko
     AMG_PREC,		// AMG (Stüben)
     DIAG_PREC,		// Jacobi
     GS_PREC,		// Gauss-Seidel
+    ID_PREC,		// Identity matrix
 #ifdef HAVE_UMFPACK
     BGS_PREC,		// block Gauss-Seidel
     RBGS_PREC,		// block Gauss-Seidel with a nonzero upper triangle ("relaxed" BGS)
 #endif
     SYM_SPLIT_PREC,	// Kuznetsov-Prokopenko for symmetrized matrix
-    MULTI_SPLIT_PREC	// Kuznetsov-Prokopenko (nested iterations for unsymmetric matrix)
+    MULTI_SPLIT_PREC,	// Kuznetsov-Prokopenko (nested iterations for unsymmetric matrix)
+    UH_CHEB_PREC	// Kuznetsov-Prokopenko
 };
 
 enum AnalType {

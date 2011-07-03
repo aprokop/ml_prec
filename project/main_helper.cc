@@ -38,10 +38,10 @@ static void usage() {
     std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
     std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
 #ifdef HAVE_UMFPACK
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|bgs|rbgs|sym_split|multi_split}" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|id|bgs|rbgs|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
 #else
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|sym_split|multi_split}" << std::endl;
+    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|id|sym_split|multi_split}" << std::endl;
     std::cout << "                                  Preconditioner type" << std::endl;
 #endif
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
@@ -93,6 +93,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"analysis",		required_argument,  NULL, 'A'},
 	{0, 0, 0, 0}
     };
+
+#define CHECK_AND_SET(str, param, value) if (!strcmp(optarg, str)) param = value
     while (1) {
 	int option_index = 0;
 	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:", long_options, &option_index);
@@ -120,87 +122,61 @@ int set_params(int argc, char * argv[], Config& cfg) {
 				    std::back_inserter(cfg.niters));
 		      }
 		      break;
-	    case 't': if (!strcmp(optarg, "yes"))
-			  cfg.use_tails = true;
-		      else if (!strcmp(optarg, "no"))
-			  cfg.use_tails = false;
-		      else
-			  THROW_EXCEPTION("Unknown use-tails option \"" << optarg << "\"");
+	    case 't': CHECK_AND_SET("yes", cfg.use_tails, true);
+		      else CHECK_AND_SET("no", cfg.use_tails, false);
+		      else THROW_EXCEPTION("Unknown use-tails option \"" << optarg << "\"");
 		      break;
-	    case 'O': if (!strcmp(optarg, "yes"))
-			  cfg.optimize_storage = true;
-		      else if (!strcmp(optarg, "no"))
-			  cfg.optimize_storage = false;
-		      else
-			  THROW_EXCEPTION("Unknown optimize-storage option \"" << optarg << "\"");
+	    case 'O': CHECK_AND_SET("yes", cfg.optimize_storage, true);
+		      else CHECK_AND_SET("no", cfg.optimize_storage, false);
+		      else THROW_EXCEPTION("Unknown optimize-storage option \"" << optarg << "\"");
 		      break;
 	    case 'c': cfg.c = atof(optarg); break;
 	    case 'x': cfg.nx = uint(atoi(optarg)); break;
 	    case 'y': cfg.ny = uint(atoi(optarg)); break;
 	    case 'z': cfg.nz = uint(atoi(optarg)); break;
-	    case 'o': if (!strcmp(optarg, "pcg"))
-			  cfg.solver = PCG_SOLVER;
-		      else if (!strcmp(optarg, "cheb"))
-			  cfg.solver = CHEB_SOLVER;
-		      else if (!strcmp(optarg, "simple"))
-			  cfg.solver = SIMPLE_SOLVER;
+	    case 'o': CHECK_AND_SET("pcg", cfg.solver, PCG_SOLVER);
+		      else CHECK_AND_SET("cheb", cfg.solver, CHEB_SOLVER);
+		      else CHECK_AND_SET("simple", cfg.solver, SIMPLE_SOLVER);
 #ifdef HAVE_UMFPACK
-		      else if (!strcmp(optarg, "direct"))
-			  cfg.solver = DIRECT_SOLVER;
+		      else CHECK_AND_SET("direct", cfg.solver, DIRECT_SOLVER);
 #endif
-		      else
-			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
+		      else THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
 	    case 'm': cfg.matrix = std::string(optarg); break;
 	    case 'v': cfg.vector = std::string(optarg); break;
 	    case 'a': cfg.ntests = uint(atoi(optarg)); break;
-	    case 'p': if (!strcmp(optarg, "uh_cheb"))
-			  cfg.prec = UH_CHEB_PREC;
-		      else if (!strcmp(optarg, "amg"))
-			  cfg.prec = AMG_PREC;
-		      else if (!strcmp(optarg, "diag"))
-			  cfg.prec = DIAG_PREC;
-		      else if (!strcmp(optarg, "gs"))
-			  cfg.prec = GS_PREC;
+	    case 'p': CHECK_AND_SET("uh_cheb", cfg.prec, UH_CHEB_PREC);
+		      else CHECK_AND_SET("amg", cfg.prec, AMG_PREC);
+		      else CHECK_AND_SET("diag", cfg.prec, DIAG_PREC);
+		      else CHECK_AND_SET("gs", cfg.prec, GS_PREC);
+		      else CHECK_AND_SET("id", cfg.prec, ID_PREC);
 #ifdef HAVE_UMFPACK
-		      else if (!strcmp(optarg, "bgs"))
-			  cfg.prec = BGS_PREC;
-		      else if (!strcmp(optarg, "rbgs"))
-			  cfg.prec = RBGS_PREC;
+		      else CHECK_AND_SET("bgs", cfg.prec, BGS_PREC);
+		      else CHECK_AND_SET("rbgs", cfg.prec, RBGS_PREC);
 #endif
-		      else if (!strcmp(optarg, "sym_split"))
-			  cfg.prec = SYM_SPLIT_PREC;
-		      else if (!strcmp(optarg, "multi_split"))
-			  cfg.prec = MULTI_SPLIT_PREC;
-		      else
-			  THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
+		      else CHECK_AND_SET("sym_split", cfg.prec, SYM_SPLIT_PREC);
+		      else CHECK_AND_SET("multi_split", cfg.prec, MULTI_SPLIT_PREC);
+		      else THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
 		      break;
 	    case 'u': cfg.unsym_matrix = true; break;
 	    case 'S': cfg.unsym_shift = atof(optarg); break;
 	    case 'd': cfg.dump_data = true; break;
 	    case 'D': cfg.dir = std::string(optarg); break;
-	    case 'A': if (!strcmp(optarg, "qdropped"))
-			  cfg.analysis = ANAL_QDROPPED;
-		      else if (!strcmp(optarg, "none"))
-			  cfg.analysis = ANAL_NONE;
-		      else if (!strcmp(optarg, "histogramm"))
-			  cfg.analysis = ANAL_HISTOGRAMM;
-		      else if (!strcmp(optarg, "q_rem_fixed_row"))
-			  cfg.analysis = ANAL_Q_REM_FIXED_ROW;
-		      else if (!strcmp(optarg, "offdiag_ratios"))
-			  cfg.analysis = ANAL_OFFDIAGONAL_RATIOS;
-		      else if (!strcmp(optarg, "1D_jacobi"))
-			  cfg.analysis = ANAL_1D_JACOBI;
-		      else if (!strcmp(optarg, "col_dominance"))
-			  cfg.analysis = ANAL_COL_DOMINANCE;
-		      else
-			  THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
+	    case 'A': CHECK_AND_SET("none", cfg.analysis, ANAL_NONE);
+		      else CHECK_AND_SET("qdropped", cfg.analysis, ANAL_QDROPPED);
+		      else CHECK_AND_SET("histogramm", cfg.analysis, ANAL_HISTOGRAMM);
+		      else CHECK_AND_SET("q_rem_fixed_row", cfg.analysis, ANAL_Q_REM_FIXED_ROW);
+		      else CHECK_AND_SET("offdiag_ratios", cfg.analysis, ANAL_OFFDIAGONAL_RATIOS);
+		      else CHECK_AND_SET("1D_Jacobi", cfg.analysis, ANAL_1D_JACOBI);
+		      else CHECK_AND_SET("col_dominance", cfg.analysis, ANAL_COL_DOMINANCE);
+		      else THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
 		      break;
 	    case '?':
 	    default:
 		      abort();
 	}
     }
+#undef CHECK_AND_SET
 
     /* Check inconsistencies in parameters */
     if (cfg.prec == UH_CHEB_PREC) {
@@ -225,12 +201,6 @@ int set_params(int argc, char * argv[], Config& cfg) {
     if (cfg.unsym_matrix == true)
 	cfg.solver = SIMPLE_SOLVER;
 
-    /* Create directory for results */
-    // if (mkdir("res", 0700) == -1) {
-	// THROW_EXCEPTION("Cannot create directory \"" << cfg.dir << "\" (" << strerror(errno) << ")");
-	// return 1;
-    // }
-
     return 0;
 }
 
@@ -250,10 +220,8 @@ double avg_time(const std::vector<double>& times) {
 void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) {
     if (cfg.matrix.empty()) {
 	/* Construct the matrix */
-	if (!cfg.unsym_matrix)
-	    mesh.construct_matrix(A, cfg.c);
-	else
-	    mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
+	if (!cfg.unsym_matrix)	mesh.construct_matrix(A, cfg.c);
+	else			mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
     } else {
 	/*
 	 * Read the matrix.
@@ -306,16 +274,17 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     }
     os << "Dump data        : " << (cfg.dump_data ? "true" : "false") << std::endl;
 
+#define CASE_PRINT(value, str) case value: os << str; break
     if (cfg.analysis != ANAL_NONE) {
 	os << "Analysis         : ";
 	switch(cfg.analysis) {
-	    case ANAL_HISTOGRAMM         : os << "histogramm"; break;
-	    case ANAL_QDROPPED           : os << "qdropped"; break;
-	    case ANAL_Q_REM_FIXED_ROW    : os << "q_rem_fixed_row"; break;
-	    case ANAL_OFFDIAGONAL_RATIOS : os << "offdiag_ratios"; break;
-	    case ANAL_1D_JACOBI          : os << "1D_jacobi";
-	    case ANAL_COL_DOMINANCE	 : os << "col_dominance"; break;
-	    case ANAL_NONE		 : break;
+	    CASE_PRINT(ANAL_HISTOGRAMM, "histogramm");
+	    CASE_PRINT(ANAL_QDROPPED, "qdropped");
+	    CASE_PRINT(ANAL_Q_REM_FIXED_ROW, "q_rem_fixed_row");
+	    CASE_PRINT(ANAL_OFFDIAGONAL_RATIOS, "offdiag_ratios");
+	    CASE_PRINT(ANAL_1D_JACOBI, "1D_jacobi");
+	    CASE_PRINT(ANAL_COL_DOMINANCE, "col_dominance");
+	    case ANAL_NONE: break;
 	}
 	os << std::endl;
 
@@ -329,11 +298,11 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
     os << "Solver           : ";
     switch(cfg.solver) {
-	case PCG_SOLVER    : os << "pcg"; break;
-	case CHEB_SOLVER   : os << "cheb"; break;
-	case SIMPLE_SOLVER : os << "simple"; break;
+	CASE_PRINT(PCG_SOLVER, "pcg");
+	CASE_PRINT(CHEB_SOLVER, "cheb");
+	CASE_PRINT(SIMPLE_SOLVER, "simple");
 #ifdef HAVE_UMFPACK
-	case DIRECT_SOLVER : os << "direct"; break;
+	CASE_PRINT(DIRECT_SOLVER, "direct");
 #endif
 	default		: THROW_EXCEPTION("Unknown SolverType");
     }
@@ -341,19 +310,22 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
     os << "Preconditioner   : ";
     switch(cfg.prec) {
-	case UH_CHEB_PREC     : os << "uh_cheb"; break;
-	case AMG_PREC         : os << "amg"; break;
-	case DIAG_PREC        : os << "diag"; break;
-	case GS_PREC          : os << "gs"; break;
+	CASE_PRINT(AMG_PREC, "amg");
+	CASE_PRINT(DIAG_PREC, "diag");
+	CASE_PRINT(GS_PREC, "gs");
+	CASE_PRINT(ID_PREC, "id");
 #ifdef HAVE_UMFPACK
-	case BGS_PREC         : os << "bgs"; break;
-	case RBGS_PREC        : os << "rbgs"; break;
+	CASE_PRINT(BGS_PREC, "bgs");
+	CASE_PRINT(RBGS_PREC, "rbgs");
 #endif
-	case SYM_SPLIT_PREC   : os << "sym_split"; break;
-	case MULTI_SPLIT_PREC : os << "multi_split"; break;
-	default           : THROW_EXCEPTION("Unknown PrecType");
+	CASE_PRINT(MULTI_SPLIT_PREC, "multi_split");
+	CASE_PRINT(SYM_SPLIT_PREC, "sym_split");
+	CASE_PRINT(UH_CHEB_PREC, "uh_cheb");
+	default: THROW_EXCEPTION("Unknown PrecType");
     }
     os << std::endl;
+
+#undef CASE_PRINT
 
     return os;
 }
