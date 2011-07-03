@@ -148,6 +148,15 @@ public:
 	return data[i][j];
     }
 
+    const std::map<uint,double>& operator()(uint i) const THROW {
+	ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
+	return data[i];
+    }
+    std::map<uint,double>& operator()(uint i) THROW {
+	ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
+	return data[i];
+    }
+
     friend class SkylineMatrix;
 
     friend std::ostream& operator<<(std::ostream& os, const MapMatrix& m);

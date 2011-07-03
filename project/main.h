@@ -17,6 +17,7 @@ void construct_vector(const Config& cfg, Vector& b);
 void dump_data(const SkylineMatrix& A, const Vector& b);
 
 void analysis(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis);
+void transform(CSRMatrix& A, Vector& b);
 
 struct GlobalStats {
     double t_resid;	    /* Residual calculation time */

@@ -65,6 +65,13 @@ int main (int argc, char * argv[]) {
 	return 0;
     }
 
+#if 1
+    // LOG_VAR(A);
+    transform(A, b);
+    // LOG_VAR(A);
+    // exit(0);
+#endif
+
     if (cfg.analysis != ANAL_NONE) {
 	analysis(A, b, cfg, cfg.analysis);
 	return 0;
