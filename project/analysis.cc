@@ -359,7 +359,7 @@ void anal_col_dominance(const SkylineMatrix& A) {
 }
 
 
-void analysis(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
+void analyze(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
     switch (analysis) {
 	case ANAL_HISTOGRAMM	    : anal_histogramm(A); break;
 	case ANAL_QDROPPED	    : anal_qdropped(A); break;

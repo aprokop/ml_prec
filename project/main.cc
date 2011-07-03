@@ -73,7 +73,7 @@ int main (int argc, char * argv[]) {
 #endif
 
     if (cfg.analysis != ANAL_NONE) {
-	analysis(A, b, cfg, cfg.analysis);
+	analyze(A, b, cfg, cfg.analysis);
 	return 0;
     }
 
