@@ -1,5 +1,5 @@
-#ifndef __PREC_H__
-#define __PREC_H__
+#ifndef __CHEB_PREC_H__
+#define __CHEB_PREC_H__
 
 #include "config/config.h"
 #include "include/time.h"
@@ -127,4 +127,4 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Prec::Level& li);
 };
 
-#endif
+#endif // __CHEB_PREC_H__

@@ -1,15 +1,7 @@
 #include "main.h"
 #include "config/config.h"
 #include "include/time.h"
-#include "modules/prec/amg/amg_prec.h"
-#include "modules/prec/diag/diag_prec.h"
-#include "modules/prec/gs/gs_prec.h"
-#include "modules/prec/bgs/bgs_prec.h"
-#include "modules/prec/rbgs/rbgs_prec.h"
-#include "modules/prec/cheb/cheb_prec.h"
-#include "modules/prec/relax/rel_prec.h"
-#include "modules/prec/sym/sym_prec.h"
-#include "modules/prec/multi_split/multi_split_prec.h"
+#include "modules/prec/prec.h"
 #include "modules/solvers/solvers.h"
 
 /* Logger header files */
@@ -65,7 +57,7 @@ int main (int argc, char * argv[]) {
 	return 0;
     }
 
-#if 1
+#if 0
     // LOG_VAR(A);
     transform(A, b);
     // LOG_VAR(A);
@@ -93,7 +85,6 @@ int main (int argc, char * argv[]) {
 	cstart = cfinish = 0;
 	cstart = pclock();
 	switch (cfg.prec) {
-	    case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
 	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
@@ -101,28 +92,28 @@ int main (int argc, char * argv[]) {
 	    case BGS_PREC         : B_ = new BGSPrec(A, cfg.nx*cfg.ny);	break;
 	    case RBGS_PREC        : B_ = new RBGSPrec(A, cfg.nx*cfg.ny);break;
 #endif
-	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
 	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
+	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
+	    case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
 	}
 	cfinish = pclock();
 	ctimes.push_back(cfinish - cstart);
 	LLL_INFO("Construction time : " << ctimes.back());
     }
+    PrecBase& B = *B_;
     gstats.t_const = avg_time(ctimes);
 
-    PrecBase& B = *B_;
-    // exit(1);
 
     /* Log preconditioner stats */
     if (cfg.prec == UH_CHEB_PREC) {
-	Prec& Bcheb = static_cast<Prec&>(B);
+	Prec& Bcheb = dynamic_cast<Prec&>(B);
 	LOG_INFO(Bcheb);
 #if 0
 	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
 	return 0;
 #endif
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
-	MultiSplitPrec& Bms = static_cast<MultiSplitPrec&>(B);
+	MultiSplitPrec& Bms = dynamic_cast<MultiSplitPrec&>(B);
 	LOG_INFO(Bms);
 #if 0
 	Bms.graph_planes("grids.ps", 4, 'z', mesh);

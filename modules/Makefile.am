@@ -12,32 +12,34 @@ libmodules_a_SOURCES = \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
+		       prec/amg/amg.cc \
+		       prec/amg/amg_prec.h \
 		       prec/cheb/cheb_constr.cc \
 		       prec/cheb/cheb_mark.cc \
 		       prec/cheb/cheb_misc.cc \
 		       prec/cheb/cheb_solve.cc \
 		       prec/cheb/cheb_misc.h \
 		       prec/cheb/cheb_prec.h \
-		       prec/amg/amg.cc \
-		       prec/amg/amg_prec.h \
 		       prec/diag/diag.cc \
 		       prec/diag/diag_prec.h \
 		       prec/gs/gs.cc \
 		       prec/gs/gs_prec.h \
-		       prec/sym/sym.cc \
-		       prec/sym/sym_prec.h \
+		       prec/id/id_prec.h \
+		       prec/misc/misc.cc \
+		       prec/misc/sparse_lu.cc \
+		       prec/misc/misc.h \
 		       prec/multi_split/multi_split_constr.cc \
 		       prec/multi_split/multi_split_mark.cc \
 		       prec/multi_split/multi_split_misc.cc \
 		       prec/multi_split/multi_split_solve.cc \
 		       prec/multi_split/multi_split_misc.h \
 		       prec/multi_split/multi_split_prec.h \
-		       prec/misc/sparse_lu.cc \
-		       prec/misc/misc.cc \
-		       prec/misc/misc.h \
+		       prec/sym/sym.cc \
+		       prec/sym/sym_prec.h \
 		       prec/prec_base.h \
-		       solvers/pcg.cc \
+		       prec/prec.h \
 		       solvers/cheb.cc \
+		       solvers/pcg.cc \
 		       solvers/simple_solver.cc \
 		       solvers/amg1r6.f \
 		       solvers/solvers.cc \
