@@ -19,10 +19,10 @@ void RBGSPrec::solve(Vector& f, Vector& x) const THROW {
 #endif
 }
 
-RBGSPrec::RBGSPrec(const SkylineMatrix& A, uint lN_) {
+RBGSPrec::RBGSPrec(const SkylineMatrix& A, const Config& cfg) {
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
     n = A.rows();
-    lN = lN_;
+    lN = cfg.nx*cfg.ny;
 
     const uvector<uint>&  ia = A.get_ia();
     const uvector<uint>&  ja = A.get_ja();

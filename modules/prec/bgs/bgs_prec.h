@@ -2,6 +2,7 @@
 #define __BGS_PREC_H__
 
 #include "modules/prec/prec_base.h"
+#include "project/config.h"
 
 // #define PREC_SUBST
 
@@ -33,7 +34,7 @@ private:
     mutable void *A2_symbolic, *A2_numeric;
 
 public:
-    BGSPrec(const SkylineMatrix& A, uint lN_);
+    BGSPrec(const SkylineMatrix& A, const Config& cfg);
 
     void solve(Vector& f, Vector& x) const THROW;
 };

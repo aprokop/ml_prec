@@ -42,9 +42,9 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
 	else	    memcpy(&x[z*lN], &x2[(z/2)*lN], lN*sizeof(double));
 }
 
-BGSPrec::BGSPrec(const SkylineMatrix& A, uint lN_) {
+BGSPrec::BGSPrec(const SkylineMatrix& A, const Config& cfg) {
     ASSERT(A.cols() == A.rows(), "Matrix must be square");
-    lN = lN_;
+    lN = cfg.nx*cfg.ny;
     n = A.rows();
 
     const uvector<uint>&  ia = A.get_ia();
