@@ -2,6 +2,8 @@
 #include "multi_split_prec.h"
 #include "project/config.h"
 
+#include "modules/solvers/solvers.h"
+
 #include <iomanip>
 
 DEFINE_LOGGER("MultiSplitPrec");
@@ -63,8 +65,14 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
 
     uint niter = li.niter;
 
-    const CSRMatrix& A = levels[level].A;
+    const CSRMatrix& A = level ? levels[level].A : level0_A;
     const uvector<uint>& map = li.map;
+
+    if (level == nlevels-1 && max_coarse_n) {
+	SolverStats stats;
+	DirectSolver(A, f, x, Ac_symbolic, Ac_numeric, stats);
+	return;
+    }
 
     Vector& r  = li.r;
     Vector& w  = li.w;

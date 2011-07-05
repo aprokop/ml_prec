@@ -67,6 +67,8 @@ struct Config {
     SolverType solver;			/* External solver */
     PrecType prec;			/* Preconditioner */
 
+    uint   coarse_n;			/* Coarse system for direct solver */
+
     /* Other */
     bool   dump_data;			/* Dumping matrix and rhs */
     std::string dir;			/* Directory to dump the results */

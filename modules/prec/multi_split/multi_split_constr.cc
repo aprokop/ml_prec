@@ -41,6 +41,14 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     li.N   = A.size();
     li.nnz = A.ja.size();
 
+    if (li.N <= max_coarse_n) {
+	nlevels = level + 1;
+#ifdef HAVE_UMFPACK
+	Ac_symbolic = Ac_numeric = NULL;
+#endif
+	return;
+    }
+
     /* Number of nodes in the subdomain */
     uint N = li.N;
 
@@ -155,6 +163,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
     use_tails = cfg.use_tails;
+    max_coarse_n = cfg.coarse_n;
 
     nlevels = 30;
     levels.resize(nlevels);

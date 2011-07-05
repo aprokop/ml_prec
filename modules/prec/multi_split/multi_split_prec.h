@@ -41,6 +41,12 @@ private:
     const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
 				       need to make a copy */
 
+    uint max_coarse_n;
+#ifdef HAVE_UMFPACK
+    /* UMFPACK factorization of the coarsest level */
+    mutable void *Ac_symbolic, *Ac_numeric;
+#endif
+
     void construct_level(uint level, const SkylineMatrix& A);
 
     void solve(uint level, const Vector& f, Vector& x) const THROW;

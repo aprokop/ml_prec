@@ -30,6 +30,7 @@ static void usage() {
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
     std::cout << "  -h|--help                       Display help" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
+    std::cout << "  -N|--coarse-n                   Use director solver for coarse systems of order <= N" << std::endl;
     std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
     std::cout << "                                  Outer solver type" << std::endl;
     std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
@@ -66,6 +67,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 
     cfg.ntests           = 1;
     cfg.use_tails        = true;
+    cfg.coarse_n	 = 0;
     cfg.optimize_storage = true;
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
@@ -84,6 +86,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"dir",			required_argument,  NULL, 'D'},
 	{"help",		no_argument,	    NULL, 'h'},
 	{"matrix",		required_argument,  NULL, 'm'},
+	{"coarse-n",		required_argument,  NULL, 'N'},
 	{"optimize-storage",	required_argument,  NULL, 'O'},
 	{"solver",		required_argument,  NULL, 'o'},
 	{"prec",		required_argument,  NULL, 'p'},
@@ -101,7 +104,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 #define CHECK_AND_SET(str, param, value) if (!strcmp(optarg, str)) param = value
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:T:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:T:N:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -138,6 +141,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'x': cfg.nx = uint(atoi(optarg)); break;
 	    case 'y': cfg.ny = uint(atoi(optarg)); break;
 	    case 'z': cfg.nz = uint(atoi(optarg)); break;
+	    case 'N': cfg.coarse_n = uint(atoi(optarg)); break;
 	    case 'o': CHECK_AND_SET("pcg", cfg.solver, PCG_SOLVER);
 		      else CHECK_AND_SET("cheb", cfg.solver, CHEB_SOLVER);
 		      else CHECK_AND_SET("simple", cfg.solver, SIMPLE_SOLVER);
@@ -188,6 +192,10 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	}
     }
 #undef CHECK_AND_SET
+
+#ifndef HAVE_UMFPACK
+    coarse_n = 0;
+#endif
 
     /* Check inconsistencies in parameters */
     if (cfg.prec == UH_CHEB_PREC) {
@@ -320,6 +328,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     /* Run parameters */
     os << "Number of tests  : " << cfg.ntests << std::endl;
     os << "Use tails        : " << (cfg.use_tails ? "true" : "false") << std::endl;
+    os << "Coarse n         : " << cfg.coarse_n << std::endl;
     os << "Optimize storage : " << (cfg.optimize_storage ? "true" : "false") << std::endl;
 
     os << "Solver           : ";
