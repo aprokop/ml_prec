@@ -20,6 +20,7 @@ enum SolverType {
 enum PrecType {
     AMG_PREC,		// AMG (Stüben)
     DIAG_PREC,		// Jacobi
+    COMP_PREC,		// composite
     GS_PREC,		// Gauss-Seidel
     ID_PREC,		// Identity matrix
 #ifdef HAVE_UMFPACK

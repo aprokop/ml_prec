@@ -20,6 +20,8 @@ libmodules_a_SOURCES = \
 		       prec/cheb/cheb_solve.cc \
 		       prec/cheb/cheb_misc.h \
 		       prec/cheb/cheb_prec.h \
+		       prec/composite/composite.cc \
+		       prec/composite/composite_prec.h \
 		       prec/diag/diag.cc \
 		       prec/diag/diag_prec.h \
 		       prec/gs/gs.cc \

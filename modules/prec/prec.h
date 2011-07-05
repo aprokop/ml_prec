@@ -6,6 +6,7 @@
 #include "modules/prec/amg/amg_prec.h"
 #include "modules/prec/bgs/bgs_prec.h"
 #include "modules/prec/cheb/cheb_prec.h"
+#include "modules/prec/composite/composite_prec.h"
 #include "modules/prec/diag/diag_prec.h"
 #include "modules/prec/gs/gs_prec.h"
 #include "modules/prec/id/id_prec.h"

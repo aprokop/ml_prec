@@ -85,6 +85,7 @@ int main (int argc, char * argv[]) {
 	cstart = pclock();
 	switch (cfg.prec) {
 	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
+	    case COMP_PREC	  : B_ = new CompositePrec(A, cfg);	break;
 	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
 	    case GS_PREC          : B_ = new GSPrec(A);			break;
 	    case ID_PREC	  : B_ = new IdPrec(A);			break;

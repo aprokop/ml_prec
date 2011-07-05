@@ -21,35 +21,35 @@ DEFINE_LOGGER("Main");
 static void usage() {
     std::cout << "Usage: ./spe_prec [options]" << std::endl;
     std::cout << "Options:" << std::endl;
-    std::cout << "  -s|--sigmas                     Level sigmas (for cheb prec, > 1) or q (for multi-split prec, < 1)" << std::endl;
+    std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance}" << std::endl;
+    std::cout << "                                  Matrix analysis to perform" << std::endl;
     std::cout << "  -b|--niters                     Number of iterations per level" << std::endl;
-    std::cout << "  -h|--help                       Display help" << std::endl;
     std::cout << "  -c                              Value of reaction coefficient" << std::endl;
+    std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
+    std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
+    std::cout << "  -h|--help                       Display help" << std::endl;
+    std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
+    std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
+    std::cout << "                                  Outer solver type" << std::endl;
+    std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
+#ifdef HAVE_UMFPACK
+    std::cout << "  -p|--prec={uh_cheb|amg|comp|diag|gs|id|bgs|rbgs|sym_split|multi_split}" << std::endl;
+    std::cout << "                                  Preconditioner type" << std::endl;
+#else
+    std::cout << "  -p|--prec={uh_cheb|amg|comp|diag|gs|id|sym_split|multi_split}" << std::endl;
+    std::cout << "                                  Preconditioner type" << std::endl;
+#endif
+    std::cout << "  -s|--sigmas                     Level sigmas (for cheb prec, > 1) or q (for multi-split prec, < 1)" << std::endl;
+    std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
+    std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
+    std::cout << "  -T|--transform={none|IL|IU|ILU}" << std::endl;
+    std::cout << "                                  Transformation to perform" << std::endl;
+    std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
+    std::cout << "  -v|--vector                     Vector input file" << std::endl;
     std::cout << "  -x|--nx                         Number of points in x direction for SPE" << std::endl;
     std::cout << "  -y|--ny                         Number of points in y direction for SPE" << std::endl;
     std::cout << "  -z|--nz                         Number of points in z direction for SPE" << std::endl;
-    std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
-    std::cout << "                                  Outer solver type" << std::endl;
-    std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
-    std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
-    std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
-    std::cout << "  -v|--vector                     Vector input file" << std::endl;
-    std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
-    std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
-    std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
-#ifdef HAVE_UMFPACK
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|id|bgs|rbgs|sym_split|multi_split}" << std::endl;
-    std::cout << "                                  Preconditioner type" << std::endl;
-#else
-    std::cout << "  -p|--prec={uh_cheb|amg|diag|gs|id|sym_split|multi_split}" << std::endl;
-    std::cout << "                                  Preconditioner type" << std::endl;
-#endif
-    std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
-    std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
-    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance}" << std::endl;
-    std::cout << "                                  Matrix analysis to perform" << std::endl;
-    std::cout << "  -T|--transform={none|IL|IU|ILU}" << std::endl;
-    std::cout << "                                  Transformation to perform" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -76,25 +76,25 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.transform	= TRANS_NONE;
 
     static struct option long_options[] = {
-	{"sigmas",		required_argument,  NULL, 's'},
+	{"ntests",		required_argument,  NULL, 'a'},
+	{"analysis",		required_argument,  NULL, 'A'},
 	{"niters",		required_argument,  NULL, 'b'},
-	{"help",		no_argument,	    NULL, 'h'},
 	{"c",			required_argument,  NULL, 'c'},
+	{"dump",		no_argument,	    NULL, 'd'},
+	{"dir",			required_argument,  NULL, 'D'},
+	{"help",		no_argument,	    NULL, 'h'},
+	{"matrix",		required_argument,  NULL, 'm'},
+	{"optimize-storage",	required_argument,  NULL, 'O'},
+	{"solver",		required_argument,  NULL, 'o'},
+	{"prec",		required_argument,  NULL, 'p'},
+	{"sigmas",		required_argument,  NULL, 's'},
+	{"unsym-shift",		required_argument,  NULL, 'S'},
+	{"use_tails",		required_argument,  NULL, 't'},
+	{"transform",		required_argument,  NULL, 'T'},
+	{"vector",		required_argument,  NULL, 'v'},
 	{"nx",			required_argument,  NULL, 'x'},
 	{"ny",			required_argument,  NULL, 'y'},
 	{"nz",			required_argument,  NULL, 'z'},
-	{"solver",		required_argument,  NULL, 'o'},
-	{"use_tails",		required_argument,  NULL, 't'},
-	{"optimize-storage",	required_argument,  NULL, 'O'},
-	{"matrix",		required_argument,  NULL, 'm'},
-	{"vector",		required_argument,  NULL, 'v'},
-	{"ntests",		required_argument,  NULL, 'a'},
-	{"prec",		required_argument,  NULL, 'p'},
-	{"dump",		no_argument,	    NULL, 'd'},
-	{"unsym-shift",		required_argument,  NULL, 'S'},
-	{"dir",			required_argument,  NULL, 'D'},
-	{"analysis",		required_argument,  NULL, 'A'},
-	{"transform",		required_argument,  NULL, 'T'},
 	{0, 0, 0, 0}
     };
 
@@ -151,6 +151,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'a': cfg.ntests = uint(atoi(optarg)); break;
 	    case 'p': CHECK_AND_SET("uh_cheb", cfg.prec, UH_CHEB_PREC);
 		      else CHECK_AND_SET("amg", cfg.prec, AMG_PREC);
+		      else CHECK_AND_SET("comp", cfg.prec, COMP_PREC);
 		      else CHECK_AND_SET("diag", cfg.prec, DIAG_PREC);
 		      else CHECK_AND_SET("gs", cfg.prec, GS_PREC);
 		      else CHECK_AND_SET("id", cfg.prec, ID_PREC);
@@ -160,7 +161,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 #endif
 		      else CHECK_AND_SET("sym_split", cfg.prec, SYM_SPLIT_PREC);
 		      else CHECK_AND_SET("multi_split", cfg.prec, MULTI_SPLIT_PREC);
-		      else THROW_EXCEPTION("Unknown solver type \"" << optarg << "\"");
+		      else THROW_EXCEPTION("Unknown prec type \"" << optarg << "\"");
 		      break;
 	    case 'u': cfg.unsym_matrix = true; break;
 	    case 'S': cfg.unsym_shift = atof(optarg); break;
@@ -336,6 +337,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     os << "Preconditioner   : ";
     switch(cfg.prec) {
 	CASE_PRINT(AMG_PREC, "amg");
+	CASE_PRINT(COMP_PREC, "composite");
 	CASE_PRINT(DIAG_PREC, "diag");
 	CASE_PRINT(GS_PREC, "gs");
 	CASE_PRINT(ID_PREC, "id");
