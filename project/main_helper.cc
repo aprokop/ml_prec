@@ -48,6 +48,8 @@ static void usage() {
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
     std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance}" << std::endl;
     std::cout << "                                  Matrix analysis to perform" << std::endl;
+    std::cout << "  -T|--transform={none|IL|IU|ILU}" << std::endl;
+    std::cout << "                                  Transformation to perform" << std::endl;
 }
 
 int set_params(int argc, char * argv[], Config& cfg) {
@@ -71,6 +73,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.dump_data       = false;
     cfg.dir	        = std::string("results/");
     cfg.analysis        = ANAL_NONE;
+    cfg.transform	= TRANS_NONE;
 
     static struct option long_options[] = {
 	{"sigmas",		required_argument,  NULL, 's'},
@@ -91,13 +94,14 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"unsym-shift",		required_argument,  NULL, 'S'},
 	{"dir",			required_argument,  NULL, 'D'},
 	{"analysis",		required_argument,  NULL, 'A'},
+	{"transform",		required_argument,  NULL, 'T'},
 	{0, 0, 0, 0}
     };
 
 #define CHECK_AND_SET(str, param, value) if (!strcmp(optarg, str)) param = value
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:T:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -171,6 +175,12 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      else CHECK_AND_SET("col_dominance", cfg.analysis, ANAL_COL_DOMINANCE);
 		      else THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
 		      break;
+	    case 'T': CHECK_AND_SET("none", cfg.transform, TRANS_NONE);
+		      else CHECK_AND_SET("IL", cfg.transform, TRANS_IL);
+		      else CHECK_AND_SET("IU", cfg.transform, TRANS_IU);
+		      else CHECK_AND_SET("ILU", cfg.transform, TRANS_ILU);
+		      else THROW_EXCEPTION("Unknown transformation type \"" << optarg << "\"");
+		      break;
 	    case '?':
 	    default:
 		      abort();
@@ -229,7 +239,9 @@ void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) 
 	 */
 	bool transform = true;
 
-	DumpType type = ((strstr(cfg.matrix.c_str(), ".crs") ? true : false)) ? ASCII : BINARY;
+	DumpType type = BINARY;
+	if (strstr(cfg.matrix.c_str(), ".crs")) type = ASCII;
+	if (strstr(cfg.matrix.c_str(), ".mm"))  type = MATRIX_MARKET;
 	A.load(cfg.matrix, transform, type);
     }
 }
@@ -285,6 +297,19 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	    CASE_PRINT(ANAL_1D_JACOBI, "1D_jacobi");
 	    CASE_PRINT(ANAL_COL_DOMINANCE, "col_dominance");
 	    case ANAL_NONE: break;
+	}
+	os << std::endl;
+
+	return os;
+    }
+
+    if (cfg.transform != TRANS_NONE) {
+	os << "Transformation   : ";
+	switch(cfg.transform) {
+	    CASE_PRINT(TRANS_IL, "IL");
+	    CASE_PRINT(TRANS_IU, "IU");
+	    CASE_PRINT(TRANS_ILU, "ILU");
+	    case TRANS_NONE: break;
 	}
 	os << std::endl;
 

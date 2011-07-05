@@ -41,6 +41,13 @@ enum AnalType {
     ANAL_COL_DOMINANCE
 };
 
+enum TransType {
+    TRANS_NONE,
+    TRANS_IL,
+    TRANS_IU,
+    TRANS_ILU
+};
+
 struct Config {
     /* Chebyshev iterations parameters */
     std::vector<uint>   niters;		/* Number of level iterations */
@@ -63,6 +70,7 @@ struct Config {
     bool   dump_data;			/* Dumping matrix and rhs */
     std::string dir;			/* Directory to dump the results */
     AnalType analysis;			/* Type of matrix analysis */
+    TransType transform;		/* Type of matrix transformation */
 
     std::string matrix;			/* Mesh file */
     std::string vector;			/* Vector file */

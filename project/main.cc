@@ -57,12 +57,11 @@ int main (int argc, char * argv[]) {
 	return 0;
     }
 
-#if 0
-    // LOG_VAR(A);
-    transform(A, b);
-    // LOG_VAR(A);
-    // exit(0);
-#endif
+    if (cfg.transform != TRANS_NONE) {
+	transform(A, b, cfg.transform);
+	dump("A_trans.dat", A, BINARY);
+	return 0;
+    }
 
     if (cfg.analysis != ANAL_NONE) {
 	analyze(A, b, cfg, cfg.analysis);
