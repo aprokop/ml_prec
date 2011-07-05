@@ -52,6 +52,10 @@ void anal_histogramm(const SkylineMatrix& A) {
     }
     for (uint i = 0; i+1 < n; i++)
 	std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+    std::cout << "( ";
+    for (uint i = 0; i+3 < n; i++)
+	std::cout << bins[i] << ", ";
+    std::cout << bins[n-3] << " )" << std::endl;
 }
 
 /*
