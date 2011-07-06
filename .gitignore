@@ -23,6 +23,10 @@ out/
 *.toc
 *.swp
 *.pyc
+*.crs
+*.dat
+*.mm
+*.rhs
 aclocal.m4
 m4/libtool.m4
 m4/ltoptions.m4
@@ -36,6 +40,11 @@ project/hypre
 tools/check_memory/check_memory
 project/fading/*.bin
 project/fading/*.txt
-*.crs
-*.dat
-*.rhs
+project/cur_run.sh
+project/log4cxx.properties
+project/results
+project/convert
+project/EM_matrices_0.tbz2
+project/EM_matrices_1.tbz2
+project/EM_matrices_3D_unsym/
+
