@@ -59,6 +59,12 @@ void MultiSplitPrec::solve(Vector& f, Vector& x) const THROW {
 void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const Level& li = levels[level];
 
+#ifdef PRINT_NORMS
+    /* Log norm */
+    if (level < 3)
+	(*norm_oss) << level << " " << dnrm2(f) << std::endl;
+#endif
+
     uint N = li.N;
     uint M = li.M;
     uint n = (level < nlevels-1) ? levels[level+1].N : 0;
@@ -103,6 +109,12 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     for (uint i = 2; i <= niter; i++) {
 	residual(A, f, x, r);
 
+#ifdef PRINT_NORMS
+    /* Log norm */
+    if (level < 3)
+	(*norm_oss) << level << " " << dnrm2(r) << std::endl;
+#endif
+
 	solve_L(level, r, w);
 	if (level < nlevels-1) {
 	    memcpy(&F[0], &w[M], n*sizeof(double));
@@ -117,4 +129,11 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
 
 	daxpy(1., u0, x);
     }
+#ifdef PRINT_NORMS
+    /* Log norm */
+    if (0 < level && level < 3) {
+	residual(A, f, x, r);
+	(*norm_oss) << level << " " << dnrm2(r) << std::endl;
+    }
+#endif
 }

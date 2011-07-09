@@ -162,8 +162,14 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
-    use_tails = cfg.use_tails;
+    use_tails    = cfg.use_tails;
     max_coarse_n = cfg.coarse_n;
+
+#ifdef PRINT_NORMS
+    /* Initialize stream for dumping norms */
+    norm_oss = new std::ostringstream;
+    (*norm_oss) << std::scientific;
+#endif
 
     nlevels = 30;
     levels.resize(nlevels);
@@ -179,4 +185,11 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     construct_level(0, A);
 
     levels.resize(nlevels);
+}
+
+MultiSplitPrec::~MultiSplitPrec() {
+#ifdef PRINT_NORMS
+    dump_norm_trace();
+    delete norm_oss;
+#endif
 }

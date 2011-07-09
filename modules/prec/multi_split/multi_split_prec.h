@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#define PRINT_NORMS
+
 class LinkTypeMultiSplit;
 class MultiSplitPrec : public PrecBase {
 private:
@@ -47,6 +49,11 @@ private:
     mutable void *Ac_symbolic, *Ac_numeric;
 #endif
 
+#ifdef PRINT_NORMS
+    mutable std::ostringstream *norm_oss;
+    void dump_norm_trace() const;
+#endif
+
     void construct_level(uint level, const SkylineMatrix& A);
 
     void solve(uint level, const Vector& f, Vector& x) const THROW;
@@ -61,7 +68,7 @@ private:
 
 public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);
-    ~MultiSplitPrec() { }
+    ~MultiSplitPrec();
 
     void solve(Vector& f, Vector& x) const THROW; /* Wrapper for solve(level,f,x) */
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;

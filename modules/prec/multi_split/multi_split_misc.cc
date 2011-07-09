@@ -67,3 +67,10 @@ std::ostream& operator<<(std::ostream& os, const MultiSplitPrec::Level& li) {
 
     return os;
 }
+
+void MultiSplitPrec::dump_norm_trace() const {
+    std::ofstream fos("norm.trace");
+    fos << (*norm_oss).str();
+    fos.close();
+}
+
