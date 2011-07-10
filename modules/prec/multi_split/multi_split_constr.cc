@@ -6,6 +6,9 @@
 #include "include/uvector.h"
 #include "include/logger.h"
 
+/* Needed for DirectSolver_free */
+#include "modules/solvers/solvers.h"
+
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -49,6 +52,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     if (li.N <= coarse_n || level == nlevels-1) {
 	nlevels = level + 1;
 	coarse_n = li.N;
+	li.M = li.Md = 0;
+	li.q = -1;
 #ifdef HAVE_UMFPACK
 	Ac_symbolic = Ac_numeric = NULL;
 #endif
@@ -195,6 +200,9 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 }
 
 MultiSplitPrec::~MultiSplitPrec() {
+#ifdef HAVE_UMFPACK
+    DirectSolver_free(Ac_symbolic, Ac_numeric);
+#endif
 #ifdef PRINT_NORMS
     dump_norm_trace();
     delete norm_oss;
