@@ -177,11 +177,13 @@ namespace log4cxx {
 #define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 
 #ifndef NO_LOGGER
-#define LLL_INFO(v)  LOG_INFO(v), std::cout << "INFO : " << v << std::endl
+#define LLL_INFO(v)  LOG_INFO(v),  std::cout << "INFO : " << v << std::endl
 #define LLL_DEBUG(v) LOG_DEBUG(v), std::cout << "DEBUG : " << v << std::endl
+#define LLL_WARN(v)  LOG_WARN(v),  std::cout << "WARN : " << v << std::endl
 #else
 #define LLL_INFO(v)  LOG_INFO(v)
 #define LLL_DEBUG(v) LOG_DEBUG(v)
+#define LLL_WARN(v)  LOG_WARN(v)
 #endif
 
 /* Logging of some common classes */
