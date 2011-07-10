@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#define PRINT_NORMS
+// #define PRINT_NORMS
 
 class LinkTypeMultiSplit;
 class MultiSplitPrec : public PrecBase {
