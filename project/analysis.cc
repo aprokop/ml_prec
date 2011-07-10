@@ -6,6 +6,9 @@
 #include "include/logger.h"
 #include "include/tools.h"
 
+#include "modules/prec/multi_split/multi_split_prec.h"
+#include "modules/solvers/solvers.h"
+
 DEFINE_LOGGER("Analysis");
 
 /*
@@ -362,6 +365,80 @@ void anal_col_dominance(const SkylineMatrix& A) {
 	std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
 }
 
+/*
+ * Find the asymptotic convergence rate for nested iterations
+ * We construct MultiSplitPrec with three levels, with different q for level 0 (q_0)
+ * and level 1 (q_1). Level 2 is solved using direct method. We perform several
+ * iterations with the preconditioner and study change in residual
+ */
+void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
+    Vector b(A.size()), x(A.size());
+
+    const uint ntests = 3;
+    const uint max_iter = 10;
+    uvector<double> rates(ntests);
+
+    uint   n = b.size();
+    Vector r(n), z(n);
+    double norm, init_norm;
+    uint   niter;
+
+    Config cfg = cfg_;
+    cfg.sigmas.resize(2);
+    cfg.max_levels = 3;
+    cfg.unsym_matrix = true;
+    cfg.prec = MULTI_SPLIT_PREC;
+    cfg.niters = std_vector<uint>(1, 1);
+
+    std::ofstream os("2level.dat");
+    os << "# q = " << cfg.sigmas[0] << std::endl;
+
+    srandom(time(NULL));
+
+    for (double q1 = 0.0001; q1 < 0.99; q1 += 0.05) {
+	cfg.sigmas[1] = q1;
+	MultiSplitPrec B(A, cfg);
+	LOG_DEBUG(B);
+
+	for (uint i = 0; i < ntests; i++) {
+	    LOG_INFO("q1 = " << q1 << ", TEST #" << i);
+
+	    /* Generate x0 */
+	    for (uint k = 0; k < x.size(); k++)
+		x[k] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
+
+	    residual(A, b, x, r);
+
+	    /* First iteration is atypical, ignore it */
+	    B.solve(r, z);
+	    daxpy(1., z, x);
+	    residual(A, b, x, r);
+
+	    norm = init_norm = calculate_norm(r, A, B, NORM_L2);
+
+	    niter = 0;
+	    while (niter < max_iter) {
+		B.solve(r, z);
+		daxpy(1., z, x);
+		residual(A, b, x, r);
+
+		norm = calculate_norm(r, A, B, NORM_L2);
+		LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+
+		niter++;
+	    }
+
+	    norm = calculate_norm(r, A, B, NORM_L2);
+
+	    rates[i] = pow(norm/init_norm, 1./max_iter);
+	}
+	double rate = std::accumulate(rates.begin(), rates.end(), 0.0)/rates.size();
+
+	std::cout << "q = " << cfg.sigmas[0] << ", q1 = " << q1 << ": rate = " << rate << std::endl;
+	os << q1 << " " << rate << std::endl;
+    }
+    os.close();
+}
 
 void analyze(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
     switch (analysis) {
@@ -371,6 +448,7 @@ void analyze(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalTyp
 	case ANAL_OFFDIAGONAL_RATIOS: anal_offdiagonal_ratios(A); break;
 	case ANAL_1D_JACOBI	    : anal_1D_Jacobi_global(A); break;
 	case ANAL_COL_DOMINANCE	    : anal_col_dominance(A); break;
+	case ANAL_2LEVEL_CONVERGENCE: anal_2level_convergence(A, cfg); break;
 	case ANAL_NONE		    : LOG_WARN("Calling analysis with ANAL_NONE"); break;
     }
 }

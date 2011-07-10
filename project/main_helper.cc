@@ -22,7 +22,7 @@ static void usage() {
     std::cout << "Usage: ./spe_prec [options]" << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
-    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance}" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance|unsym_convergence}" << std::endl;
     std::cout << "                                  Matrix analysis to perform" << std::endl;
     std::cout << "  -b|--niters                     Number of iterations per level" << std::endl;
     std::cout << "  -c                              Value of reaction coefficient" << std::endl;
@@ -185,6 +185,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 		      else CHECK_AND_SET("offdiag_ratios", cfg.analysis, ANAL_OFFDIAGONAL_RATIOS);
 		      else CHECK_AND_SET("1D_Jacobi", cfg.analysis, ANAL_1D_JACOBI);
 		      else CHECK_AND_SET("col_dominance", cfg.analysis, ANAL_COL_DOMINANCE);
+		      else CHECK_AND_SET("unsym_convergence", cfg.analysis, ANAL_2LEVEL_CONVERGENCE);
 		      else THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
 		      break;
 	    case 'T': CHECK_AND_SET("none", cfg.transform, TRANS_NONE);
@@ -210,6 +211,11 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	LLL_WARN("No direct solver available, ignoring -M argument");
     }
 #endif
+
+    if (cfg.analysis == ANAL_2LEVEL_CONVERGENCE && cfg.prec != MULTI_SPLIT_PREC) {
+	LLL_WARN("Changing preconditioner to \"multi_split\" for this type of analysis");
+	cfg.prec = MULTI_SPLIT_PREC;
+    }
 
     /* Check inconsistencies in parameters */
     if (cfg.prec == UH_CHEB_PREC) {
@@ -319,6 +325,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	    CASE_PRINT(ANAL_OFFDIAGONAL_RATIOS, "offdiag_ratios");
 	    CASE_PRINT(ANAL_1D_JACOBI, "1D_jacobi");
 	    CASE_PRINT(ANAL_COL_DOMINANCE, "col_dominance");
+	    CASE_PRINT(ANAL_2LEVEL_CONVERGENCE, "unsym_convergence");
 	    case ANAL_NONE: break;
 	}
 	os << std::endl;
