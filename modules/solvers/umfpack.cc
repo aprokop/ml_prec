@@ -49,6 +49,11 @@ void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbol
     delete[] a;
 }
 
+void DirectSolver_free(void * &Symbolic, void * &Numeric) {
+    if (Symbolic) { umfpack_di_free_symbolic(&Symbolic); Symbolic = NULL; }
+    if (Numeric)  { umfpack_di_free_numeric(&Numeric);   Numeric = NULL; }
+}
+
 /* Convert CSR matrix to CSC */
 void convert(const CSRMatrix& A, int* ia, int* ja, double* a) {
     const uint n = A.size();

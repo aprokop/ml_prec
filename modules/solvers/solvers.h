@@ -38,6 +38,7 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector
 #ifdef HAVE_UMFPACK
 void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void *&Symbolic, void *&Numeric,
 		  SolverStats& stats, bool silent = false) THROW;
+void DirectSolver_free(void * &Symbolic, void * &Numeric);
 #endif
 
 void generate_x0(Vector& x);
