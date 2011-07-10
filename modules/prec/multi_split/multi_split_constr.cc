@@ -41,8 +41,14 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     li.N   = A.size();
     li.nnz = A.ja.size();
 
-    if (li.N <= max_coarse_n) {
+#ifndef HAVE_UMFPACK
+    if (level == nlevels-1)
+	THROW_EXCEPTION("Too many levels: " << nlevels);
+#endif
+
+    if (li.N <= coarse_n || level == nlevels-1) {
 	nlevels = level + 1;
+	coarse_n = li.N;
 #ifdef HAVE_UMFPACK
 	Ac_symbolic = Ac_numeric = NULL;
 #endif
@@ -151,9 +157,6 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	li.x2.resize(n);
 	li.F.resize(n);
 
-	if (level == nlevels-2)
-	    THROW_EXCEPTION("Too many levels: " << nlevels);
-
 	construct_level(level+1, nA);
     } else {
 	LOG_DEBUG("Reducing number of levels: " << nlevels << " -> " << level+1);
@@ -162,8 +165,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
-    use_tails    = cfg.use_tails;
-    max_coarse_n = cfg.coarse_n;
+    use_tails = cfg.use_tails;
+    coarse_n  = cfg.coarse_n;
 
 #ifdef PRINT_NORMS
     /* Initialize stream for dumping norms */
@@ -171,7 +174,8 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     (*norm_oss) << std::scientific;
 #endif
 
-    nlevels = 30;
+    if (cfg.max_levels)
+	nlevels = cfg.max_levels;
     levels.resize(nlevels);
 
     /* Fill in q parameter for each level */
@@ -187,6 +191,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     construct_level(0, A);
 
     levels.resize(nlevels);
+    levels[nlevels-1].niter = 0;
 }
 
 MultiSplitPrec::~MultiSplitPrec() {

@@ -74,7 +74,7 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const CSRMatrix& A = level ? levels[level].A : level0_A;
     const uvector<uint>& map = li.map;
 
-    if (level == nlevels-1 && max_coarse_n) {
+    if (level == nlevels-1 && coarse_n) {
 	SolverStats stats;
 	DirectSolver(A, f, x, Ac_symbolic, Ac_numeric, stats);
 	return;

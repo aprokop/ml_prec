@@ -30,7 +30,10 @@ static void usage() {
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
     std::cout << "  -h|--help                       Display help" << std::endl;
     std::cout << "  -m|--matrix                     Matrix input file" << std::endl;
+#ifdef HAVE_UMFPACK
+    std::cout << "  -M|--max-levels                 Maximum number of levels for constructed preconditioner" << std::endl;
     std::cout << "  -N|--coarse-n                   Use director solver for coarse systems of order <= N" << std::endl;
+#endif
     std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
     std::cout << "                                  Outer solver type" << std::endl;
     std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
@@ -53,6 +56,7 @@ static void usage() {
     std::cout << "  -z|--nz                         Number of points in z direction for SPE" << std::endl;
 }
 
+static const uint DEFAULT_MAX_LEVELS = 30;
 int set_params(int argc, char * argv[], Config& cfg) {
     cfg.niters.push_back(2);
     cfg.sigmas.push_back(3);
@@ -68,6 +72,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.ntests           = 1;
     cfg.use_tails        = true;
     cfg.coarse_n	 = 0;
+    cfg.max_levels	 = DEFAULT_MAX_LEVELS;
     cfg.optimize_storage = true;
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
@@ -86,6 +91,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	{"dir",			required_argument,  NULL, 'D'},
 	{"help",		no_argument,	    NULL, 'h'},
 	{"matrix",		required_argument,  NULL, 'm'},
+	{"max-levels",		required_argument,  NULL, 'M'},
 	{"coarse-n",		required_argument,  NULL, 'N'},
 	{"optimize-storage",	required_argument,  NULL, 'O'},
 	{"solver",		required_argument,  NULL, 'o'},
@@ -104,7 +110,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 #define CHECK_AND_SET(str, param, value) if (!strcmp(optarg, str)) param = value
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "hb:s:O:t:c:x:y:z:to:m:v:a:p:uS:dD:A:T:N:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "s:O:a:A:b:c:dD:hm:M:N:o:p:S:t:T:uv:x:y:z:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -141,6 +147,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'x': cfg.nx = uint(atoi(optarg)); break;
 	    case 'y': cfg.ny = uint(atoi(optarg)); break;
 	    case 'z': cfg.nz = uint(atoi(optarg)); break;
+	    case 'M': cfg.max_levels = uint(atoi(optarg)); break;
 	    case 'N': cfg.coarse_n = uint(atoi(optarg)); break;
 	    case 'o': CHECK_AND_SET("pcg", cfg.solver, PCG_SOLVER);
 		      else CHECK_AND_SET("cheb", cfg.solver, CHEB_SOLVER);
@@ -194,7 +201,14 @@ int set_params(int argc, char * argv[], Config& cfg) {
 #undef CHECK_AND_SET
 
 #ifndef HAVE_UMFPACK
-    coarse_n = 0;
+    if (cfg.coarse_n) {
+	cfg.coarse_n = 0;
+	LLL_WARN("No direct solver available, ignoring -N argument");
+    }
+    if (cfg.max_levels) {
+	cfg.max_levels = 0;
+	LLL_WARN("No direct solver available, ignoring -M argument");
+    }
 #endif
 
     /* Check inconsistencies in parameters */
@@ -329,6 +343,9 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     os << "Number of tests  : " << cfg.ntests << std::endl;
     os << "Use tails        : " << (cfg.use_tails ? "true" : "false") << std::endl;
     os << "Coarse n         : " << cfg.coarse_n << std::endl;
+    if (cfg.max_levels != DEFAULT_MAX_LEVELS &&
+	(cfg.prec == UH_CHEB_PREC || cfg.prec == MULTI_SPLIT_PREC))
+	os << "Max levels       : " << cfg.max_levels << std::endl;
     os << "Optimize storage : " << (cfg.optimize_storage ? "true" : "false") << std::endl;
 
     os << "Solver           : ";

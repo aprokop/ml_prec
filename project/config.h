@@ -68,6 +68,7 @@ struct Config {
     PrecType prec;			/* Preconditioner */
 
     uint   coarse_n;			/* Coarse system for direct solver */
+    uint   max_levels;			/* Maximum number of levels for constructed preconditioner */
 
     /* Other */
     bool   dump_data;			/* Dumping matrix and rhs */
