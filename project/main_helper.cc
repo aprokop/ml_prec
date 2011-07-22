@@ -26,6 +26,7 @@ static void usage() {
     std::cout << "                                  Matrix analysis to perform" << std::endl;
     std::cout << "  -b|--niters                     Number of iterations per level" << std::endl;
     std::cout << "  -c                              Value of reaction coefficient" << std::endl;
+    std::cout << "  -C|--prec-config-file           Config file for the preconditioner" << std::endl;
     std::cout << "  -d|--dump                       Dump matrix and vector" << std::endl;
     std::cout << "     --dir                        Directory for the results (must not exist)" << std::endl;
     std::cout << "  -h|--help                       Display help" << std::endl;
@@ -77,16 +78,17 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.solver           = PCG_SOLVER;
     cfg.prec             = UH_CHEB_PREC;
 
-    cfg.dump_data       = false;
-    cfg.dir	        = std::string("results/");
-    cfg.analysis        = ANAL_NONE;
-    cfg.transform	= TRANS_NONE;
+    cfg.dump_data        = false;
+    cfg.dir	         = std::string("results/");
+    cfg.analysis         = ANAL_NONE;
+    cfg.transform	 = TRANS_NONE;
 
     static struct option long_options[] = {
 	{"ntests",		required_argument,  NULL, 'a'},
 	{"analysis",		required_argument,  NULL, 'A'},
 	{"niters",		required_argument,  NULL, 'b'},
 	{"c",			required_argument,  NULL, 'c'},
+	{"prec-config-file",	required_argument,  NULL, 'C'},
 	{"dump",		no_argument,	    NULL, 'd'},
 	{"dir",			required_argument,  NULL, 'D'},
 	{"help",		no_argument,	    NULL, 'h'},
@@ -110,7 +112,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 #define CHECK_AND_SET(str, param, value) if (!strcmp(optarg, str)) param = value
     while (1) {
 	int option_index = 0;
-	int ch = getopt_long(argc, argv, "s:O:a:A:b:c:dD:hm:M:N:o:p:S:t:T:uv:x:y:z:", long_options, &option_index);
+	int ch = getopt_long(argc, argv, "s:O:a:A:b:c:C:dD:hm:M:N:o:p:S:t:T:uv:x:y:z:", long_options, &option_index);
 
 	if (ch == -1)
 	    break;
@@ -177,6 +179,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'u': cfg.unsym_matrix = true; break;
 	    case 'S': cfg.unsym_shift = atof(optarg); break;
 	    case 'd': cfg.dump_data = true; break;
+	    case 'C': cfg.prec_conf_file = std::string(optarg); break;
 	    case 'D': cfg.dir = std::string(optarg); break;
 	    case 'A': CHECK_AND_SET("none", cfg.analysis, ANAL_NONE);
 		      else CHECK_AND_SET("qdropped", cfg.analysis, ANAL_QDROPPED);

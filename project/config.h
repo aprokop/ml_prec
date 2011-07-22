@@ -56,26 +56,27 @@ struct Config {
     std::vector<double> sigmas;		/* Level sigmas (or q for unsymmetric) */
 
     /* Mesh parameters */
-    double c;				/* Reaction coefficient */
-    uint   nx, ny, nz;			/* Mesh dimensions */
+    double	c;			/* Reaction coefficient */
+    uint	nx, ny, nz;		/* Mesh dimensions */
 
     /* Run parameters */
-    uint   ntests;			/* Number of tests for averaging */
-    bool   use_tails;			/* Optional use of tail elimination */
-    bool   optimize_storage;		/* Storage optimization for symmetric matrices */
-    bool   unsym_matrix;		/* Symmetricity of the matrix */
-    double unsym_shift;			/* Degree of the generated unsymmetry */
-    SolverType solver;			/* External solver */
-    PrecType prec;			/* Preconditioner */
+    uint	ntests;			/* Number of tests for averaging */
+    bool	use_tails;		/* Optional use of tail elimination */
+    bool	optimize_storage;	/* Storage optimization for symmetric matrices */
+    bool	unsym_matrix;		/* Symmetricity of the matrix */
+    double	unsym_shift;		/* Degree of the generated unsymmetry */
+    SolverType	solver;			/* External solver */
+    PrecType	prec;			/* Preconditioner */
 
-    uint   coarse_n;			/* Coarse system for direct solver */
-    uint   max_levels;			/* Maximum number of levels for constructed preconditioner */
+    uint	coarse_n;		/* Coarse system for direct solver */
+    uint	max_levels;		/* Maximum number of levels for constructed preconditioner */
 
     /* Other */
-    bool   dump_data;			/* Dumping matrix and rhs */
+    bool	dump_data;		/* Dumping matrix and rhs */
+    AnalType	analysis;		/* Type of matrix analysis */
+    TransType	transform;		/* Type of matrix transformation */
+    std::string prec_conf_file;		/* Config file for the preconditioner */
     std::string dir;			/* Directory to dump the results */
-    AnalType analysis;			/* Type of matrix analysis */
-    TransType transform;		/* Type of matrix transformation */
 
     std::string matrix;			/* Mesh file */
     std::string vector;			/* Vector file */
