@@ -2,6 +2,8 @@ AM_CPPFLAGS = -I$(top_srcdir)
 
 noinst_LIBRARIES = libmodules.a
 libmodules_a_SOURCES = \
+		       config_file/config_file.cc \
+		       config_file/config_file.h \
 		       matrix/csrmatrix.cc \
 		       matrix/dmatrix.cc \
 		       matrix/mapmatrix.cc \
