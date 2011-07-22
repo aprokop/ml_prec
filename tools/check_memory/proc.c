@@ -82,7 +82,7 @@ static void stat2proc(const char* S, proc_stat_t * P) {
 		 "%ld "
 		 "%lu %lu %lu %lu %lu %lu "
 		 "%*s %*s %*s %*s " /* discard, no RT signals & Linux 2.1 used hex */
-		 "%lu %*lu %*lu "
+		 "%lu %*s %*s "
 		 "%d %d "
 		 "%lu %lu",
 		 &P->state,
