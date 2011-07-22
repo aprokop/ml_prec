@@ -23,6 +23,7 @@ private:
 
 	double q;		    /* Convergence factor */
 	uint niter;		    /* Number of iterations on the level */
+	double eps;		    /* Epsilon for residual norm stop criteria */
 
 	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
 	CSRMatrix     L;	    /* L factor for the level (N x N) */

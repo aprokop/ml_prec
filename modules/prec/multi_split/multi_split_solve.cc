@@ -92,6 +92,9 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
      * But x0 = 0, so x1 = solve(f1)
      */
     r = f;
+    double init_norm = 0;
+    if (li.eps)
+	init_norm = dnrm2(r);
     solve_L(level, r, w);
     if (level < nlevels-1) {
 	memcpy(&F[0], &w[M], n*sizeof(double));
@@ -106,14 +109,22 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
 
     /* ===============    STEP 2+    =============== */
     /* x^{k+1} = x^k + solve(f1 - A*x^k) */
-    for (uint i = 2; i <= niter; i++) {
+    for (uint i = 2; li.eps || i <= niter; i++) {
 	residual(A, f, x, r);
 
 #ifdef PRINT_NORMS
-    /* Log norm */
-    if (level < 3)
-	(*norm_oss) << level << " " << dnrm2(r) << std::endl;
+	/* Log norm */
+	if (level < 3)
+	    (*norm_oss) << level << " " << dnrm2(r) << std::endl;
 #endif
+
+	if (li.eps) {
+	    double norm = dnrm2(r);
+	    if (norm / init_norm < li.eps) {
+		LOG_INFO("Level #" << level << ": Number of level iterations: " << i);
+		break;
+	    }
+	}
 
 	solve_L(level, r, w);
 	if (level < nlevels-1) {

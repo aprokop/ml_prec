@@ -59,7 +59,10 @@ std::ostream& operator<<(std::ostream& os, const MultiSplitPrec::Level& li) {
     os << "N = " << li.N << ", nnz = " << li.nnz << std::endl;
     os << "M = " << li.M << ", Md  = " << li.Md << std::endl;
     os << "q = " << li.q << std::endl;
-    os << "niter = " << li.niter << std::endl;
+    if (!li.eps)
+	os << "niter = " << li.niter << std::endl;
+    else
+	os << "eps   = " << li.eps << std::endl;
     os << std::endl;
 #if 0
     os << "A: " << li.A;

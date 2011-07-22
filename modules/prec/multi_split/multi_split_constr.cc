@@ -189,9 +189,16 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 
     /* Set number of iterations per level */
     levels[0].niter = 1;
+    levels[0].eps   = 0.0;
     LOG_INFO("The number of iterations on the first level is always 1");
-    for (uint l = 1; l < nlevels; l++)
+    for (uint l = 1; l < nlevels; l++) {
 	levels[l].niter = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
+	levels[l].eps = 0.0;
+    }
+    if (nlevels > 2) {
+	levels[1].niter = 0;
+	levels[1].eps = 1e-2;
+    }
 
     construct_level(0, A);
 
