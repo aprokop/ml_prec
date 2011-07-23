@@ -54,9 +54,6 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 	coarse_n = li.N;
 	li.M = li.Md = 0;
 	li.q = -1;
-#ifdef HAVE_UMFPACK
-	Ac_symbolic = Ac_numeric = NULL;
-#endif
 	return;
     }
 
@@ -204,11 +201,23 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 
     levels.resize(nlevels);
     levels[nlevels-1].niter = 0;
+
+#ifdef HAVE_UMFPACK
+    Ac_symbolic = Ac_numeric = NULL;
+#endif
+
+#ifdef PRINT_NORMS
+    /* Initialize stream for dumping norms */
+    norm_oss = new std::ostringstream;
+    (*norm_oss) << std::scientific;
+#endif
+
 }
 
 MultiSplitPrec::~MultiSplitPrec() {
 #ifdef HAVE_UMFPACK
-    DirectSolver_free(Ac_symbolic, Ac_numeric);
+    if (Ac_symbolic && Ac_numeric)
+	DirectSolver_free(Ac_symbolic, Ac_numeric);
 #endif
 #ifdef PRINT_NORMS
     dump_norm_trace();

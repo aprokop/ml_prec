@@ -235,7 +235,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	for (uint i = 0; i < cfg.sigmas.size(); i++)
 	    if (cfg.sigmas[i] <= 1)
 		THROW_EXCEPTION("All sigmas must be > 1");
-    if (cfg.prec == MULTI_SPLIT_PREC)
+    if (cfg.prec == MULTI_SPLIT_PREC && cfg.prec_conf_file.empty())
 	for (uint i = 0; i < cfg.sigmas.size(); i++)
 	    if (cfg.sigmas[i] >= 1)
 		THROW_EXCEPTION("All sigmas must be < 1");
