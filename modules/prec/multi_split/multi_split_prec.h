@@ -17,26 +17,40 @@ private:
     bool use_tails;
 
     struct Level {
+	/* Config variables */
+	double	q;		    /* Convergence factor */
+	uint	niter;		    /* Number of iterations on the level */
+	double	eps;		    /* Epsilon for residual norm stop criteria */
+
+	/* Info variables */
 	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
 	uint M;                     /* Size of the excluded block (not including diagonal block) */
 	uint Md;		    /* Size of the excluded diagonal block */
 
-	double q;		    /* Convergence factor */
-	uint niter;		    /* Number of iterations on the level */
-	double eps;		    /* Epsilon for residual norm stop criteria */
-
-	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
-	CSRMatrix     L;	    /* L factor for the level (N x N) */
-	SkylineMatrix U;	    /* U factor for the level (M x N) */
-
-	uvector<uint> map;	    /* Indices map: permuted -> original */
-	uvector<uint> rmap;	    /* Indices map: original -> permuted */
-
+	/* Data variables */
+	SkylineMatrix	A;	    /* Level matrix (for level 0 we use level0_A) */
+	CSRMatrix	L;	    /* L factor for the level (N x N) */
+	SkylineMatrix	U;	    /* U factor for the level (M x N) */
 	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
+	uvector<uint>	map;	    /* Indices map: permuted -> original */
+	uvector<uint>	rmap;	    /* Indices map: original -> permuted */
+
+	/* Misc variables */
 	mutable
 	Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
+
+	Level() : q(0.0), niter(0), eps(0.0) { }
     };
+
+    enum { INNER_ITER_FIXED, INNER_ITER_DYNAMIC }   inner_iter_type;
+    enum { LU_EXACT, LU_ILUT }			    lu_type;
+
+    uint   ilut_p;
+    double ilut_tau;
+    uint   degree_max;
+    double level_ratio;
+    uint coarse_n;
 
     uint nlevels;
     std::vector<Level> levels;
@@ -44,7 +58,6 @@ private:
     const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
 				       need to make a copy */
 
-    uint coarse_n;
 #ifdef HAVE_UMFPACK
     /* UMFPACK factorization of the coarsest level */
     mutable void *Ac_symbolic, *Ac_numeric;

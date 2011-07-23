@@ -1,5 +1,6 @@
 #include "multi_split_prec.h"
 #include "multi_split_misc.h"
+#include "modules/config_file/config_file.h"
 
 #include "include/time.h"
 #include "include/tools.h"
@@ -167,34 +168,88 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
-    use_tails = cfg.use_tails;
-    coarse_n  = cfg.coarse_n;
+    /* Read parameters from the config file */
+    std::string inner_iter_type, lu_type, elim_order_type, elim_stop_type;
+    std::string qs_str, niters_str, epss_str;
 
-#ifdef PRINT_NORMS
-    /* Initialize stream for dumping norms */
-    norm_oss = new std::ostringstream;
-    (*norm_oss) << std::scientific;
-#endif
+    std::vector<double> qs;
+    std::vector<uint>	niters;
+    std::vector<double> epss;
 
-    if (cfg.max_levels)
-	nlevels = cfg.max_levels;
+    if (!cfg.prec_conf_file.empty()) {
+	LOG_INFO("Prec configuration file provided, ignoring command line arguments");
+	try {
+	    ConfigFile config(cfg.prec_conf_file);
+
+	    /*                                          name in file  | default value */
+	    qs_str	    = config.read<std::string>	("q",		"0.8"	    );
+	    inner_iter_type = config.read<std::string>	("inner_iter",	"fixed"	    );
+	    lu_type         = config.read<std::string>	("lu_method",	"exact"	    );
+	    elim_order_type = config.read<std::string>	("elim_order",	"original"  );
+	    elim_stop_type  = config.read<std::string>	("elim_stop",	"degree"    );
+	    coarse_n        = config.read<uint>		("coarse_n",	0	    );
+	    nlevels         = config.read<uint>		("max_levels",	15	    );
+
+	    qs		    = new_vector<double>(qs_str);
+
+	    if (inner_iter_type == "fixed") {
+		niters_str  = config.read<std::string>	("level_niter", "5"	    );
+		niters	    = new_vector<uint>(niters_str);
+	    } else if (inner_iter_type == "dynamic") {
+		epss_str    = config.read<std::string>	("level_eps",	"1e-2"	    );
+		epss	    = new_vector<double>(epss_str);
+	    } else
+		THROW_EXCEPTION("Unknown inner_iter type: " << inner_iter_type);
+
+	    if (lu_type == "ilut") {
+		ilut_p	    = config.read<uint>		("ilut_p",	7	    );
+		ilut_tau    = config.read<double>	("ilut_tau",	1e-4	    );
+	    } else if (lu_type != "exact")
+		THROW_EXCEPTION("Unknown lu type: " << lu_type);
+
+	    if (elim_order_type != "original" &&
+		elim_order_type != "simple_1")
+		THROW_EXCEPTION("Unknown elim_order type: " << elim_order_type);
+
+	    degree_max  = 0;
+	    level_ratio = 0.0;
+	    if (elim_stop_type == "degree")
+		degree_max  = config.read<uint>		("degree_max",	3	    );
+	    else if (elim_stop_type == "goal") {
+		level_ratio = config.read<double>	("level_ratio", 0.25	    );
+	    } else
+		THROW_EXCEPTION("Unknown elim_stop type: " << elim_stop_type);
+
+	} catch (ConfigFile::file_not_found) {
+	    LOG_INFO("Config file \"" << cfg.prec_conf_file << "\" is absent");
+	}
+    } else { // if (cfg.prec_conf_file)
+	inner_iter_type = "fixed";
+	lu_type         = "exact";
+	elim_order_type = "original";
+	elim_stop_type  = "degree";
+	coarse_n        = cfg.coarse_n;
+	nlevels         = cfg.max_levels;
+
+	qs              = cfg.sigmas;
+	niters          = cfg.niters;
+    }
+
+    /* Constructing the preconditioner according to parameters */
     levels.resize(nlevels);
 
     /* Fill in q parameter for each level */
     for (uint l = 0; l < nlevels; l++)
-	levels[l].q = (l >= cfg.sigmas.size() ? cfg.sigmas.back() : cfg.sigmas[l]);
+	levels[l].q = (l >= qs.size() ? qs.back() : qs[l]);
 
     /* Set number of iterations per level */
     levels[0].niter = 1;
-    levels[0].eps   = 0.0;
     LOG_INFO("The number of iterations on the first level is always 1");
     for (uint l = 1; l < nlevels; l++) {
-	levels[l].niter = (l >= cfg.niters.size() ? cfg.niters.back() : cfg.niters[l]);
-	levels[l].eps = 0.0;
-    }
-    if (nlevels > 2) {
-	levels[1].niter = 0;
-	levels[1].eps = 1e-2;
+	if (inner_iter_type == "fixed")
+	    levels[l].niter = (l >= niters.size() ? niters.back() : niters[l]);
+	else
+	    levels[l].eps   = (l >= epss.size()   ? epss.back()   : epss[l]);
     }
 
     construct_level(0, A);
@@ -211,7 +266,6 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     norm_oss = new std::ostringstream;
     (*norm_oss) << std::scientific;
 #endif
-
 }
 
 MultiSplitPrec::~MultiSplitPrec() {
