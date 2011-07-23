@@ -12,11 +12,11 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <sys/types.h>
 #include <signal.h>
-
-#define FORTRAN(f) f ## _
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
@@ -69,12 +69,11 @@ std::vector<T> new_vector(uint n, T t1, ...) {
  *	std::vector<double> x = new_vector<double>("1.0 0.0 -2 4");
  */
 template<typename T>
-std::vector<T> new_vector(const char* str) {
+std::vector<T> new_vector(const std::string& str) {
     std::vector<T> v;
 
-    std::istringstream os(str);
-    std::copy(std::istream_iterator<T>(os), std::istream_iterator<T>(),
-	      std::back_inserter(v));
+    std::istringstream is(str);
+    std::copy(std::istream_iterator<T>(is), std::istream_iterator<T>(), std::back_inserter(v));
 
     return v;
 }

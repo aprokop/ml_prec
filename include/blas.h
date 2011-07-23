@@ -1,7 +1,7 @@
 #ifndef _BLAS_H_
 #define _BLAS_H_
 
-#include "tools.h"
+#include "fortran.h"
 
 extern "C" {
 	void	FORTRAN(dscal)  (const int* N, const double* ALPHA, double X[], const int* INCX);

@@ -1,5 +1,5 @@
 #include "include/logger.h"
-#include "include/tools.h"
+#include "include/fortran.h"
 #include "amg_prec.h"
 
 DEFINE_LOGGER("AMGPrec");

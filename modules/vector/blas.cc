@@ -1,5 +1,6 @@
 #include "vector.h"
 #include "include/blas.h"
+#include "include/tools.h"
 
 // ===========================  BLAS PROCEDURES WRAPPERS  ===========================
 #ifdef HAVE_BLAS

@@ -1,6 +1,7 @@
 #include "include/exception.h"
 #include "misc.h"
 
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 

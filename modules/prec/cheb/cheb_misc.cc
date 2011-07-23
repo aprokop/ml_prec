@@ -2,6 +2,8 @@
 #include "modules/prec/misc/misc.h"
 #include "include/logger.h"
 
+#include <fstream>
+
 DEFINE_LOGGER("Prec");
 
 void Prec::graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const {
