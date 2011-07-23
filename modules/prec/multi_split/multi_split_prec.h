@@ -40,11 +40,12 @@ private:
 	mutable
 	Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
 
-	Level() : q(0.0), niter(0), eps(0.0) { }
+	Level() : q(0.0), niter(0), eps(0.0) { N = nnz = M = Md = 0; }
     };
 
     enum { INNER_ITER_FIXED, INNER_ITER_DYNAMIC }   inner_iter_type;
     enum { LU_EXACT, LU_ILUT }			    lu_type;
+    enum { ORDER_ORIGINAL, ORDER_SIMPLE_1}	    order;
 
     uint   ilut_p;
     double ilut_tau;
@@ -76,9 +77,12 @@ private:
     void solve_L(uint level, const Vector& f, Vector& w) const;
     void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
 
-    void construct_permutation(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-			       uvector<int>& nlinks_in, uvector<int>& nlinks_out,
-			       uint& Md, uint& M, uvector<uint>& map) const;
+    void order_original(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+			uvector<int>& nlinks_in, uvector<int>& nlinks_out,
+			uint& Md, uint& M, uvector<uint>& map) const;
+    void order_simple_1(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+			const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+			uint& Md, uint& M, uvector<uint>& map) const;
 
 public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);

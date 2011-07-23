@@ -5,9 +5,9 @@
 
 DEFINE_LOGGER("Prec");
 
-void MultiSplitPrec::construct_permutation(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-					   uvector<int>& nlinks_in, uvector<int>& nlinks_out,
-					   uint& Md, uint& M, uvector<uint>& map) const {
+void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+				    uvector<int>& nlinks_in, uvector<int>& nlinks_out,
+				    uint& Md, uint& M, uvector<uint>& map) const {
     uint N = A.size();
 
     /*
@@ -50,7 +50,7 @@ void MultiSplitPrec::construct_permutation(const SkylineMatrix& A, const LinkTyp
 		     */
 		    bool aji_present = (ltype.stat(i1,i0) == PRESENT);
 		    if (!( nlinks_in[i0] == 0 ||
-			  (nlinks_in[i0] == 1 && aji_present))) {
+			   (nlinks_in[i0] == 1 && aji_present))) {
 			/*
 			 * Node i0 has more than one incoming connection, or
 			 * it has one incoming connection but not from i1
@@ -137,4 +137,41 @@ void MultiSplitPrec::construct_permutation(const SkylineMatrix& A, const LinkTyp
 	}
 
     Md = N - pind;
+}
+
+void MultiSplitPrec::order_simple_1(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+				    const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+				    uint& Md, uint& M, uvector<uint>& map) const {
+    uint N = A.size();
+
+    const int MAX_USEFUL_DEGREE = 6;
+    std::vector<uvector<uint> > degrees(MAX_USEFUL_DEGREE+2); // degrees[MAX_USEFUL_DEGREE+1] contains all with >
+
+    for (uint i = 0; i < N; i++)
+	if (nlinks_out[i] <= MAX_USEFUL_DEGREE)
+	    degrees[nlinks_out[i]].push_back(i);
+	else
+	    degrees.back().push_back(i);
+
+    const uvector<uint>& list0 = degrees[0];
+
+    uint pind = 0;
+    for (uint k = 0; k < list0.size(); k++)
+	if (nlinks_in[list0[k]] != 0)
+	    map[pind++] = list0[k];
+    for (uint i = 1; i < degrees.size(); i++) {
+	const uvector<uint>& list = degrees[i];
+	for (uint k = 0; k < list.size(); k++)
+	    map[pind++] = list[k];
+
+	if (i == degree_max)
+	    M = pind;
+    }
+
+    /* Mark the diagonal nodes last */
+    Md = pind;
+    for (uint k = 0; k < list0.size(); k++)
+	if (nlinks_in[list0[k]] == 0)
+	    map[pind++] = list0[k];
+    Md = N - Md;
 }

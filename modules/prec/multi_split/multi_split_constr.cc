@@ -51,10 +51,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 #endif
 
     if (li.N <= coarse_n || level == nlevels-1) {
-	nlevels = level + 1;
+	nlevels  = level + 1;
 	coarse_n = li.N;
-	li.M = li.Md = 0;
-	li.q = -1;
 	return;
     }
 
@@ -130,7 +128,10 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
      *  M, ..., N-Md  : Nodes which go to the next level
      *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
      */
-    construct_permutation(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map);
+    switch (order) {
+	case ORDER_ORIGINAL: order_original(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
+	case ORDER_SIMPLE_1: order_simple_1(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
+    }
 
     /* Construct reverse map */
     rmap.resize(N);
@@ -235,6 +236,9 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 	niters          = cfg.niters;
     }
 
+    if      (elim_order_type == "original") order = ORDER_ORIGINAL;
+    else if (elim_order_type == "simple_1") order = ORDER_SIMPLE_1;
+
     /* Constructing the preconditioner according to parameters */
     levels.resize(nlevels);
 
@@ -256,6 +260,8 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 
     levels.resize(nlevels);
     levels[nlevels-1].niter = 0;
+    levels[nlevels-1].eps   = 0.0;
+    levels[nlevels-1].q	    = 0.0;
 
 #ifdef HAVE_UMFPACK
     Ac_symbolic = Ac_numeric = NULL;
