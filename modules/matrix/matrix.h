@@ -236,6 +236,9 @@ public:
 void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
 void scale_c(CSRMatrix& A, double alpha);
 
+/* Convert CSR matrix to CSC */
+void convert(const CSRMatrix& A, int* ia, int* ja, double* a);
+
 class SkylineMatrix : public CSRMatrix {
     uvector<uint> iasym, jasym;
     uvector<double> asym;

@@ -7,7 +7,6 @@
 
 DEFINE_LOGGER("DirectSolver");
 
-void convert(const CSRMatrix& A, int* ia, int* ja, double* a);
 void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbolic, void * &Numeric,
 		  SolverStats& stats, bool silent) THROW {
     ASSERT_SIZE(b.size(), A.size());
@@ -52,43 +51,4 @@ void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbol
 void DirectSolver_free(void * &Symbolic, void * &Numeric) {
     if (Symbolic) { umfpack_di_free_symbolic(&Symbolic); Symbolic = NULL; }
     if (Numeric)  { umfpack_di_free_numeric(&Numeric);   Numeric = NULL; }
-}
-
-/* Convert CSR matrix to CSC */
-void convert(const CSRMatrix& A, int* ia, int* ja, double* a) {
-    const uint n = A.size();
-
-    const uvector<uint>&   Aia = A.get_ia();
-    const uvector<uint>&   Aja = A.get_ja();
-    const uvector<double>&  Aa = A.get_a();
-
-    std::vector<int> marker(n, 0);
-
-    /* Calculate number of elements in each column */
-    for (uint i = 0; i < n; i++)
-	for (uint j = Aia[i]; j < Aia[i+1]; j++)
-	    marker[Aja[j]]++;
-
-    /*
-     * Fill array ia for transposed matrix using marker
-     * After cycle marker = B.ia (but shorter by 1 element)
-     */
-    ia[0] = 0;
-    for (uint i = 0; i < n; i++) {
-	ia[i+1] = ia[i] + marker[i];
-	marker[i] = ia[i];
-    }
-
-    /* Fill in ja and a */
-    int col, relpos;
-    for (uint i = 0; i < n; i++)
-	for (uint j = Aia[i]; j < Aia[i+1]; j++) {
-	    col = Aja[j];
-	    relpos = marker[col];
-
-	    ja[relpos] = i;
-	    a[relpos] = Aa[j];
-
-	    marker[col]++;
-	}
 }
