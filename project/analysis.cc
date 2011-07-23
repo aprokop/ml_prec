@@ -388,7 +388,7 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
     cfg.max_levels = 3;
     cfg.unsym_matrix = true;
     cfg.prec = MULTI_SPLIT_PREC;
-    cfg.niters = std_vector<uint>(1, 1);
+    cfg.niters = new_vector<uint>(1, 1);
 
     std::ofstream os("2level.dat");
     os << "# q = " << cfg.sigmas[0] << std::endl;

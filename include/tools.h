@@ -8,8 +8,9 @@
 #include <cmath>
 #include <cstdarg>
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <iterator>
 #include <limits>
 #include <vector>
 #include <sys/types.h>
@@ -46,10 +47,10 @@ inline T random(T i0, T i1) {
  * Create std::vector from a list of scalars of type T.
  * The first argument is the number of variables in the list.
  * Typical use:
- *	std::vector<double> x = std_vector(5, 1.0, 0.0, -2, 4);
+ *	std::vector<double> x = new_vector(4, 1.0, 0.0, -2, 4);
  */
 template<typename T>
-const std::vector<T> std_vector(uint n, T t1, ...) {
+std::vector<T> new_vector(uint n, T t1, ...) {
     std::vector<T> v(n);
 
     v[0] = t1;
@@ -62,9 +63,25 @@ const std::vector<T> std_vector(uint n, T t1, ...) {
     return v;
 }
 
+/*
+ * Create std::vector from a string.
+ * Typical use:
+ *	std::vector<double> x = new_vector<double>("1.0 0.0 -2 4");
+ */
+template<typename T>
+std::vector<T> new_vector(const char* str) {
+    std::vector<T> v;
+
+    std::istringstream os(str);
+    std::copy(std::istream_iterator<T>(os), std::istream_iterator<T>(),
+	      std::back_inserter(v));
+
+    return v;
+}
+
 /* The same as std_vector but for uvector */
 template<typename T>
-const uvector<T> new_uvector(uint n, T t1, ...) {
+uvector<T> new_uvector(uint n, T t1, ...) {
     uvector<T> v(n);
 
     v[0] = t1;
