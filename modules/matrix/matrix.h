@@ -157,6 +157,7 @@ public:
 	return data[i];
     }
 
+    friend class CSRMatrix;
     friend class SkylineMatrix;
 
     friend std::ostream& operator<<(std::ostream& os, const MapMatrix& m);
@@ -171,6 +172,7 @@ protected:
 
 public:
     CSRMatrix();
+    CSRMatrix(const MapMatrix& A);
     virtual ~CSRMatrix() { }
 
     const CSRMatrix& operator=(const CSRMatrix& A);
@@ -249,7 +251,7 @@ public:
 
     void optimize_storage(char type = 's');
 
-    void load(const std::string& filename, bool transform, DumpType type = BINARY) THROW;
+    void load(const std::string& filename, DumpType type, bool transform) THROW;
 
     void permute(const std::vector<uint>& perm) THROW;
 

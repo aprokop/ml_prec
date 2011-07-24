@@ -27,7 +27,7 @@ uint SkylineMatrix::index(uint i, uint j) const {
     return uint(-1);
 }
 
-void SkylineMatrix::load(const std::string& filename, bool transform, DumpType type) THROW {
+void SkylineMatrix::load(const std::string& filename, DumpType type, bool transform) THROW {
     CSRMatrix::load(filename, type);
 
     if (transform) {

@@ -43,7 +43,7 @@ int main (int argc, char * argv[]) {
 	// bool input_is_binary = false;
     }
 
-    /* 
+    /*
      * Check extensions of the files:
      * crs - ascii
      * dat - binary
@@ -59,7 +59,7 @@ int main (int argc, char * argv[]) {
     std::cout << "Input (ascii = " << input_is_ascii << "): " << input << std::endl;
     std::cout << "Output (ascii = " << output_is_ascii << "): " << output << std::endl;
     SkylineMatrix A;
-    A.load(input, false, input_is_ascii ? ASCII : BINARY);
+    A.load(input, input_is_ascii ? ASCII : BINARY, false);
 
     if (update_c) {
 	const uint n = A.size();

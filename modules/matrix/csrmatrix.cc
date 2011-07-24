@@ -20,6 +20,27 @@ CSRMatrix::CSRMatrix() {
     nrow = ncol = 0;
 }
 
+CSRMatrix::CSRMatrix(const MapMatrix& A) {
+    nrow = A.rows();
+    ncol = A.cols();
+    ia.resize(nrow + 1);
+    ja.reserve(nrow*7);
+    a.reserve(nrow*7);
+
+    ia[0] = 0;
+    for (uint i = 0; i < nrow; i++) {
+	const MapMatrix::Row& row = A.data[i];
+
+	/* Add remaining elements of a row */
+	for (MapMatrix::Row::const_iterator it = row.begin(); it != row.end(); it++) {
+	    ja.push_back(it->first);
+	    a.push_back(it->second);
+	}
+
+	ia[i+1] = ia[i] + row.size();
+    }
+}
+
 const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
     nrow = A.nrow;
     ncol = A.ncol;
@@ -175,6 +196,27 @@ void CSRMatrix::load(const std::string& filename, DumpType type) THROW {
 	a.resize(nnz);
 	for (uint i  = 0; i < nnz; i++)
 	    is >> a[i];
+    } else if (type == MATRIX_MARKET) {
+	std::ifstream is(filename.c_str());
+	ASSERT(is.good(), "Problem reading file \"" << filename  << "\"");
+
+	const int N = 2011;
+	char str[N];
+	is.getline(str, N); /* "%%MatrixMarket matrix coordinate real general" */
+
+	is >> nrow >> ncol >> nnz;
+
+	MapMatrix mm(nrow);
+
+	uint i, j;
+	double v;
+	for (uint k = 0; k < nnz; k++) {
+	    is >> i >> j >> v;
+
+	    mm(i-1,j-1) = v;
+	}
+
+	*this = CSRMatrix(mm);
     } else if (type == HYPRE) {
 	THROW_EXCEPTION("Loading format HYPRE is not applicable to CSRMatrix");
     }

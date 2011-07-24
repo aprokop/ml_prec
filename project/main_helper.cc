@@ -274,7 +274,7 @@ void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) 
 	DumpType type = BINARY;
 	if (strstr(cfg.matrix.c_str(), ".crs")) type = ASCII;
 	if (strstr(cfg.matrix.c_str(), ".mm"))  type = MATRIX_MARKET;
-	A.load(cfg.matrix, transform, type);
+	A.load(cfg.matrix, type, transform);
     }
 }
 
