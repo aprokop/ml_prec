@@ -192,6 +192,17 @@ public:
 };
 #endif
 
+template<typename T1, typename T2>
+bool operator==(const uvector<T1>& x1, const uvector<T2>& x2) {
+    if (x1.size() != x2.size())
+	return false;
+    uint n = x1.size();
+    for (uint i = 0; i < n; i++)
+	if (x1[i] != x2[i])
+	    return false;
+    return true;
+}
+
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const uvector<T>& v) {
     os << " size = " << v.size() << std::endl;
