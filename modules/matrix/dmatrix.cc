@@ -10,28 +10,43 @@ using namespace std;
 
 DEFINE_LOGGER("DMatrix");
 
-DMatrix::DMatrix(uint _n, Type type) THROW {
-    ASSERT(_n, "Can't create matrix 0x0");
-    nrow = ncol = _n;
-    data.resize(nrow*ncol, 0.);
+DMatrix::DMatrix(uint n_, Type type) THROW {
+    ASSERT(n_, "Can't create matrix 0x0");
+    nrow = ncol = n_;
+    data.resize(nrow*ncol);
     factored = false;
 
     switch (type) {
+	case NONE: break;
 	case IDENTITY: /* identity matrix */
+	    memset(&data[0], 0, nrow*ncol*sizeof(double));
 	    for (uint i = 0; i < nrow; i++)
 		(*this)(i,i) = 1.0;
 	    break;
-	case ZERO:;
+	case ZERO:
+	    memset(&data[0], 0, nrow*ncol*sizeof(double));
     }
 }
 
-DMatrix::DMatrix(uint _m, uint _n) THROW {
-    ASSERT(_m && _n, "Can't create matrix " << _m << "x" << _n);
-    nrow = _m;
-    ncol = _n;
-    data.resize(nrow*ncol, 0.);
+DMatrix::DMatrix(uint m_, uint n_, Type type) THROW {
+    ASSERT(m_ && n_, "Can't create matrix " << m_ << "x" << n_);
+    nrow = m_;
+    ncol = n_;
+    data.resize(nrow*ncol);
     factored = false;
+
+    switch (type) {
+	case NONE: break;
+	case IDENTITY: /* identity matrix */
+	    ASSERT(m_ == n_, "IDENTITY is only for square matrices");
+	    for (uint i = 0; i < nrow; i++)
+		(*this)(i,i) = 1.0;
+	    break;
+	case ZERO:
+	    memset(&data[0], 0, nrow*ncol*sizeof(double));
+    }
 }
+
 
 DMatrix::DMatrix(const DMatrix& v) : Matrix() {
     nrow = v.nrow;

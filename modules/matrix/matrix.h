@@ -25,6 +25,10 @@ public:
 
     uint rows() const { return nrow; }
     uint cols() const { return ncol; }
+    uint size() const THROW {
+	ASSERT(nrow == ncol, "size was called for rectangular matrix: nrow = " << nrow << ", ncol = " << ncol);
+	return nrow;
+    }
 
     virtual double  operator()(uint i, uint j) const THROW = 0;
     virtual double& operator()(uint i, uint j) THROW = 0;
@@ -51,13 +55,14 @@ private:
 
 public:
     enum Type {
+	NONE,
 	ZERO,
 	IDENTITY
     };
 
 public:
-    DMatrix(uint _n = 1, Type type = ZERO) THROW;
-    DMatrix(uint _m, uint _n) THROW;
+    DMatrix(uint n_ = 1, Type type = ZERO) THROW;
+    DMatrix(uint m_, uint n_, Type type = NONE) THROW;
     DMatrix(const DMatrix& v);
     DMatrix(const char* values) THROW;
     DMatrix(const std::vector<double>& v, uint _ncol) THROW;
@@ -176,10 +181,6 @@ public:
     virtual ~CSRMatrix() { }
 
     const CSRMatrix& operator=(const CSRMatrix& A);
-    uint size() const THROW {
-	ASSERT(nrow == ncol, "size was called for rectangular matrix: nrow = " << nrow << ", ncol = " << ncol);
-	return nrow;
-    }
 
     virtual uint index(uint i, uint j) const;
 
