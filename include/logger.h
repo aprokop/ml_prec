@@ -180,10 +180,12 @@ namespace log4cxx {
 #define LLL_INFO(v)  LOG_INFO(v),  std::cout << "INFO : " << v << std::endl
 #define LLL_DEBUG(v) LOG_DEBUG(v), std::cout << "DEBUG : " << v << std::endl
 #define LLL_WARN(v)  LOG_WARN(v),  std::cout << "WARN : " << v << std::endl
+#define LLL_ERROR(v) LOG_ERROR(v), std::cout << "ERROR : " << v << std::endl
 #else
 #define LLL_INFO(v)  LOG_INFO(v)
 #define LLL_DEBUG(v) LOG_DEBUG(v)
 #define LLL_WARN(v)  LOG_WARN(v)
+#define LLL_ERROR(v) LOG_ERROR(v)
 #endif
 
 /* Logging of some common classes */
