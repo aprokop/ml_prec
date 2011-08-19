@@ -41,6 +41,25 @@ CSRMatrix::CSRMatrix(const MapMatrix& A) {
     }
 }
 
+CSRMatrix::CSRMatrix(const DMatrix& A) {
+    nrow = A.rows();
+    ncol = A.cols();
+    ia.resize(nrow+1);
+    ja.reserve(nrow*7);
+    a.reserve(nrow*7);
+
+    ia[0] = 0;
+    for (uint i = 0; i < nrow; i++) {
+	for (uint j = 0; j < ncol; j++)
+	    if (A(i,j)) {
+		ja.push_back(j);
+		a.push_back(A(i,j));
+	    }
+
+	ia[i+1] = ja.size();
+    }
+}
+
 const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
     nrow = A.nrow;
     ncol = A.ncol;
@@ -203,6 +222,8 @@ void CSRMatrix::load(const std::string& filename, DumpType type) THROW {
 	const int N = 2011;
 	char str[N];
 	is.getline(str, N); /* "%%MatrixMarket matrix coordinate real general" */
+	/* TODO: ignore comments */
+	is.getline(str, N); /* some comments */
 
 	is >> nrow >> ncol >> nnz;
 

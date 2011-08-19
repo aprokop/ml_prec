@@ -117,6 +117,7 @@ public:
     friend void dposv(DMatrix& A, DMatrix& B);
     friend void dpotri(DMatrix& A);
 
+    friend void	multiply(const DMatrix& A, const Vector& v, Vector& res) THROW;
     friend std::ostream& operator<<(std::ostream& os, const DMatrix& m);
 
     Vector operator*(const Vector& v) const THROW;
@@ -178,6 +179,7 @@ protected:
 public:
     CSRMatrix();
     CSRMatrix(const MapMatrix& A);
+    CSRMatrix(const DMatrix& A);
     virtual ~CSRMatrix() { }
 
     const CSRMatrix& operator=(const CSRMatrix& A);

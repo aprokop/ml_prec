@@ -315,6 +315,19 @@ bool DMatrix::is_symmetric() const {
     return true;
 }
 
+void multiply(const DMatrix& A, const Vector& v, Vector& res) THROW {
+    ASSERT(A.rows() == res.size(), "Different sizes: A is " << A.sizes() << ", res is " << res.size());
+    if (res.size() == 0)
+	return;
+
+    uint m = A.nrow, n = A.ncol;
+    for (uint i = 0; i < m; i++) {
+	res[i] = 0.0;
+	for (uint j = 0; j < n; j++)
+	    res[i] += A.data[i*n+j]*v[j];
+    }
+}
+
 /*
  * Given an s.p.d matrix A routine constructs its Cholesky decomposition
  * A = L L^T. Only the upper triangle of A is used for input; it is not
