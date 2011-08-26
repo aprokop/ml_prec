@@ -37,7 +37,7 @@ CSRMatrix::CSRMatrix(const MapMatrix& A) {
 	    a.push_back(it->second);
 	}
 
-	ia[i+1] = ia[i] + row.size();
+	ia[i+1] = ja.size();
     }
 }
 
