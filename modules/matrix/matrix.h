@@ -141,6 +141,12 @@ public:
     }
     MapMatrix(const CSRMatrix& sm);
 
+    void set_size(uint r, uint c) {
+	nrow = r;
+	ncol = c;
+	data.resize(r);
+    }
+
     double operator()(uint i, uint j) const THROW {
 	check_indices(i,j);
 
@@ -166,6 +172,7 @@ public:
     friend class CSRMatrix;
     friend class SkylineMatrix;
 
+    friend void	multiply(const MapMatrix& A, const Vector& v, Vector& res) THROW;
     friend std::ostream& operator<<(std::ostream& os, const MapMatrix& m);
 };
 
@@ -181,6 +188,8 @@ public:
     CSRMatrix(const MapMatrix& A);
     CSRMatrix(const DMatrix& A);
     virtual ~CSRMatrix() { }
+
+    void set_size(uint r, uint c) { nrow = r; ncol = c; }
 
     const CSRMatrix& operator=(const CSRMatrix& A);
 
@@ -199,8 +208,6 @@ public:
 	multiply(*this, v, x);
 	return x;
     }
-
-    void set_size(uint r, uint c) { nrow = r; ncol = c; }
 
     virtual double  operator()(uint i, uint j) const THROW;
     virtual double& operator()(uint i, uint j) THROW;
