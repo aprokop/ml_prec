@@ -52,15 +52,6 @@ int main (int argc, char * argv[]) {
     Vector b(A.size(), 0.);
     construct_vector(cfg, b);
 
-#if 1
-    dump("dump.mm", A, MATRIX_MARKET);
-    SkylineMatrix C;
-    C.load("dump.mm", MATRIX_MARKET, true);
-    LOG_VAR(A);
-    LOG_VAR(C);
-    return 0;
-#endif
-
     if (cfg.dump_data) {
 	dump_data(A, b);
 	return 0;
