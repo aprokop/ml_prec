@@ -70,9 +70,9 @@ const CSRMatrix& CSRMatrix::operator=(const CSRMatrix& A) {
 	ia.resize(n);
 	ja.resize(nnz);
 	a.resize(nnz);
-	memcpy(ia.data(), A.ia.data(), n*sizeof(int));
-	memcpy(ja.data(), A.ja.data(), nnz*sizeof(int));
-	memcpy(a.data(),  A.a.data(),  nnz*sizeof(double));
+	memcpy(&ia[0], &A.ia[0], n*sizeof(int));
+	memcpy(&ja[0], &A.ja[0], nnz*sizeof(int));
+	memcpy(&a[0],  &A.a[0],  nnz*sizeof(double));
     } else {
 	ia.clear();
 	ja.clear();
