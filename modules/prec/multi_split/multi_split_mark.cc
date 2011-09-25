@@ -5,6 +5,25 @@
 
 DEFINE_LOGGER("Prec");
 
+void MultiSplitPrec::order_none    (const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+				    const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+				    uint& Md, uint& M, uvector<uint>& map) const {
+    uint N = A.size();
+
+    uint pind = 0;
+    M = 0;
+
+    /* Mark the diagonal nodes last */
+    uint eind = N-1;
+    for (uint i = 0; i < N; i++)
+	if (nlinks_in[i] == 0 && nlinks_out[i] == 0)
+	    map[eind--] = i;
+	else
+	    map[pind++] = i;
+
+    Md = N - pind;
+}
+
 void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
 				    uvector<int>& nlinks_in, uvector<int>& nlinks_out,
 				    uint& Md, uint& M, uvector<uint>& map) const {
@@ -174,4 +193,48 @@ void MultiSplitPrec::order_simple_1(const SkylineMatrix& A, const LinkTypeMultiS
 	if (nlinks_in[list0[k]] == 0)
 	    map[pind++] = list0[k];
     Md = N - Md;
+}
+
+#define BSIZE 10
+void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
+				 const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+				 uint& Md, uint& M, uvector<uint>& map) const {
+    const uint nx = 60;
+    const uint ny = 220;
+    const uint nz = 85;
+
+    uint N = A.size();
+    if (N != nx*ny*nz)
+	THROW_EXCEPTION("Wrong mesh size: " << N << " (expected 1122000)");
+    LOG_WARN("Mesh is assumed to be cartesian 3D 60x220x85");
+
+    /* Set the marking of all nodes to default */
+    uvector<uint> marked(N, 0);
+
+    uint pind = 0;
+    for (uint k = 0; k < nz; k++)
+	for (uint j = 0; j < ny; j++)
+	    for (uint i = 0; i < nx; i++) {
+		uint id = k*ny*nx + j*nx + i;
+		if ( ((i % BSIZE != 0) && (j % BSIZE != 0) && (k % BSIZE != 0)) &&  /* check that it is an inner node */
+		     (nlinks_in[id] || nlinks_out[id]) &&			    /* check that it is not a diagonal node */
+		     (marked[id] == 0)) {					    /* check that it is unmarked */
+
+		    map[pind++] = id;
+		    marked[id] = 1;
+		}
+	    }
+    M = pind;
+
+    /* Mark the remaining nodes, diagonal nodes */
+    uint eind = N-1;
+    for (uint i = 0; i < N; i++)
+	if (marked[i] == 0) {
+	    if (nlinks_in[i] == 0 && nlinks_out[i] == 0)
+		map[eind--] = i;
+	    else
+		map[pind++] = i;
+	}
+
+    Md = N - pind;
 }

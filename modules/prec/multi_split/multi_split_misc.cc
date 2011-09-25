@@ -38,14 +38,17 @@ void MultiSplitPrec::graph_planes(const std::string& filename, uint level, char 
 
 std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p) {
     os << std::endl;
-    os << "nlevels: " << p.nlevels << std::endl;
-    os << "order: ";
+    os << "%%%%%%%%%%%%%%%%    MULTI_SPLIT preconditioner    %%%%%%%%%%%%%%%%" << std::endl;
+    os << "nlevels         : " << p.nlevels << std::endl;
+    os << "order           : ";
     switch(p.order) {
+	case MultiSplitPrec::ORDER_NONE    : os << "none\n"; break;
 	case MultiSplitPrec::ORDER_ORIGINAL: os << "original\n"; break;
+	case MultiSplitPrec::ORDER_BLOCK   : os << "block\n"; break;
 	case MultiSplitPrec::ORDER_SIMPLE_1: os << "simple_1\n"; break;
     }
     os << "inner iterations: ";
-    switch(p.order) {
+    switch(p.inner_iter_type) {
 	case MultiSplitPrec::INNER_ITER_FIXED: os << "fixed\n"; break;
 	case MultiSplitPrec::INNER_ITER_DYNAMIC: os << "dynamic\n"; break;
     }

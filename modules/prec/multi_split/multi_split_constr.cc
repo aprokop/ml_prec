@@ -129,7 +129,9 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
      *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
      */
     switch (order) {
+	case ORDER_NONE    : order_none    (A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
 	case ORDER_ORIGINAL: order_original(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
+	case ORDER_BLOCK   : order_block   (A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
 	case ORDER_SIMPLE_1: order_simple_1(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
     }
 
@@ -208,7 +210,9 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 	    } else if (lu_type != "exact")
 		THROW_EXCEPTION("Unknown lu type: " << lu_type);
 
-	    if (elim_order_type != "original" &&
+	    if (elim_order_type != "none" &&
+		elim_order_type != "original" &&
+		elim_order_type != "block" &&
 		elim_order_type != "simple_1")
 		THROW_EXCEPTION("Unknown elim_order type: " << elim_order_type);
 
@@ -236,7 +240,9 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 	niters          = cfg.niters;
     }
 
-    if      (elim_order_type == "original") order = ORDER_ORIGINAL;
+    if      (elim_order_type == "none")	    order = ORDER_NONE;
+    else if (elim_order_type == "original") order = ORDER_ORIGINAL;
+    else if (elim_order_type == "block")    order = ORDER_BLOCK;
     else if (elim_order_type == "simple_1") order = ORDER_SIMPLE_1;
 
     /* Constructing the preconditioner according to parameters */
