@@ -195,7 +195,7 @@ void MultiSplitPrec::order_simple_1(const SkylineMatrix& A, const LinkTypeMultiS
     Md = N - Md;
 }
 
-#define BSIZE 10
+#define BSIZE 5
 void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
 				 const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
 				 uint& Md, uint& M, uvector<uint>& map) const {
@@ -212,6 +212,7 @@ void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSpli
     uvector<uint> marked(N, 0);
 
     uint pind = 0;
+#if 0
     for (uint k = 0; k < nz; k++)
 	for (uint j = 0; j < ny; j++)
 	    for (uint i = 0; i < nx; i++) {
@@ -224,6 +225,22 @@ void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSpli
 		    marked[id] = 1;
 		}
 	    }
+#else
+    for (uint K = 0; K < nz; K += BSIZE)
+	for (uint J = 0; J < ny; J += BSIZE)
+	    for (uint I = 0; I < nx; I += BSIZE) {
+		for (uint k = K+1; k < std::min(K+BSIZE,nz)-1; k++)
+		    for (uint j = J+1; j < std::min(J+BSIZE,ny)-1; j++)
+			for (uint i = I+1; i < std::min(I+BSIZE,nx)-1; i++) {
+			    uint id = k*ny*nx + j*nx + i;
+			    if (nlinks_in[id] || nlinks_out[id]) { /* check that it is not a diagonal node */
+
+				map[pind++] = id;
+				marked[id] = 1;
+			    }
+			}
+	    }
+#endif
     M = pind;
 
     /* Mark the remaining nodes, diagonal nodes */

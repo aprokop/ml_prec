@@ -19,6 +19,7 @@ double dnrm2(const Vector& x);
 void   daxpy(double alpha, const double* x, double* y, uint n);
 void   dscal(double alpha, double* x, uint n);
 double ddot(const double* x, const double* y, uint n);
+double dnrm2(const double* x, uint n);
 
 Vector vector_product(const Vector& v1, const Vector& v2) THROW;
 

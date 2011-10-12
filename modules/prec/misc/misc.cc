@@ -87,6 +87,7 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 	/* Need to return scale to (1,1) as we'll have ellipses using /a if not */
 	ofs << "grestore\n";
 #if 0
+	/* Highlight nodes depending on the presense of links orthogonal to 2D picture */
 	for (uint i = 0; i < N; i++)
 	    if (marked[i]) {
 		switch (orth[i]) {
@@ -98,6 +99,24 @@ void graph_planes(const std::string& filename, const SkylineMatrix& A, const uve
 		    case 1: ofs << "g "; break;
 		    case 2: ofs << "r "; break;
 		}
+
+		const Point& a = nodes[map[i]];
+		switch (plane) {
+		    case 'x': ofs << mult_x*a.y << " " << mult_y*a.z << " a\n"; break;
+		    case 'y': ofs << mult_x*a.x << " " << mult_y*a.z << " a\n"; break;
+		    case 'z': ofs << mult_x*a.x << " " << mult_y*a.y << " a\n"; break;
+		}
+	    }
+#endif
+#if 1
+	/* Highlight nodes depending on the diagonal dominance criteria */
+	double tau = 0.8;
+	for (uint i = 0; i < N; i++)
+	    if (marked[i]) {
+		if (1 - A.row_sum(i)/A(i,i) > tau)
+		    ofs << "r ";
+		else
+		    ofs << "g ";
 
 		const Point& a = nodes[map[i]];
 		switch (plane) {

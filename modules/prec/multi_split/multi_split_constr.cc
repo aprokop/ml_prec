@@ -278,6 +278,17 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     norm_oss = new std::ostringstream;
     (*norm_oss) << std::scientific;
 #endif
+
+    {
+	/* Run analysis for A_1 */
+	const SkylineMatrix& S = levels[1].A;
+	uint nbad = 0;
+	float tau = 0.8;
+	for (uint i = 0; i < S.size(); i++)
+	    if (1 - S.row_sum(i)/S(i,i) > tau)
+		nbad++;
+	std::cout << "Number of bad nodes for A_1 (tau = " << tau << "): " << nbad << std::endl;
+    }
 }
 
 MultiSplitPrec::~MultiSplitPrec() {

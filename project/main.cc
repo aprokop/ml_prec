@@ -116,8 +116,8 @@ int main (int argc, char * argv[]) {
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
 	MultiSplitPrec& Bms = dynamic_cast<MultiSplitPrec&>(B);
 	LOG_INFO(Bms);
-#if 0
-	Bms.graph_planes("grids.ps", 4, 'z', mesh);
+#if 1
+	Bms.graph_planes("grids.ps", 1, 'z', mesh);
 	return 0;
 #endif
     }

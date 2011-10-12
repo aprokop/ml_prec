@@ -22,11 +22,10 @@ double ddot(const double* x, const double* y, uint n) {
     return FORTRAN(ddot)(&in, &x[0], &one, &y[0], &one);
 }
 
-double dnrm2(const Vector& x) {
-    int n = x.size();
-
+double dnrm2(const double* x, uint n) {
     int one = 1;
-    return FORTRAN(dnrm2)(&n, &x[0], &one);
+    int in  = n;
+    return FORTRAN(dnrm2)(&in, x, &one);
 }
 #else
 void daxpy(double alpha, const double* x, double* y, uint n) {
@@ -50,8 +49,8 @@ double ddot(const double* x, const double* y, uint n) {
     return s;
 }
 
-double dnrm2(const Vector& x) {
-    return sqrt(ddot(x,x));
+double dnrm2(const double* x, uint n) {
+    return sqrt(ddot(x,x,n));
 }
 #endif
 
@@ -75,6 +74,11 @@ double ddot(const Vector& x, const Vector& y) {
     ASSERT(y.size() == n, "Different sizes: x (" << x.size() << "), y (" << y.size() << ")");
 
     return ddot(&x[0], &y[0], n);
+}
+
+double dnrm2(const Vector& x) {
+    int n = x.size();
+    return dnrm2(&x[0], n);
 }
 
 Vector vector_product(const Vector& v1, const Vector& v2) THROW {
