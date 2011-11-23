@@ -231,7 +231,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     } else { // if (cfg.prec_conf_file)
 	inner_iter_type = "fixed";
 	lu_type         = "exact";
-	elim_order_type = "original";
+	elim_order_type = cfg.use_tails ? "original" : "none";
 	elim_stop_type  = "degree";
 	coarse_n        = cfg.coarse_n;
 	nlevels         = cfg.max_levels;
