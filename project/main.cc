@@ -58,7 +58,11 @@ int main (int argc, char * argv[]) {
     }
 
     if (cfg.transform != TRANS_NONE) {
+	TIME_INIT();
+	TIME_START();
 	transform(A, b, cfg.transform);
+	std::cout << TIME_INFO("Transformation") << std::endl;
+
 	dump("A_trans.dat", A, BINARY);
 	return 0;
     }
@@ -116,7 +120,7 @@ int main (int argc, char * argv[]) {
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
 	MultiSplitPrec& Bms = dynamic_cast<MultiSplitPrec&>(B);
 	LOG_INFO(Bms);
-#if 1
+#if 0
 	Bms.graph_planes("grids.ps", 1, 'z', mesh);
 	return 0;
 #endif
@@ -132,7 +136,7 @@ int main (int argc, char * argv[]) {
 	    case PCG_SOLVER : {
 		if (cfg.unsym_matrix)
 		    LOG_WARN("Applying PCGSolver for unsymmetric matrix");
-		PCGSolver(A, b, B, x, eps);
+		PCGSolver(A, b, B, x, stats, eps);
 		break;
 	    }
 	    case CHEB_SOLVER : {
