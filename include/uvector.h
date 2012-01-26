@@ -2,6 +2,7 @@
 #define __UVECTOR_H__
 
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
