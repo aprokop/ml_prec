@@ -35,7 +35,7 @@ static void usage() {
     std::cout << "  -M|--max-levels                 Maximum number of levels for constructed preconditioner" << std::endl;
     std::cout << "  -N|--coarse-n                   Use director solver for coarse systems of order <= N" << std::endl;
 #endif
-    std::cout << "  -o|--solver={cheb|pcg|simple|direct}" << std::endl;
+    std::cout << "  -o|--solver={cheb|pcg|simple|gmres|direct}" << std::endl;
     std::cout << "                                  Outer solver type" << std::endl;
     std::cout << "  -O|--optimize-storage={yes|no}  Do not optimize storage for symmetric matrices" << std::endl;
 #ifdef HAVE_UMFPACK
@@ -154,6 +154,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    case 'o': CHECK_AND_SET("pcg", cfg.solver, PCG_SOLVER);
 		      else CHECK_AND_SET("cheb", cfg.solver, CHEB_SOLVER);
 		      else CHECK_AND_SET("simple", cfg.solver, SIMPLE_SOLVER);
+		      else CHECK_AND_SET("gmres", cfg.solver, GMRES_SOLVER);
 #ifdef HAVE_UMFPACK
 		      else CHECK_AND_SET("direct", cfg.solver, DIRECT_SOLVER);
 #endif
@@ -240,7 +241,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
 	    if (cfg.sigmas[i] >= 1)
 		THROW_EXCEPTION("All sigmas must be < 1");
 
-    if (cfg.unsym_matrix == true)
+    if (cfg.unsym_matrix == true &&
+	(cfg.solver != SIMPLE_SOLVER && cfg.solver != GMRES_SOLVER))
 	cfg.solver = SIMPLE_SOLVER;
 
     return 0;
@@ -363,6 +365,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 	CASE_PRINT(PCG_SOLVER, "pcg");
 	CASE_PRINT(CHEB_SOLVER, "cheb");
 	CASE_PRINT(SIMPLE_SOLVER, "simple");
+	CASE_PRINT(GMRES_SOLVER, "gmres");
 #ifdef HAVE_UMFPACK
 	CASE_PRINT(DIRECT_SOLVER, "direct");
 #endif

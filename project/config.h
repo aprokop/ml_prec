@@ -12,6 +12,7 @@ enum SolverType {
     PCG_SOLVER,
     CHEB_SOLVER,
     SIMPLE_SOLVER,
+    GMRES_SOLVER,
 #ifdef HAVE_UMFPACK
     DIRECT_SOLVER
 #endif

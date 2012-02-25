@@ -152,6 +152,10 @@ int main (int argc, char * argv[]) {
 		SimpleSolver(A, b, B, x, stats, eps);
 		break;
 	    }
+	    case GMRES_SOLVER : {
+		GMRESSolver(A, b, B, x, stats, eps);
+		break;
+	    }
 #ifdef HAVE_UMFPACK
 	    case DIRECT_SOLVER : {
 		void *Symbolic = NULL, *Numeric = NULL;
