@@ -64,7 +64,8 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     LinkType ltype(A);
 
     /* Marking stage */
-    uint MAX_NUM = 100; /* Maximum number of elements in a row */
+    // uint MAX_NUM = 100; /* Maximum number of elements in a row */
+    uint MAX_NUM = 10000; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     aux.resize(N);
     const double* adata = &(A.a[0]);
@@ -279,6 +280,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     (*norm_oss) << std::scientific;
 #endif
 
+#if 0
     {
 	/* Run analysis for A_1 */
 	const SkylineMatrix& S = levels[1].A;
@@ -289,6 +291,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 		nbad++;
 	std::cout << "Number of bad nodes for A_1 (tau = " << tau << "): " << nbad << std::endl;
     }
+#endif
 }
 
 MultiSplitPrec::~MultiSplitPrec() {

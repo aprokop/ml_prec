@@ -1,5 +1,6 @@
 #include "solvers.h"
 #include "include/logger.h"
+#include "include/time.h"
 
 #include <cmath>
 
@@ -11,6 +12,7 @@ void update_x(uint i, const PrecBase& B, const std::vector<Vector>& v, double** 
 
 void GMRESSolver    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
 		     double eps, NormType norm_type, bool silent) THROW {
+    double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
 
@@ -37,6 +39,9 @@ void GMRESSolver    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vec
     double norm, init_norm;
     double dtmp;
 
+    double  mult = 0,  inv = 0,  cstr = 0, delta;
+    int	   nmult = 0, ninv = 0;
+
     generate_x0(x);
     residual(A, b, x, v[0]);
     norm = init_norm = dnrm2(v[0]);
@@ -60,8 +65,15 @@ void GMRESSolver    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vec
 	uint i = 0;
 	for (; i < m-1;) {
 	    /* v[i+1] = A M^-1 v[i] */
+	    delta = pclock();
 	    B.solve(v[i], z);
+	    inv += pclock() - delta;
+	    ninv++;
+
+	    delta = pclock();
 	    multiply(A, z, v[i+1]);
+	    mult += pclock() - delta;
+	    nmult++;
 
 	    /* Orhogonalize */
 	    if (true) {

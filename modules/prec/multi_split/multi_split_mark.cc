@@ -129,7 +129,7 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
     LOG_INFO("Excluded using small c criteria: " << c_marked);
 #endif
 
-#if 0
+#if 1
     /* Group 2 : all nodes with two links
      * NOTE: we don't mark links as removed, as we assume that this is the last step */
     const int max_links = 2;

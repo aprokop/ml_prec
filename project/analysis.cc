@@ -375,13 +375,14 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
     Vector b(A.size()), x(A.size());
 
     const uint ntests = 3;
-    const uint max_iter = 10;
+    const uint max_iter = 20;
     uvector<double> rates(ntests);
 
     uint   n = b.size();
     Vector r(n), z(n);
-    double norm, init_norm;
+    double init_norm;
     uint   niter;
+    std::vector<double> norm(max_iter);
 
     Config cfg = cfg_;
     cfg.sigmas.resize(2);
@@ -414,7 +415,7 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
 	    daxpy(1., z, x);
 	    residual(A, b, x, r);
 
-	    norm = init_norm = calculate_norm(r, A, B, NORM_L2);
+	    norm[0] = init_norm = calculate_norm(r, A, B, NORM_L2);
 
 	    niter = 0;
 	    while (niter < max_iter) {
@@ -422,19 +423,21 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
 		daxpy(1., z, x);
 		residual(A, b, x, r);
 
-		norm = calculate_norm(r, A, B, NORM_L2);
-		LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+		norm[niter] = calculate_norm(r, A, B, NORM_L2);
+		LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm[niter]/init_norm << "   absolute -> " << norm);
 
 		niter++;
 	    }
 
-	    norm = calculate_norm(r, A, B, NORM_L2);
+	    norm[niter] = calculate_norm(r, A, B, NORM_L2);
 
-	    rates[i] = pow(norm/init_norm, 1./max_iter);
+	    const int several = 5;
+	    rates[i] = pow(norm[niter]/norm[niter-several], 1./several);
 	}
 	double rate = std::accumulate(rates.begin(), rates.end(), 0.0)/rates.size();
 
 	std::cout << "q = " << cfg.sigmas[0] << ", q1 = " << q1 << ": rate = " << rate << std::endl;
+	std::cout << "(q_0 + (1-q_0)*q_1 - rate =  " << (cfg.sigmas[0] + (1-cfg.sigmas[0])*q1 - rate) << std::endl;
 	os << q1 << " " << rate << std::endl;
     }
     os.close();
