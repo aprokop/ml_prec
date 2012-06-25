@@ -266,9 +266,11 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
     construct_level(0, A);
 
     levels.resize(nlevels);
-    levels[nlevels-1].niter = 0;
-    levels[nlevels-1].eps   = 0.0;
-    levels[nlevels-1].q	    = 0.0;
+    if (levels[nlevels-1].M == 0) {
+        levels[nlevels-1].niter = 0;
+        levels[nlevels-1].eps   = 0.0;
+        levels[nlevels-1].q	    = 0.0;
+    }
 
 #ifdef HAVE_UMFPACK
     Ac_symbolic = Ac_numeric = NULL;
