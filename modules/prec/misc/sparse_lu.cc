@@ -4,8 +4,8 @@
 
 /* Saad. Iterative methods for sparse linear systems. Pages 310-312 */
 void construct_sparse_lu(const SkylineMatrix& A, const uvector<uint>& map, const uvector<uint>& rmap,
-			 uint Md, uint M, const LinkTypeBase& ltype, double beta, const uvector<double>& aux,
-			 SkylineMatrix& nA, SkylineMatrix& U, CSRMatrix& L) {
+                         uint Md, uint M, const LinkTypeBase& ltype, double beta, const uvector<double>& aux,
+                         SkylineMatrix& nA, SkylineMatrix& U, CSRMatrix& L) {
     const uint	N = A.size();
     uint	n = N-M-Md;
 
@@ -32,102 +32,102 @@ void construct_sparse_lu(const SkylineMatrix& A, const uvector<uint>& map, const
     nA_ia.push_back(0);
 
     /* Reserve some space */
-    L_ja.reserve(2*(N-Md));       L_a.reserve(2*(N-Md));
-    U_ja.reserve(3*M);		  U_a.reserve(3*M);
-    nA_ja.reserve(5*(N-M-Md));    nA_a.reserve(5*(N-M-Md));
+    L_ja.reserve(2*(N-Md));         L_a.reserve(2*(N-Md));
+    U_ja.reserve(3*M);		        U_a.reserve(3*M);
+    nA_ja.reserve(5*(N-M-Md));      nA_a.reserve(5*(N-M-Md));
     /* TODO: deal with M = 0 */
     for (uint i = 0; i < N-Md; i++) { /* i corresponds to a permuted index */
-	/* Step 0: clear tmp values filled on previous iteration */
-	unsigned jwn = jw.size();
-	for (uint k = 0; k < jwn; k++)
-	    jr[jw[k]] = -1;
-	jw.clear();
-	w.clear();
+        /* Step 0: clear tmp values filled on previous iteration */
+        unsigned jwn = jw.size();
+        for (uint k = 0; k < jwn; k++)
+            jr[jw[k]] = -1;
+        jw.clear();
+        w.clear();
 
-	uint arow = map[i];	/* Index of a row in A */
+        uint arow = map[i];	/* Index of a row in A */
 
-	/* Step 1: create buffer with permuted row of A */
-	/* Add diagonal element to buffer */
-	jr[i] = 0;
-	jw.insert(i);
-	w.push_back(aux[map[i]]);    /* w[0] is the value of the diagonal element */
+        /* Step 1: create buffer with permuted row of A */
+        /* Add diagonal element to buffer */
+        jr[i] = 0;
+        jw.insert(i);
+        w.push_back(aux[map[i]]);    /* w[0] is the value of the diagonal element */
 
-	/* Add off-diagonal elements to buffer */
-	max_num = 1;
-	ltype.set_row(arow);
-	for (uint j_ = A_ia[arow]+1; j_ < A_ia[arow+1]; j_++) {
-	    uint j = A_ja[j_];
+        /* Add off-diagonal elements to buffer */
+        max_num = 1;
+        ltype.set_row(arow);
+        for (uint j_ = A_ia[arow]+1; j_ < A_ia[arow+1]; j_++) {
+            uint j = A_ja[j_];
 
-	    if (ltype.stat(j_) == PRESENT) {
-		/* Translate original indices into permuted */
-		uint new_j = rmap[j];   /* permuted index */
+            if (ltype.stat(j_) == PRESENT) {
+                /* Translate original indices into permuted */
+                uint new_j = rmap[j];   /* permuted index */
 
-		jr[new_j] = max_num++;
-		jw.insert(new_j);
+                jr[new_j] = max_num++;
+                jw.insert(new_j);
 
-		/* Scale elements: required by our preconditioner theory. See report */
-		double z = A_a[j_] / beta;
+                /* Scale elements: required by our preconditioner theory. See report */
+                double z = A_a[j_] / beta;
 
-		w.push_back(z);
-		w[0] -= z;       /* update diagonal */
-	    }
-	}
+                w.push_back(z);
+                w[0] -= z;       /* update diagonal */
+            }
+        }
 
-	/* Step 2: perform sparse gaussian elimination */
-	uint m = std::min(i, M);
+        /* Step 2: perform sparse gaussian elimination */
+        uint m = std::min(i, M);
 
-	uint k = *(jw.begin());
-	while (k < m) {
-	    double lik = w[jr[k]] / U(k,k);
+        uint k = *(jw.begin());
+        while (k < m) {
+            double lik = w[jr[k]] / U(k,k);
 
-	    /* Update L */
-	    L_ja.push_back(k);
-	    L_a.push_back(lik);
+            /* Update L */
+            L_ja.push_back(k);
+            L_a.push_back(lik);
 
-	    /* Update buffer using k-th row of U */
-	    for (uint j_ = U_ia[k]+1; j_ < U_ia[k+1]; j_++) {
-		uint j = U_ja[j_];      /* j is a permuted index */
+            /* Update buffer using k-th row of U */
+            for (uint j_ = U_ia[k]+1; j_ < U_ia[k+1]; j_++) {
+                uint j = U_ja[j_];      /* j is a permuted index */
 
-		if (jr[j] != -1) {
-		    /* Element already exists in the buffer => update */
-		    w[jr[j]] -= lik*U_a[j_];
-		} else {
-		    /* Element does not exist in the buffer => create */
-		    jr[j] = max_num++;
-		    jw.insert(j);
-		    w.push_back(-lik*U_a[j_]);
-		}
-	    }
+                if (jr[j] != -1) {
+                    /* Element already exists in the buffer => update */
+                    w[jr[j]] -= lik*U_a[j_];
+                } else {
+                    /* Element does not exist in the buffer => create */
+                    jr[j] = max_num++;
+                    jw.insert(j);
+                    w.push_back(-lik*U_a[j_]);
+                }
+            }
 
-	    /* Find next index in the buffer, i.e. next element of L */
-	    k = *(jw.upper_bound(k));
-	}
-	L_ia.push_back(L_ja.size());
+            /* Find next index in the buffer, i.e. next element of L */
+            k = *(jw.upper_bound(k));
+        }
+        L_ia.push_back(L_ja.size());
 
-	/* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
-	if (i < M) {
-	    /* Update U */
-	    for (container::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
-		U_ja.push_back(*it);
-		U_a.push_back(w[jr[*it]]);
-	    }
+        /* Step 3: move element from buffer to corresponding rows of U/A_{level+1} */
+        if (i < M) {
+            /* Update U */
+            for (container::const_iterator it = jw.lower_bound(i); it != jw.end(); it++) {
+                U_ja.push_back(*it);
+                U_a.push_back(w[jr[*it]]);
+            }
 
-	    U_ia.push_back(U_ja.size());
-	} else {
-	    /* Update A_{level+1}
-	     * Note that the process is a bit more difficult than updating U as A is a SkylineMatrix
-	     * but elements added are sorted (i.e. the diagonal element is somewhere in the middle */
-	    uint adind = nA_ja.size();
-	    nA_ja.push_back(i-M);
-	    nA_a.push_back(w[0]);
+            U_ia.push_back(U_ja.size());
+        } else {
+            /* Update A_{level+1}
+             * Note that the process is a bit more difficult than updating U as A is a SkylineMatrix
+             * but elements added are sorted (i.e. the diagonal element is somewhere in the middle */
+            uint adind = nA_ja.size();
+            nA_ja.push_back(i-M);
+            nA_a.push_back(w[0]);
 
-	    for (container::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
-		if (*it != i) {
-		    nA_ja.push_back(*it-M);
-		    nA_a.push_back(w[jr[*it]]);
-		}
+            for (container::const_iterator it = jw.lower_bound(M); it != jw.end(); it++)
+                if (*it != i) {
+                    nA_ja.push_back(*it-M);
+                    nA_a.push_back(w[jr[*it]]);
+                }
 
-	    nA_ia.push_back(nA_ja.size());
-	}
+            nA_ia.push_back(nA_ja.size());
+        }
     }
 }

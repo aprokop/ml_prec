@@ -16,8 +16,8 @@ void MultiSplitPrec::solve_diagonal(uint level, const Vector& f, Vector& x) cons
     uint Md = li.Md;
     uint N  = li.N;
     for (uint i = 0; i < Md; i++) {
-	uint j = map[(N-Md) + i];
-	x[j] = dval[i]*f[j];
+        uint j = map[(N-Md) + i];
+        x[j] = dval[i]*f[j];
     }
 }
 
@@ -29,9 +29,9 @@ void MultiSplitPrec::solve_L(uint level, const Vector& f, Vector& w) const {
     const CSRMatrix& L = li.L;
 
     for (uint i = 0; i < N-Md; i++) { /* i is a permuted index */
-	w[i] = f[map[i]];
-	for (uint j_ = L.ia[i]; j_ < L.ia[i+1]; j_++)
-	    w[i] -= L.a[j_] * w[L.ja[j_]];
+        w[i] = f[map[i]];
+        for (uint j_ = L.ia[i]; j_ < L.ia[i+1]; j_++)
+            w[i] -= L.a[j_] * w[L.ja[j_]];
     }
 }
 
@@ -43,12 +43,12 @@ void MultiSplitPrec::solve_U(uint level, const Vector& w, Vector& x) const {
     const SkylineMatrix& U = li.U;
 
     for (int i = M-1; i >= 0; i--) {
-	double z = w[i];
+        double z = w[i];
 
-	for (uint j_ = U.ia[i]+1; j_ < U.ia[i+1]; j_++)
-	    z -= U.a[j_] * x[map[U.ja[j_]]];
+        for (uint j_ = U.ia[i]+1; j_ < U.ia[i+1]; j_++)
+            z -= U.a[j_] * x[map[U.ja[j_]]];
 
-	x[map[i]] = z / U.a[U.ia[i]];
+        x[map[i]] = z / U.a[U.ia[i]];
     }
 }
 
@@ -62,7 +62,7 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
 #ifdef PRINT_NORMS
     /* Log norm */
     if (level < 3)
-	(*norm_oss) << level << " " << dnrm2(f) << std::endl;
+        (*norm_oss) << level << " " << dnrm2(f) << std::endl;
 #endif
 
     uint N = li.N;
@@ -75,9 +75,9 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     const uvector<uint>& map = li.map;
 
     if (level == nlevels-1 && coarse_n) {
-	SolverStats stats;
-	DirectSolver(A, f, x, Ac_symbolic, Ac_numeric, stats);
-	return;
+        SolverStats stats;
+        DirectSolver(A, f, x, Ac_symbolic, Ac_numeric, stats);
+        return;
     }
 
     Vector& r  = li.r;
@@ -94,57 +94,62 @@ void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
     r = f;
     double init_norm = 0;
     if (li.eps)
-	init_norm = dnrm2(r);
+        init_norm = dnrm2(r);
     solve_L(level, r, w);
     if (level < nlevels-1) {
-	memcpy(&F[0], &w[M], n*sizeof(double));
+        memcpy(&F[0], &w[M], n*sizeof(double));
 
-	solve(level+1, F, x2);
+        solve(level+1, F, x2);
 
-	for (uint i = 0; i < n; i++)
-	    x[map[i+M]] = x2[i];
+        for (uint i = 0; i < n; i++)
+            x[map[i+M]] = x2[i];
     }
     solve_U(level, w, x);
     solve_diagonal(level, r, x);
 
+    if (level == nlevels-1) {
+        residual(A, f, x, r);
+        LOG_DEBUG("cnorm = " << dnrm2(r));
+    }
+
     /* ===============    STEP 2+    =============== */
     /* x^{k+1} = x^k + solve(f1 - A*x^k) */
     for (uint i = 2; li.eps || i <= niter; i++) {
-	residual(A, f, x, r);
+        residual(A, f, x, r);
 
 #ifdef PRINT_NORMS
-	/* Log norm */
-	if (level < 3)
-	    (*norm_oss) << level << " " << dnrm2(r) << std::endl;
+        /* Log norm */
+        if (level < 3)
+            (*norm_oss) << level << " " << dnrm2(r) << std::endl;
 #endif
 
-	if (li.eps) {
-	    double norm = dnrm2(r);
-	    if (norm / init_norm < li.eps) {
-		LOG_INFO("Level #" << level << ": Number of level iterations: " << i);
-		break;
-	    }
-	}
+        if (li.eps) {
+            double norm = dnrm2(r);
+            if (norm / init_norm < li.eps) {
+                LOG_INFO("Level #" << level << ": Number of level iterations: " << i);
+                break;
+            }
+        }
 
-	solve_L(level, r, w);
-	if (level < nlevels-1) {
-	    memcpy(&F[0], &w[M], n*sizeof(double));
+        solve_L(level, r, w);
+        if (level < nlevels-1) {
+            memcpy(&F[0], &w[M], n*sizeof(double));
 
-	    solve(level+1, F, x2);
+            solve(level+1, F, x2);
 
-	    for (uint i = 0; i < n; i++)
-		u0[map[i+M]] = x2[i];
-	}
-	solve_U(level, w, u0);
-	solve_diagonal(level, r, u0);
+            for (uint i = 0; i < n; i++)
+                u0[map[i+M]] = x2[i];
+        }
+        solve_U(level, w, u0);
+        solve_diagonal(level, r, u0);
 
-	daxpy(1., u0, x);
+        daxpy(1., u0, x);
     }
 #ifdef PRINT_NORMS
     /* Log norm */
     if (0 < level && level < 3) {
-	residual(A, f, x, r);
-	(*norm_oss) << level << " " << dnrm2(r) << std::endl;
+        residual(A, f, x, r);
+        (*norm_oss) << level << " " << dnrm2(r) << std::endl;
     }
 #endif
 }
