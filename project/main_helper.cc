@@ -291,11 +291,12 @@ void dump_data(const SkylineMatrix& A, const Vector& b) {
 #if 0
     /* Dump matrix in the HYPRE format for further running of HYPRE */
     dump("matrix_hypre.dat.00000", A, HYPRE);
+    dump("vector_hypre.dat.00000", b, HYPRE);
 #else
     /* Dump matrix in the BINARY format */
-    dump("matrix_hypre.dat", A, BINARY);
+    dump("matrix.dat", A, BINARY);
+    dump("vector.dat", b, BINARY);
 #endif
-    dump("vector_hypre.dat.00000", b, HYPRE);
 }
 
 std::ostream& operator<<(std::ostream& os, const Config& cfg) {
