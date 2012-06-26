@@ -385,19 +385,25 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
     std::vector<double> norm(max_iter);
 
     Config cfg = cfg_;
-    cfg.sigmas.resize(2);
-    cfg.max_levels = 3;
+    cfg.sigmas.resize(4);
+    cfg.max_levels = 5;
     cfg.unsym_matrix = true;
+    cfg.use_tails = false;
     cfg.prec = MULTI_SPLIT_PREC;
     cfg.niters = new_vector<uint>(1, 1);
 
-    std::ofstream os("2level.dat");
-    os << "# q = " << cfg.sigmas[0] << std::endl;
+    std::ofstream os_real("2level_real.dat");
+    std::ofstream os_form("2level_form.dat");
+    // os << "# q = " << cfg.sigmas[0] << std::endl;
 
     srandom(time(NULL));
 
+    double q0 = cfg.sigmas[0];
+
     for (double q1 = 0.0001; q1 < 0.99; q1 += 0.05) {
-	cfg.sigmas[1] = q1;
+        cfg.sigmas[1] = q1;
+	cfg.sigmas[2] = q1;
+	cfg.sigmas[3] = q1;
 	MultiSplitPrec B(A, cfg);
 	LOG_DEBUG(B);
 
@@ -435,12 +441,17 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
 	    rates[i] = pow(norm[niter]/norm[niter-several], 1./several);
 	}
 	double rate = std::accumulate(rates.begin(), rates.end(), 0.0)/rates.size();
+        double form2 = q1 + (1-q1)*q1;
+        double form1 = q1 + (1-q1)*form2;
+        double form  = q0 + (1-q0)*form1;
 
 	std::cout << "q = " << cfg.sigmas[0] << ", q1 = " << q1 << ": rate = " << rate << std::endl;
-	std::cout << "(q_0 + (1-q_0)*q_1 - rate =  " << (cfg.sigmas[0] + (1-cfg.sigmas[0])*q1 - rate) << std::endl;
-	os << q1 << " " << rate << std::endl;
+	std::cout << "(q_0 + (1-q_0)*q_1 - rate =  " << form-rate << std::endl;
+	os_real << q1 << " " << rate << std::endl;
+	os_form << q1 << " " << form << std::endl;
     }
-    os.close();
+    os_real.close();
+    os_form.close();
 }
 
 void analyze(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
