@@ -14,7 +14,7 @@ libmodules_a_SOURCES = \
 		       vector/vector.h \
 		       mesh/spe.cc \
 		       mesh/mesh.h \
-		       prec/amg/amg.cc \
+		       prec/amg/amg_prec.cc \
 		       prec/amg/amg_prec.h \
 		       prec/cheb/cheb_constr.cc \
 		       prec/cheb/cheb_mark.cc \
@@ -24,7 +24,7 @@ libmodules_a_SOURCES = \
 		       prec/cheb/cheb_prec.h \
 		       prec/composite/composite.cc \
 		       prec/composite/composite_prec.h \
-		       prec/diag/diag.cc \
+		       prec/diag/diag_prec.cc \
 		       prec/diag/diag_prec.h \
 		       prec/gs/gs.cc \
 		       prec/gs/gs_prec.h \
@@ -38,7 +38,7 @@ libmodules_a_SOURCES = \
 		       prec/multi_split/multi_split_solve.cc \
 		       prec/multi_split/multi_split_misc.h \
 		       prec/multi_split/multi_split_prec.h \
-		       prec/sym/sym.cc \
+		       prec/sym/sym_prec.cc \
 		       prec/sym/sym_prec.h \
 		       prec/prec_base.h \
 		       prec/prec.h \
@@ -51,9 +51,9 @@ libmodules_a_SOURCES = \
 		       solvers/solvers.h
 if UMFPACK
 libmodules_a_SOURCES += \
-		       prec/bgs/bgs.cc \
+		       prec/bgs/bgs_prec.cc \
 		       prec/bgs/bgs_prec.h \
-		       prec/rbgs/rbgs.cc \
+		       prec/rbgs/rbgs_prec.cc \
 		       prec/rbgs/rbgs_prec.h \
 		       solvers/umfpack.cc
 endif
