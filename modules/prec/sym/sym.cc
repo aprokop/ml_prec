@@ -24,11 +24,11 @@ SymPrec::SymPrec(const SkylineMatrix& A, const Config& cfg) {
 
     /* Create a symmetric variant of the matrix */
     for (uint i = 0; i < n; i++)
-	for (uint j = ia[i]+1; j < ia[i+1]; j++) {
-	    double d = Asym(ja[j],i); /* <= 0 */
-	    if (d > a[j])
-		a[j] = d;
-	}
+        for (uint j = ia[i]+1; j < ia[i+1]; j++) {
+            double d = Asym(ja[j],i); /* <= 0 */
+            if (d > a[j])
+                a[j] = d;
+        }
 
     Config cfg1 = cfg;
     cfg1.unsym_matrix = false;

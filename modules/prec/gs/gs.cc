@@ -14,11 +14,11 @@ void GSPrec::solve(Vector& f, Vector& x) const THROW {
     const uvector<double>& a = L.get_a();
 
     for (uint i = 0; i < n; i++) {
-	double d = f[i];
-	for (uint j = ia[i]+1; j < ia[i+1]; j++)
-	    d -= a[j]*x[ja[j]];
+        double d = f[i];
+        for (uint j = ia[i]+1; j < ia[i+1]; j++)
+            d -= a[j]*x[ja[j]];
 
-	x[i] = d/a[ia[i]];
+        x[i] = d/a[ia[i]];
     }
 
 }
@@ -43,23 +43,23 @@ GSPrec::GSPrec(const SkylineMatrix& A) {
 
     lia[0] = 0;
     for (uint i = 0; i < n; i++) {
-	uint start = ia[i], end = ia[i+1];
+        uint start = ia[i], end = ia[i+1];
 
-	ASSERT(A(i,i) > 0, "Something is very strange: (" << i << ") has " << A(i,i) << " on diagonal, aborting...");
+        ASSERT(A(i,i) > 0, "Something is very strange: (" << i << ") has " << A(i,i) << " on diagonal, aborting...");
 
-	/* Set diagonal element */
-	lja[ind] = i;
-	la[ind]  = a[start];
-	ind++;
+        /* Set diagonal element */
+        lja[ind] = i;
+        la[ind]  = a[start];
+        ind++;
 
-	uint middle = (std::upper_bound(ja.begin() + start+1, ja.begin() + end, i) - ja.begin());
-	for (uint j = start+1; j < middle; j++) {
-	    lja[ind] = ja[j];
-	    la[ind]  = a[j];
-	    ind++;
-	}
+        uint middle = (std::upper_bound(ja.begin() + start+1, ja.begin() + end, i) - ja.begin());
+        for (uint j = start+1; j < middle; j++) {
+            lja[ind] = ja[j];
+            la[ind]  = a[j];
+            ind++;
+        }
 
-	lia[i+1] = ind;
+        lia[i+1] = ind;
     }
     lja.resize(lia[n]);
     lja.resize(lia[n]);

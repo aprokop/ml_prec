@@ -3,6 +3,6 @@
 
 typedef unsigned int uint;
 
-#define PI 3.1415923
+#define PI 3.14159265358979323846264338327950
 
 #endif // __DEFINE_H__

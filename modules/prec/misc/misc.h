@@ -13,7 +13,7 @@
 double cheb(double x, uint k);
 
 void graph_planes(const std::string& filename, const SkylineMatrix& A, const uvector<uint>& map,
-		  char plane, const MeshBase& mesh);
+                  char plane, const MeshBase& mesh);
 
 struct TailNode {
     uint index;
@@ -26,10 +26,10 @@ struct TailNode {
 struct Tail : std::vector<TailNode> {
     char end_type;
     friend std::ostream& operator<<(std::ostream& os, const Tail& t) {
-	os << t[0].index;
-	for (uint i = 1; i < t.size(); i++)
-	    os << "-" << t[i].index;
-	return os << "\n";
+        os << t[0].index;
+        for (uint i = 1; i < t.size(); i++)
+            os << "-" << t[i].index;
+        return os << "\n";
     }
 };
 
@@ -51,7 +51,7 @@ public:
 };
 
 void construct_sparse_lu(const SkylineMatrix& A, const uvector<uint>& map, const uvector<uint>& rmap,
-			 uint Md, uint M, const LinkTypeBase& ltype, double beta, const uvector<double>& aux,
-			 SkylineMatrix& nA, SkylineMatrix& U, CSRMatrix& L);
+                         uint Md, uint M, const LinkTypeBase& ltype, double beta, const uvector<double>& aux,
+                         SkylineMatrix& nA, SkylineMatrix& U, CSRMatrix& L);
 
 #endif

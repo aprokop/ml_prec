@@ -27,23 +27,23 @@ public:
     virtual void construct_matrix(SkylineMatrix& A, double c) const = 0;
 
     const std::vector<Point>& get_nodes() const {
-	return nodes;
+        return nodes;
     }
     float get_size(char t) const {
-	switch (t) {
-	    case 'x': return size_x;
-	    case 'y': return size_y;
-	    case 'z': return size_z;
-	    default: THROW_EXCEPTION("Unknown type '" << t << "'");
-	}
+        switch (t) {
+            case 'x': return size_x;
+            case 'y': return size_y;
+            case 'z': return size_z;
+            default: THROW_EXCEPTION("Unknown type '" << t << "'");
+        }
     }
     uint get_n(char t) const {
-	switch (t) {
-	    case 'x': return nx;
-	    case 'y': return ny;
-	    case 'z': return nz;
-	    default: THROW_EXCEPTION("Unknown type '" << t << "'");
-	}
+        switch (t) {
+            case 'x': return nx;
+            case 'y': return ny;
+            case 'z': return nz;
+            default: THROW_EXCEPTION("Unknown type '" << t << "'");
+        }
     }
 };
 
@@ -55,7 +55,7 @@ private:
     uint knx, kny, knz,	kN;
 
     uint index_k(uint i, uint j, uint k) const {
-	return (k*kny*knx + j*knx + i) % kN;
+        return (k*kny*knx + j*knx + i) % kN;
     }
 
 public:
@@ -65,14 +65,14 @@ public:
     void construct_matrix_unsym(SkylineMatrix& A, double c, double shift) const;
 
     uint index(uint i, uint j, uint k) const THROW {
-	ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
+        ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
 
 #ifdef XYZ
-	/* XYZ */
-	return k*ny*nx + j*nx + i;
+        /* XYZ */
+        return k*ny*nx + j*nx + i;
 #elif defined ZXY
-	/* ZXY */
-	return j*nx*nz + i*nz + k;
+        /* ZXY */
+        return j*nx*nz + i*nz + k;
 #endif
     }
 };

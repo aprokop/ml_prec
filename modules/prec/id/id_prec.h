@@ -9,12 +9,12 @@ private:
 
 public:
     IdPrec(const SkylineMatrix& A) {
-	n = A.size();
+        n = A.size();
     }
 
     void solve(Vector& f, Vector& x) const THROW {
-	ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
-	x = f;
+        ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
+        x = f;
     }
 };
 

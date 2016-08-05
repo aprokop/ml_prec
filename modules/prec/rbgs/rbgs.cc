@@ -40,24 +40,24 @@ RBGSPrec::RBGSPrec(const SkylineMatrix& A, const Config& cfg) {
     uint ind = 0;
     b_ia[0] = 0;
     for (uint i = 0; i < n; i++) {
-	double c = std::accumulate(&a[ia[i]], &a[ia[i+1]], 0.0);
-	for (uint j = ia[i]; j < ia[i+1]; j++)
-	    if (ja[j] <= i || ((ja[j] - i) % lN)) {
-		b_ja[ind] = ja[j];
-		b_a[ind]  = a[j];
-		ind++;
-	    } else {
-		double v = -a[j];
-		if (v > 0.5*alpha*c/(1-alpha)) {
-		    b_ja[ind] = ja[j];
-		    b_a[ind]  = a[j];
-		    ind++;
+        double c = std::accumulate(&a[ia[i]], &a[ia[i+1]], 0.0);
+        for (uint j = ia[i]; j < ia[i+1]; j++)
+            if (ja[j] <= i || ((ja[j] - i) % lN)) {
+                b_ja[ind] = ja[j];
+                b_a[ind]  = a[j];
+                ind++;
+            } else {
+                double v = -a[j];
+                if (v > 0.5*alpha*c/(1-alpha)) {
+                    b_ja[ind] = ja[j];
+                    b_a[ind]  = a[j];
+                    ind++;
 
-		    R_nnz++;
-		}
-		R_nnz_total++;
-	    }
-	b_ia[i+1] = ind;
+                    R_nnz++;
+                }
+                R_nnz_total++;
+            }
+        b_ia[i+1] = ind;
     }
     b_ja.resize(b_ia.back());
     b_a.resize(b_ia.back());

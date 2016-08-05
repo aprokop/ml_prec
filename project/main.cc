@@ -16,25 +16,25 @@ int main (int argc, char * argv[]) {
     /* Set problem parameters */
     Config cfg;
     if (set_params(argc, argv, cfg)) {
-	LLL_INFO("Error while setting parameters, exiting...");
-	return 1;
+        LLL_INFO("Error while setting parameters, exiting...");
+        return 1;
     }
 
 #ifndef NO_LOGGER
     {
-	/* Reset logger output file */
-	std::ostringstream os;
-	std::string regexp_dir = cfg.dir;
-	size_t j = regexp_dir.find_first_of('/');
-	while(j != std::string::npos) {
-	    regexp_dir.replace(j, 1, "\\/");
-	    j = regexp_dir.find_first_of('/', j + 2);
+        /* Reset logger output file */
+        std::ostringstream os;
+        std::string regexp_dir = cfg.dir;
+        size_t j = regexp_dir.find_first_of('/');
+        while(j != std::string::npos) {
+            regexp_dir.replace(j, 1, "\\/");
+            j = regexp_dir.find_first_of('/', j + 2);
 
-	}
-	os << "sed 's/log4j.appender.R.File=trace.log/log4j.appender.R.File=" << regexp_dir
-		<< "\\/trace.log/' default.properties > log4cxx.properties";
-	if (system(os.str().c_str()) != 0)
-	    THROW_EXCEPTION("Cannot use sed");
+        }
+        os << "sed 's/log4j.appender.R.File=trace.log/log4j.appender.R.File=" << regexp_dir
+                << "\\/trace.log/' default.properties > log4cxx.properties";
+        if (system(os.str().c_str()) != 0)
+            THROW_EXCEPTION("Cannot use sed");
     }
 
     /* Initialize logger */
@@ -53,23 +53,23 @@ int main (int argc, char * argv[]) {
     construct_vector(cfg, b);
 
     if (cfg.dump_data) {
-	dump_data(A, b);
-	return 0;
+        dump_data(A, b);
+        return 0;
     }
 
     if (cfg.transform != TRANS_NONE) {
-	TIME_INIT();
-	TIME_START();
-	transform(A, b, cfg.transform);
-	std::cout << TIME_INFO("Transformation") << std::endl;
+        TIME_INIT();
+        TIME_START();
+        transform(A, b, cfg.transform);
+        std::cout << TIME_INFO("Transformation") << std::endl;
 
-	dump("A_trans.dat", A, BINARY);
-	return 0;
+        dump("A_trans.dat", A, BINARY);
+        return 0;
     }
 
     if (cfg.analysis != ANAL_NONE) {
-	analyze(A, b, cfg, cfg.analysis);
-	return 0;
+        analyze(A, b, cfg, cfg.analysis);
+        return 0;
     }
 
     PrecBase * B_ = NULL;
@@ -81,29 +81,29 @@ int main (int argc, char * argv[]) {
     /* Timers */
     double cstart, cfinish, sstart, sfinish;
     for (uint i = 0; i < cfg.ntests; i++) {
-	if (B_) {
-	    delete B_;
-	    B_ = NULL;
-	}
-	cstart = cfinish = 0;
-	cstart = pclock();
-	switch (cfg.prec) {
-	    case AMG_PREC         : B_ = new AMGPrec(A);		break;
-	    case COMP_PREC	  : B_ = new CompositePrec(A, cfg);	break;
-	    case DIAG_PREC        : B_ = new DiagPrec(A);		break;
-	    case GS_PREC          : B_ = new GSPrec(A);			break;
-	    case ID_PREC	  : B_ = new IdPrec(A);			break;
+        if (B_) {
+            delete B_;
+            B_ = NULL;
+        }
+        cstart = cfinish = 0;
+        cstart = pclock();
+        switch (cfg.prec) {
+            case AMG_PREC         : B_ = new AMGPrec(A);		break;
+            case COMP_PREC	  : B_ = new CompositePrec(A, cfg);	break;
+            case DIAG_PREC        : B_ = new DiagPrec(A);		break;
+            case GS_PREC          : B_ = new GSPrec(A);			break;
+            case ID_PREC	  : B_ = new IdPrec(A);			break;
 #ifdef HAVE_UMFPACK
-	    case BGS_PREC         : B_ = new BGSPrec(A, cfg);		break;
-	    case RBGS_PREC        : B_ = new RBGSPrec(A, cfg);		break;
+            case BGS_PREC         : B_ = new BGSPrec(A, cfg);		break;
+            case RBGS_PREC        : B_ = new RBGSPrec(A, cfg);		break;
 #endif
-	    case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
-	    case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
-	    case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
-	}
-	cfinish = pclock();
-	ctimes.push_back(cfinish - cstart);
-	LLL_INFO("Construction time : " << ctimes.back());
+            case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
+            case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
+            case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
+        }
+        cfinish = pclock();
+        ctimes.push_back(cfinish - cstart);
+        LLL_INFO("Construction time : " << ctimes.back());
     }
     PrecBase& B = *B_;
     gstats.t_const = avg_time(ctimes);
@@ -111,18 +111,18 @@ int main (int argc, char * argv[]) {
 
     /* Log preconditioner stats */
     if (cfg.prec == UH_CHEB_PREC) {
-	Prec& Bcheb = dynamic_cast<Prec&>(B);
-	LOG_INFO(Bcheb);
+        Prec& Bcheb = dynamic_cast<Prec&>(B);
+        LOG_INFO(Bcheb);
 #if 0
-	Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
-	return 0;
+        Bcheb.graph_planes("grids.ps", 1, 'z', mesh);
+        return 0;
 #endif
     } else if (cfg.prec == MULTI_SPLIT_PREC) {
-	MultiSplitPrec& Bms = dynamic_cast<MultiSplitPrec&>(B);
-	LOG_INFO(Bms);
+        MultiSplitPrec& Bms = dynamic_cast<MultiSplitPrec&>(B);
+        LOG_INFO(Bms);
 #if 0
-	Bms.graph_planes("grids.ps", 1, 'z', mesh);
-	return 0;
+        Bms.graph_planes("grids.ps", 1, 'z', mesh);
+        return 0;
 #endif
     }
 
@@ -131,49 +131,49 @@ int main (int argc, char * argv[]) {
     Vector x(A.size());
     /* =====  Solution phase (preconditioner)  ===== */
     for (uint i = 0; i < cfg.ntests; i++) {
-	SolverStats stats;
-	switch (cfg.solver) {
-	    case PCG_SOLVER : {
-		if (cfg.unsym_matrix)
-		    LOG_WARN("Applying PCGSolver for unsymmetric matrix");
-		PCGSolver(A, b, B, x, stats, eps);
-		break;
-	    }
-	    case CHEB_SOLVER : {
-		/*
-		 * ChebSolver requires lower and upper bounds on eigenvalues. Thus
-		 * it is applicable only to Chebyshev preconditioner
-		 */
-		Prec& Bcheb = dynamic_cast<Prec&>(B);
-		ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
-		break;
-	    }
-	    case SIMPLE_SOLVER : {
-		SimpleSolver(A, b, B, x, stats, eps);
-		break;
-	    }
-	    case GMRES_SOLVER : {
-		GMRESSolver(A, b, B, x, stats, eps);
-		break;
-	    }
+        SolverStats stats;
+        switch (cfg.solver) {
+            case PCG_SOLVER : {
+                                  if (cfg.unsym_matrix)
+                                      LOG_WARN("Applying PCGSolver for unsymmetric matrix");
+                                  PCGSolver(A, b, B, x, stats, eps);
+                                  break;
+                              }
+            case CHEB_SOLVER : {
+                                   /*
+                                    * ChebSolver requires lower and upper bounds on eigenvalues. Thus
+                                    * it is applicable only to Chebyshev preconditioner
+                                    */
+                                   Prec& Bcheb = dynamic_cast<Prec&>(B);
+                                   ChebSolver(A, Bcheb.lmin(), Bcheb.lmax(), b, Bcheb, x, eps);
+                                   break;
+                               }
+            case SIMPLE_SOLVER : {
+                                     SimpleSolver(A, b, B, x, stats, eps);
+                                     break;
+                                 }
+            case GMRES_SOLVER : {
+                                    GMRESSolver(A, b, B, x, stats, eps);
+                                    break;
+                                }
 #ifdef HAVE_UMFPACK
-	    case DIRECT_SOLVER : {
-		void *Symbolic = NULL, *Numeric = NULL;
-		DirectSolver(A, b, x, Symbolic, Numeric, stats);
-		break;
-	    }
+            case DIRECT_SOLVER : {
+                                     void *Symbolic = NULL, *Numeric = NULL;
+                                     DirectSolver(A, b, x, Symbolic, Numeric, stats);
+                                     break;
+                                 }
 #endif
-	}
-	stimes.push_back(stats.t_sol);
+        }
+        stimes.push_back(stats.t_sol);
 
-	gstats.t_prec = stats.t_prec;
-	gstats.niter  = stats.niter;
-	if (stats.t_const > gstats.t_const)
-	    gstats.t_const = stats.t_const;
+        gstats.t_prec = stats.t_prec;
+        gstats.niter  = stats.niter;
+        if (stats.t_const > gstats.t_const)
+            gstats.t_const = stats.t_const;
 
-	LLL_DEBUG(stats);
+        LLL_DEBUG(stats);
 
-	LLL_INFO("Solution time : " << stimes.back());
+        LLL_INFO("Solution time : " << stimes.back());
     }
 
     gstats.t_sol = avg_time(stimes);

@@ -15,35 +15,35 @@ private:
     bool use_tails;
 
     struct Level {
-	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-	uint M;                     /* Size of the excluded block (not including diagonal block) */
-	uint Md;		    /* Size of the excluded diagonal block */
+        uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
+        uint M;                     /* Size of the excluded block (not including diagonal block) */
+        uint Md;		    /* Size of the excluded diagonal block */
 
-	double alpha, beta;	    /* Spectral constants used for the level */
-	double lmin, lmax;	    /* Spectral boundaries for the level */
-	uint ncheb;		    /* Number of Chebyshev iterations on the level */
+        double alpha, beta;	    /* Spectral constants used for the level */
+        double lmin, lmax;	    /* Spectral boundaries for the level */
+        uint ncheb;		    /* Number of Chebyshev iterations on the level */
 
-	SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
-	CSRMatrix     L;	    /* L factor for the level (N x N) */
-	SkylineMatrix U;	    /* U factor for the level (M x N) */
+        SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
+        CSRMatrix     L;	    /* L factor for the level (N x N) */
+        SkylineMatrix U;	    /* U factor for the level (M x N) */
 
-	uvector<uint> map;	    /* Indices map: permuted -> original */
-	uvector<uint> rmap;	    /* Indices map: original -> permuted */
+        uvector<uint> map;	    /* Indices map: permuted -> original */
+        uvector<uint> rmap;	    /* Indices map: original -> permuted */
 
-	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
+        uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
-	mutable
-	Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Schur */
+        mutable
+                Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Schur */
 
-	uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
-				       used in tail elimination. Don't actually need to keep it */
+        uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
+                                       used in tail elimination. Don't actually need to keep it */
     };
 
     uint nlevels;
     std::vector<Level> levels;
 
     const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
-				       need to make a copy */
+                                       need to make a copy */
 
     /*
      * This function tries to increase s by amount necessary to mark v as removable.
@@ -57,46 +57,46 @@ private:
      */
     bool to_remove(double c, double v, double beta, double& s) {
 #if 1
-	/* Dynamic variant */
-	double t = -2*v / (c*(beta-1));
+        /* Dynamic variant */
+        double t = -2*v / (c*(beta-1));
 #if 0
-	/* There can be several possibilities */
-	if (v < 0 && beta > 1) {
-	    /* We are allowed to touch negative off-diagonal elements */
-	    t = -2*v / (c*(beta-1));
-	} else if (v > 0 && alpha < 1) {
-	    /* We are allowed to touch positive off-diagonal elements */
-	    t =  2*v / (c*(1-alpha));
-	} else {
-	    // LOG_WARN("Zero offdiagonal element");
-	}
+        /* There can be several possibilities */
+        if (v < 0 && beta > 1) {
+            /* We are allowed to touch negative off-diagonal elements */
+            t = -2*v / (c*(beta-1));
+        } else if (v > 0 && alpha < 1) {
+            /* We are allowed to touch positive off-diagonal elements */
+            t =  2*v / (c*(1-alpha));
+        } else {
+            // LOG_WARN("Zero offdiagonal element");
+        }
 #endif
 
-	if (s+t > 1)
-	    return false;
+        if (s+t > 1)
+            return false;
 
-	s += t;
+        s += t;
 #else
-	/* Static variant */
-	if (1 + 12*(-v)/c > beta)
-	    return false;
+        /* Static variant */
+        if (1 + 12*(-v)/c > beta)
+            return false;
 #endif
 
-	return true;
+        return true;
     }
 
     void construct_permutation(const SkylineMatrix& A, const LinkTypeCheb& ltype, uvector<int>& nlinks,
-			       uint& Md, uint& M, uvector<uint>& map) const;
+                               uint& Md, uint& M, uvector<uint>& map) const;
 
     /* ViTE framework */
     mutable std::ostringstream *foss;
     double vite_start;
 #ifdef USE_VITE
     void log_state(const char* name) const {
-	*foss << "10 " << pclock() - vite_start << " S T0 " << name << std::endl;
+        *foss << "10 " << pclock() - vite_start << " S T0 " << name << std::endl;
     }
     void log_event(uint val) const {
-	*foss << "11 " << pclock() - vite_start << " E T0 " << val << std::endl;
+        *foss << "11 " << pclock() - vite_start << " E T0 " << val << std::endl;
     }
 #else
     void log_state(const char* name) const { }

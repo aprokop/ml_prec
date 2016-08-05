@@ -17,42 +17,42 @@ private:
     bool use_tails;
 
     struct Level {
-	/* Config variables */
-	double	q;		    /* Convergence factor */
-	uint	niter;		    /* Number of iterations on the level */
-	double	eps;		    /* Epsilon for residual norm stop criteria */
+        /* Config variables */
+        double	q;		    /* Convergence factor */
+        uint	niter;		    /* Number of iterations on the level */
+        double	eps;		    /* Epsilon for residual norm stop criteria */
 
-	/* Info variables */
-	uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-	uint M;                     /* Size of the excluded block (not including diagonal block) */
-	uint Md;		    /* Size of the excluded diagonal block */
+        /* Info variables */
+        uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
+        uint M;                     /* Size of the excluded block (not including diagonal block) */
+        uint Md;		    /* Size of the excluded diagonal block */
 
-	/* Data variables */
-	SkylineMatrix	A;	    /* Level matrix (for level 0 we use level0_A) */
-	CSRMatrix	L;	    /* L factor for the level (N x N) */
-	SkylineMatrix	U;	    /* U factor for the level (M x N) */
-	uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
+        /* Data variables */
+        SkylineMatrix	A;	    /* Level matrix (for level 0 we use level0_A) */
+        CSRMatrix	L;	    /* L factor for the level (N x N) */
+        SkylineMatrix	U;	    /* U factor for the level (M x N) */
+        uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
 
-	uvector<uint>	map;	    /* Indices map: permuted -> original */
-	uvector<uint>	rmap;	    /* Indices map: original -> permuted */
+        uvector<uint>	map;	    /* Indices map: permuted -> original */
+        uvector<uint>	rmap;	    /* Indices map: original -> permuted */
 
-	/* Misc variables */
-	mutable
-	Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
+        /* Misc variables */
+        mutable
+                Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
 
-	Level() : q(0.0), niter(0), eps(0.0) { N = nnz = M = Md = 0; }
+        Level() : q(0.0), niter(0), eps(0.0) { N = nnz = M = Md = 0; }
     };
 
     enum {  INNER_ITER_FIXED,
-	    INNER_ITER_DYNAMIC
+        INNER_ITER_DYNAMIC
     } inner_iter_type;
     enum {  LU_EXACT,
-	    LU_ILUT
+        LU_ILUT
     } lu_type;
     enum {  ORDER_NONE,
-	    ORDER_ORIGINAL,
-	    ORDER_BLOCK,
-	    ORDER_SIMPLE_1
+        ORDER_ORIGINAL,
+        ORDER_BLOCK,
+        ORDER_SIMPLE_1
     } order;
 
     uint   ilut_p;
@@ -65,7 +65,7 @@ private:
     std::vector<Level> levels;
 
     const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
-				       need to make a copy */
+                                       need to make a copy */
 
 #ifdef HAVE_UMFPACK
     /* UMFPACK factorization of the coarsest level */
@@ -86,17 +86,17 @@ private:
     void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
 
     void order_none    (const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-			const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
-			uint& Md, uint& M, uvector<uint>& map) const;
+                        const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+                        uint& Md, uint& M, uvector<uint>& map) const;
     void order_original(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-			uvector<int>& nlinks_in, uvector<int>& nlinks_out,
-			uint& Md, uint& M, uvector<uint>& map) const;
+                        uvector<int>& nlinks_in, uvector<int>& nlinks_out,
+                        uint& Md, uint& M, uvector<uint>& map) const;
     void order_simple_1(const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-			const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
-			uint& Md, uint& M, uvector<uint>& map) const;
+                        const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+                        uint& Md, uint& M, uvector<uint>& map) const;
     void order_block   (const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
-			const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
-			uint& Md, uint& M, uvector<uint>& map) const;
+                        const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
+                        uint& Md, uint& M, uvector<uint>& map) const;
 
 public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);

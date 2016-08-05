@@ -21,7 +21,7 @@ public:
     SymPrec(const SkylineMatrix& A, const Config& cfg);
 
     void set_eps(double eps_) {
-	eps = eps_;
+        eps = eps_;
     }
     void solve(Vector& f, Vector& x) const THROW;
 };

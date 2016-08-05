@@ -7,7 +7,7 @@
 DEFINE_LOGGER("ChebSolver");
 
 void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, const PrecBase& B, Vector& x,
-		double eps, NormType norm_type, bool silent) THROW {
+                double eps, NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
@@ -48,53 +48,53 @@ void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, c
 
     // ===============    STEPS 2+    ===============
     while (norm/init_norm > eps) {
-	if (!silent)
-	    LOG_DEBUG("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        if (!silent)
+            LOG_DEBUG("#" << niter-1 << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
-	// hack to avoid copying and allocating new memory
-	u0.swap(x);
-	u1.swap(u0);
-	// end hack
+        // hack to avoid copying and allocating new memory
+        u0.swap(x);
+        u1.swap(u0);
+        // end hack
 
-	alpha = 4/(lmax - lmin) * cheb(eta, niter-1)/cheb(eta, niter);
-	beta  = cheb(eta, niter-2) / cheb(eta, niter);
+        alpha = 4/(lmax - lmin) * cheb(eta, niter-1)/cheb(eta, niter);
+        beta  = cheb(eta, niter-2) / cheb(eta, niter);
 
-	// x = u1 + alpha*B.solve(b - A*u1) + beta*(u1 - u0);
-	delta = pclock();
-	B.solve(r, x);
-	inv += pclock() - delta;
-	ninv++;
+        // x = u1 + alpha*B.solve(b - A*u1) + beta*(u1 - u0);
+        delta = pclock();
+        B.solve(r, x);
+        inv += pclock() - delta;
+        ninv++;
 
-	for (uint k = 0; k < n; k++)
-	    x[k] = u1[k] + alpha*x[k] + beta*(u1[k] - u0[k]);
+        for (uint k = 0; k < n; k++)
+            x[k] = u1[k] + alpha*x[k] + beta*(u1[k] - u0[k]);
 
-	delta = pclock();
-	residual(A, b, x, r);
-	mult += pclock() - delta;
-	nmult++;
-	norm = calculate_norm(r, A, B, norm_type);
+        delta = pclock();
+        residual(A, b, x, r);
+        mult += pclock() - delta;
+        nmult++;
+        norm = calculate_norm(r, A, B, norm_type);
 
-	niter++;
+        niter++;
     }
     gtime = pclock() - gtime;
 
     niter--;
 
     if (!silent) {
-	LLL_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        LLL_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
-	LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult/nmult << "\t total = " << mult);
-	if (ninv) {
-	    LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv/ninv << "\t total = " << inv);
-	    double cstr_pos = cstr - inv/ninv;
-	    if (cstr_pos > 1e-1) {
-		LLL_DEBUG(std::fixed << std::setprecision(3) <<
-			  "Time of (possible) construction: " << cstr_pos);
-		LLL_DEBUG(std::fixed << std::setprecision(3) <<
-			  "Time of (possible) solution    : " << gtime - cstr_pos);
-	    }
-	}
+        LLL_DEBUG(std::fixed << std::setprecision(3) << "Residual:       avg = " << mult/nmult << "\t total = " << mult);
+        if (ninv) {
+            LLL_DEBUG(std::fixed << std::setprecision(3) << "Prec inversion: avg = " << inv/ninv << "\t total = " << inv);
+            double cstr_pos = cstr - inv/ninv;
+            if (cstr_pos > 1e-1) {
+                LLL_DEBUG(std::fixed << std::setprecision(3) <<
+                          "Time of (possible) construction: " << cstr_pos);
+                LLL_DEBUG(std::fixed << std::setprecision(3) <<
+                          "Time of (possible) solution    : " << gtime - cstr_pos);
+            }
+        }
     } else {
-	LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        LOG_INFO("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
     }
 }

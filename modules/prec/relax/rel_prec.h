@@ -17,17 +17,17 @@ private:
     uint niter;
 
     struct Level {
-	uint N, nnz;
+        uint N, nnz;
 
-	mutable Vector x1, f1;
-	Vector tmp0, tmp1;
-	SkylineMatrix A;
+        mutable Vector x1, f1;
+        Vector tmp0, tmp1;
+        SkylineMatrix A;
 
-	std::vector<uint> tr;
-	std::vector<uint> dtr;
-	std::vector<Tail> tails;
+        std::vector<uint> tr;
+        std::vector<uint> dtr;
+        std::vector<Tail> tails;
 
-	Vector aux;
+        Vector aux;
     };
     uint nlevels;
     std::vector<Level> levels;

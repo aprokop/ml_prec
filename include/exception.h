@@ -36,7 +36,7 @@ public:
 #define ASSERT(expression, what) \
 { \
     if (unlikely(!(expression))) \
-	THROW_EXCEPTION(what); \
+    THROW_EXCEPTION(what); \
 }
 #else
 #define ASSERT(expression,what)

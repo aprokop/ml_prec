@@ -8,7 +8,7 @@
 #define TIME_INIT()  clock_t timer
 #define TIME_START() timer = clock()
 #define TIME_INFO(msg) "TIME: " << msg << " : " << \
-	std::fixed << std::setprecision(3) << double(clock() - timer)/CLOCKS_PER_SEC
+        std::fixed << std::setprecision(3) << double(clock() - timer)/CLOCKS_PER_SEC
 
 /* High precision clock (up to nanoseconds) */
 inline double pclock() {
@@ -30,6 +30,6 @@ inline double timediff(const clock_t& t1, const clock_t& t2) {
 #define TIME_INIT_TIMER(timer) clock_t timer
 #define TIME_START_TIMER(timer) timer = clock()
 #define TIME_INFO_TIMER(timer,msg) "TIME: " << msg << " : " << \
-	        std::fixed << std::setprecision(3) << double(clock() - timer)/CLOCKS_PER_SEC
+        std::fixed << std::setprecision(3) << double(clock() - timer)/CLOCKS_PER_SEC
 
 #endif // __TIME_H__

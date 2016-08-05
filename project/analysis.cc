@@ -22,10 +22,10 @@ static void psort(const double *a, uint n, uvector<uint>& sorted) {
     double v;
     int j;
     for (uint i = 1; i < n; i++) {
-	v = fabs(a[i]);
-	for (j = i-1; j >= 0 && fabs(a[sorted[j]]) > v; j--)
-	    sorted[j+1] = sorted[j];
-	sorted[j+1] = i;
+        v = fabs(a[i]);
+        for (j = i-1; j >= 0 && fabs(a[sorted[j]]) > v; j--)
+            sorted[j+1] = sorted[j];
+        sorted[j+1] = i;
     }
 }
 
@@ -47,17 +47,17 @@ void anal_histogramm(const SkylineMatrix& A) {
 
     double sum, d;
     for (uint i = 0; i < N; i++) {
-	sum = 0;
-	d = a[ia[i]];
-	for (uint j = ia[i]; j < ia[i+1]; j++)
-	    sum += a[j];
-	bins[std::upper_bound(ticks, ticks+n, 1-sum/d) - (ticks+1)]++;
+        sum = 0;
+        d = a[ia[i]];
+        for (uint j = ia[i]; j < ia[i+1]; j++)
+            sum += a[j];
+        bins[std::upper_bound(ticks, ticks+n, 1-sum/d) - (ticks+1)]++;
     }
     for (uint i = 0; i+1 < n; i++)
-	std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+        std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
     std::cout << "( ";
     for (uint i = 0; i+3 < n; i++)
-	std::cout << bins[i] << ", ";
+        std::cout << bins[i] << ", ";
     std::cout << bins[n-3] << " )" << std::endl;
 }
 
@@ -84,37 +84,37 @@ void anal_qdropped(const SkylineMatrix& A) {
 
     ofs << "0 0 " << std::endl;
     for (double q = 0.01; q < 0.99; q += 0.01) {
-	std::cout << "q = " << q << std::endl;
-	uint dropped = 0;
+        std::cout << "q = " << q << std::endl;
+        uint dropped = 0;
 
-	for (uint i = 0; i < N; i++) {
-	    uint rstart = ia[i];		/* Row start */
-	    uint rend   = ia[i+1];		/* Row end */
-	    uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+        for (uint i = 0; i < N; i++) {
+            uint rstart = ia[i];		/* Row start */
+            uint rend   = ia[i+1];		/* Row end */
+            uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
 
-	    d = a[rstart]; // diagonal element
-	    c = 0;
-	    for (uint j_ = rstart; j_ < rend; j_++)
-		c += a[j_];
+            d = a[rstart]; // diagonal element
+            c = 0;
+            for (uint j_ = rstart; j_ < rend; j_++)
+                c += a[j_];
 
-	    if (1-c/d > 1-beta)
-		continue;
+            if (1-c/d > 1-beta)
+                continue;
 
-	    /* Sort off-diagonal elements wrt their abs values */
-	    psort(&a[0] + rstart+1, nrz, sorted);
+            /* Sort off-diagonal elements wrt their abs values */
+            psort(&a[0] + rstart+1, nrz, sorted);
 
-	    double s = q/(1-q)*c;
-	    for (uint k = 0; k < nrz; k++) {
-		uint j_ = rstart+1 + sorted[k];
+            double s = q/(1-q)*c;
+            for (uint k = 0; k < nrz; k++) {
+                uint j_ = rstart+1 + sorted[k];
 
-		double aij = -a[j_];
-		if (aij <= s) {
-		    s -= aij;
-		    dropped++;
-		}
-	    }
-	}
-	ofs << q << " " << dropped << std::endl;
+                double aij = -a[j_];
+                if (aij <= s) {
+                    s -= aij;
+                    dropped++;
+                }
+            }
+        }
+        ofs << q << " " << dropped << std::endl;
     }
     ofs << "1.0 " << ia[N]-N << std::endl;
 }
@@ -142,44 +142,44 @@ void anal_q_rem_fixed_row(const SkylineMatrix& A) {
     double c, d;
     double beta = 0.1;
     for (uint i = 0; i < N; i++) {
-	uint rstart = ia[i];		    /* Row start */
-	uint rend   = ia[i+1];		    /* Row end */
-	uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+        uint rstart = ia[i];		    /* Row start */
+        uint rend   = ia[i+1];		    /* Row end */
+        uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
 
-	d = a[rstart]; // diagonal element
-	c = 0;
-	for (uint j_ = rstart; j_ < rend; j_++)
-	    c += a[j_];
+        d = a[rstart]; // diagonal element
+        c = 0;
+        for (uint j_ = rstart; j_ < rend; j_++)
+            c += a[j_];
 
-	if (1-c/d > 1-beta)
-	    continue;
+        if (1-c/d > 1-beta)
+            continue;
 
-	/* Sort off-diagonal elements wrt their abs values */
-	psort(&a[0] + rstart+1, nrz, sorted);
+        /* Sort off-diagonal elements wrt their abs values */
+        psort(&a[0] + rstart+1, nrz, sorted);
 
-	double s = 0;
-	uint k;
-	for (k = 0; k < nrz && k < MAX_QS; k++) {
-	    uint j_ = rstart+1 + sorted[k];
+        double s = 0;
+        uint k;
+        for (k = 0; k < nrz && k < MAX_QS; k++) {
+            uint j_ = rstart+1 + sorted[k];
 
-	    double aij = -a[j_];
-	    s += aij;
+            double aij = -a[j_];
+            s += aij;
 
-	    double q = s/(c+s);
+            double q = s/(c+s);
 
-	    if (q > qs[k])
-		qs[k] = q;
-	}
-	if (k == nrz)
-	    for (; k < MAX_QS; k++) {
-		double q = s/(c+s);
-		if (q > qs[k])
-		    qs[k] = q;
-	    }
+            if (q > qs[k])
+                qs[k] = q;
+        }
+        if (k == nrz)
+            for (; k < MAX_QS; k++) {
+                double q = s/(c+s);
+                if (q > qs[k])
+                    qs[k] = q;
+            }
     }
     std::cout << std::fixed << std::setprecision(3);
     for (uint k = 0; k < MAX_QS; k++)
-	std::cout << "To remove " << k+1 << " element(s) from each line we need q = " << qs[k] << std::endl;
+        std::cout << "To remove " << k+1 << " element(s) from each line we need q = " << qs[k] << std::endl;
 }
 
 /*
@@ -196,16 +196,16 @@ void anal_offdiagonal_ratios(const SkylineMatrix& A) {
     uvector<uint> sorted(1000);
     double min = 1e50, max = 0;
     for (uint i = 0; i < N; i++) {
-	uint rstart = ia[i];		    /* Row start */
-	uint rend   = ia[i+1];		    /* Row end */
-	uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+        uint rstart = ia[i];		    /* Row start */
+        uint rend   = ia[i+1];		    /* Row end */
+        uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
 
-	/* Sort off-diagonal elements wrt their abs values */
-	psort(&a[0] + rstart+1, nrz, sorted);
+        /* Sort off-diagonal elements wrt their abs values */
+        psort(&a[0] + rstart+1, nrz, sorted);
 
-	double ratio = a[rstart+1+sorted[nrz-1]]/a[rstart+1+sorted[0]];
-	if (ratio < min) min = ratio;
-	if (ratio > max) max = ratio;
+        double ratio = a[rstart+1+sorted[nrz-1]]/a[rstart+1+sorted[0]];
+        if (ratio < min) min = ratio;
+        if (ratio > max) max = ratio;
     }
     std::cout << "Ratio: [" << min << "," << max << "]\n";
 }
@@ -223,9 +223,9 @@ void anal_unused1(const SkylineMatrix& A) {
 
     uvector<double> x(N);
     for (uint i = 0; i < N; i++) {
-	double c = std::accumulate(a.begin() + ia[i], a.begin() + ia[i+1], 0.0);
-	// x[i] = (log10(c) < -1) ? log10(c) : -1;
-	x[i] = 1 - c/a[ia[i]];
+        double c = std::accumulate(a.begin() + ia[i], a.begin() + ia[i+1], 0.0);
+        // x[i] = (log10(c) < -1) ? log10(c) : -1;
+        x[i] = 1 - c/a[ia[i]];
     }
 
     std::string filename("c_map.dat");
@@ -258,39 +258,39 @@ void anal_1D_Jacobi_array(const SkylineMatrix& A) {
     z_ia[0] = 0;
     uint ind = 0;
     for (uint k = 0; k < nz; k++) {
-	z_ja[ind++] = k;
-	if (k != 0)	z_ja[ind++] = k-1;
-	if (k != nz-1)	z_ja[ind++] = k+1;
+        z_ja[ind++] = k;
+        if (k != 0)	z_ja[ind++] = k-1;
+        if (k != nz-1)	z_ja[ind++] = k+1;
 
-	z_ia[k+1] = ind;
+        z_ia[k+1] = ind;
     }
     z_ja.resize(ind);
 
     /* Fill out values */
     z_a.resize(ind);
     for (uint j = 0; j < ny; j++)
-	for (uint i = 0; i < nx; i++) {
-	    double v1, v2;
-	    ind = 0;
-	    for (uint k = 0; k < nz; k++) {
-		uint mesh_ind = k*ny*nx + j*nx + i;
+        for (uint i = 0; i < nx; i++) {
+            double v1, v2;
+            ind = 0;
+            for (uint k = 0; k < nz; k++) {
+                uint mesh_ind = k*ny*nx + j*nx + i;
 
-		double s = A.row_sum(mesh_ind);
+                double s = A.row_sum(mesh_ind);
 
-		v1 = v2 = 0.0;
-		if (k != 0)	v1 = -a[ia[mesh_ind]+1];
-		if (k != nz-1)	v2 = -a[ia[mesh_ind+1]-1];
+                v1 = v2 = 0.0;
+                if (k != 0)	v1 = -a[ia[mesh_ind]+1];
+                if (k != nz-1)	v2 = -a[ia[mesh_ind+1]-1];
 
-		z_a[ind++] = s + (v1 + v2);
-		if (k != 0)	z_a[ind++] = -v1;
-		if (k != nz-1)	z_a[ind++] = -v2;
-	    }
-	    Az.set_size(nz,nz);
+                z_a[ind++] = s + (v1 + v2);
+                if (k != 0)	z_a[ind++] = -v1;
+                if (k != nz-1)	z_a[ind++] = -v2;
+            }
+            Az.set_size(nz,nz);
 
-	    std::ostringstream oss;
-	    oss << "z_matrices/matrix_i" << i << "_j" << j << ".mm";
-	    dump(oss.str().c_str(), Az, MATRIX_MARKET);
-	}
+            std::ostringstream oss;
+            oss << "z_matrices/matrix_i" << i << "_j" << j << ".mm";
+            dump(oss.str().c_str(), Az, MATRIX_MARKET);
+        }
 }
 
 /*
@@ -318,19 +318,19 @@ void anal_1D_Jacobi_global(const SkylineMatrix& A) {
     double ind = 0, dind = 0;
     z_ia[0] = 0;
     for (uint i = 0; i < n; i++) {
-	dind = ind;
-	z_ja[dind] = i;
-	z_a[dind]  = A.row_sum(i);
-	ind++;
-	for (uint j = ia[i]+1; j < ia[i+1]; j++)
-	    if (((abs(ja[j] - i)) % (nx*ny)) == 0) {
-		z_ja[ind]  = ja[j];
-		z_a[ind]   = a[j];
-		z_a[dind] -= a[j];
-		ind++;
-	    }
+        dind = ind;
+        z_ja[dind] = i;
+        z_a[dind]  = A.row_sum(i);
+        ind++;
+        for (uint j = ia[i]+1; j < ia[i+1]; j++)
+            if (((abs(ja[j] - i)) % (nx*ny)) == 0) {
+                z_ja[ind]  = ja[j];
+                z_a[ind]   = a[j];
+                z_a[dind] -= a[j];
+                ind++;
+            }
 
-	z_ia[i+1] = ind;
+        z_ia[i+1] = ind;
     }
     z_ja.resize(ind);
     z_a.resize(ind);
@@ -354,15 +354,15 @@ void anal_col_dominance(const SkylineMatrix& A) {
 
     uvector<double> x(N, 0.0);
     for (uint i = 0; i < N; i++)
-	for (uint j = ia[i]; j < ia[i+1]; j++)
-	    x[ja[j]] += a[j];
+        for (uint j = ia[i]; j < ia[i+1]; j++)
+            x[ja[j]] += a[j];
     for (uint i = 0; i < N; i++) {
-	x[i] = 1 - x[i]/A(i,i);
-	bins[std::upper_bound(ticks, ticks+n, x[i]) - (ticks+1)]++;
+        x[i] = 1 - x[i]/A(i,i);
+        bins[std::upper_bound(ticks, ticks+n, x[i]) - (ticks+1)]++;
     }
 
     for (uint i = 0; i+1 < n; i++)
-	std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
+        std::cout << "[" << ticks[i] << "," << ticks[i+1] << ") : " << bins[i] << std::endl;
 }
 
 /*
@@ -402,53 +402,53 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
 
     for (double q1 = 0.0001; q1 < 0.99; q1 += 0.05) {
         cfg.sigmas[1] = q1;
-	cfg.sigmas[2] = q1;
-	cfg.sigmas[3] = q1;
-	MultiSplitPrec B(A, cfg);
-	LOG_DEBUG(B);
+        cfg.sigmas[2] = q1;
+        cfg.sigmas[3] = q1;
+        MultiSplitPrec B(A, cfg);
+        LOG_DEBUG(B);
 
-	for (uint i = 0; i < ntests; i++) {
-	    LOG_INFO("q1 = " << q1 << ", TEST #" << i);
+        for (uint i = 0; i < ntests; i++) {
+            LOG_INFO("q1 = " << q1 << ", TEST #" << i);
 
-	    /* Generate x0 */
-	    for (uint k = 0; k < x.size(); k++)
-		x[k] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
+            /* Generate x0 */
+            for (uint k = 0; k < x.size(); k++)
+                x[k] = 20.*(random() - 0.5*RAND_MAX)/RAND_MAX + 100;
 
-	    residual(A, b, x, r);
+            residual(A, b, x, r);
 
-	    /* First iteration is atypical, ignore it */
-	    B.solve(r, z);
-	    daxpy(1., z, x);
-	    residual(A, b, x, r);
+            /* First iteration is atypical, ignore it */
+            B.solve(r, z);
+            daxpy(1., z, x);
+            residual(A, b, x, r);
 
-	    norm[0] = init_norm = calculate_norm(r, A, B, NORM_L2);
+            norm[0] = init_norm = calculate_norm(r, A, B, NORM_L2);
 
-	    niter = 0;
-	    while (niter < max_iter) {
-		B.solve(r, z);
-		daxpy(1., z, x);
-		residual(A, b, x, r);
+            niter = 0;
+            while (niter < max_iter) {
+                B.solve(r, z);
+                daxpy(1., z, x);
+                residual(A, b, x, r);
 
-		norm[niter] = calculate_norm(r, A, B, NORM_L2);
-		LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm[niter]/init_norm << "   absolute -> " << norm);
+                norm[niter] = calculate_norm(r, A, B, NORM_L2);
+                LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm[niter]/init_norm << "   absolute -> " << norm);
 
-		niter++;
-	    }
+                niter++;
+            }
 
-	    norm[niter] = calculate_norm(r, A, B, NORM_L2);
+            norm[niter] = calculate_norm(r, A, B, NORM_L2);
 
-	    const int several = 5;
-	    rates[i] = pow(norm[niter]/norm[niter-several], 1./several);
-	}
-	double rate = std::accumulate(rates.begin(), rates.end(), 0.0)/rates.size();
+            const int several = 5;
+            rates[i] = pow(norm[niter]/norm[niter-several], 1./several);
+        }
+        double rate = std::accumulate(rates.begin(), rates.end(), 0.0)/rates.size();
         double form2 = q1 + (1-q1)*q1;
         double form1 = q1 + (1-q1)*form2;
         double form  = q0 + (1-q0)*form1;
 
-	std::cout << "q = " << cfg.sigmas[0] << ", q1 = " << q1 << ": rate = " << rate << std::endl;
-	std::cout << "(q_0 + (1-q_0)*q_1 - rate =  " << form-rate << std::endl;
-	os_real << q1 << " " << rate << std::endl;
-	os_form << q1 << " " << form << std::endl;
+        std::cout << "q = " << cfg.sigmas[0] << ", q1 = " << q1 << ": rate = " << rate << std::endl;
+        std::cout << "(q_0 + (1-q_0)*q_1 - rate =  " << form-rate << std::endl;
+        os_real << q1 << " " << rate << std::endl;
+        os_form << q1 << " " << form << std::endl;
     }
     os_real.close();
     os_form.close();
@@ -456,14 +456,14 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
 
 void analyze(const SkylineMatrix& A, const Vector& b, const Config& cfg, AnalType analysis) {
     switch (analysis) {
-	case ANAL_HISTOGRAMM	    : anal_histogramm(A); break;
-	case ANAL_QDROPPED	    : anal_qdropped(A); break;
-	case ANAL_Q_REM_FIXED_ROW   : anal_q_rem_fixed_row(A); break;
-	case ANAL_OFFDIAGONAL_RATIOS: anal_offdiagonal_ratios(A); break;
-	case ANAL_1D_JACOBI	    : anal_1D_Jacobi_global(A); break;
-	case ANAL_COL_DOMINANCE	    : anal_col_dominance(A); break;
-	case ANAL_2LEVEL_CONVERGENCE: anal_2level_convergence(A, cfg); break;
-	case ANAL_NONE		    : LOG_WARN("Calling analysis with ANAL_NONE"); break;
+        case ANAL_HISTOGRAMM	    : anal_histogramm(A); break;
+        case ANAL_QDROPPED	    : anal_qdropped(A); break;
+        case ANAL_Q_REM_FIXED_ROW   : anal_q_rem_fixed_row(A); break;
+        case ANAL_OFFDIAGONAL_RATIOS: anal_offdiagonal_ratios(A); break;
+        case ANAL_1D_JACOBI	    : anal_1D_Jacobi_global(A); break;
+        case ANAL_COL_DOMINANCE	    : anal_col_dominance(A); break;
+        case ANAL_2LEVEL_CONVERGENCE: anal_2level_convergence(A, cfg); break;
+        case ANAL_NONE		    : LOG_WARN("Calling analysis with ANAL_NONE"); break;
     }
 }
 

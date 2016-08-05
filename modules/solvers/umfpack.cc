@@ -8,7 +8,7 @@
 DEFINE_LOGGER("DirectSolver");
 
 void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbolic, void * &Numeric,
-		  SolverStats& stats, bool silent) THROW {
+                  SolverStats& stats, bool silent) THROW {
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
 
@@ -29,11 +29,11 @@ void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbol
     Control[UMFPACK_PRL] = 4;
 
     if (Symbolic == NULL || Numeric == NULL) {
-	/* Perform symbolic factorization */
-	umfpack_di_symbolic(n, n, ia, ja, a, &Symbolic, 0, Info);
+        /* Perform symbolic factorization */
+        umfpack_di_symbolic(n, n, ia, ja, a, &Symbolic, 0, Info);
 
-	/* Perform numeric factorization */
-	umfpack_di_numeric(ia, ja, a, Symbolic, &Numeric, 0, Info);
+        /* Perform numeric factorization */
+        umfpack_di_numeric(ia, ja, a, Symbolic, &Numeric, 0, Info);
     }
 
     /* Solve the system */

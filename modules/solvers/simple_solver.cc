@@ -6,12 +6,12 @@
 DEFINE_LOGGER("SimpleSolver");
 
 void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
-		  double eps, NormType norm_type, bool silent) THROW {
+                  double eps, NormType norm_type, bool silent) THROW {
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
     if (norm_type != NORM_L2)
-	THROW_EXCEPTION("One must only use L2 norm in simple solver");
+        THROW_EXCEPTION("One must only use L2 norm in simple solver");
 
     uint   n = b.size();
     Vector r(n), z(n);
@@ -37,52 +37,52 @@ void SimpleSolver(const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector
 #endif
 
     while (norm/init_norm > eps) {
-	if (!silent)
-	    LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        if (!silent)
+            LOG_DEBUG("#" << niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 
-	delta = pclock();
-	B.solve(r, z);
-	if (niter) {
-	    inv += pclock() - delta;
-	    ninv++;
-	} else {
-	    cstr = pclock() - delta;
-	}
+        delta = pclock();
+        B.solve(r, z);
+        if (niter) {
+            inv += pclock() - delta;
+            ninv++;
+        } else {
+            cstr = pclock() - delta;
+        }
 
-	daxpy(1., z, x);
+        daxpy(1., z, x);
 
-	delta = pclock();
-	residual(A, b, x, r);
-	mult += pclock() - delta;
-	nmult++;
+        delta = pclock();
+        residual(A, b, x, r);
+        mult += pclock() - delta;
+        nmult++;
 
-	norm = calculate_norm(r, A, B, norm_type);
+        norm = calculate_norm(r, A, B, norm_type);
 
-	niter++;
+        niter++;
     }
     gtime = pclock() - gtime;
 
     if (ninv) {
-	stats.t_resid = mult/nmult;
-	stats.t_prec  = inv/ninv;
-	stats.t_const = 0;
+        stats.t_resid = mult/nmult;
+        stats.t_prec  = inv/ninv;
+        stats.t_const = 0;
 
-	stats.niter         = niter;
-	stats.t_resid_total = mult;
-	stats.t_prec_total  = inv;
-	stats.t_sol         = gtime;
+        stats.niter         = niter;
+        stats.t_resid_total = mult;
+        stats.t_prec_total  = inv;
+        stats.t_sol         = gtime;
 
-	double cstr_pos = cstr - stats.t_prec;
-	if (cstr_pos > 1.05*stats.t_prec) {
-	    stats.t_const  = cstr_pos;
-	    stats.t_sol   -= cstr_pos;
-	}
+        double cstr_pos = cstr - stats.t_prec;
+        if (cstr_pos > 1.05*stats.t_prec) {
+            stats.t_const  = cstr_pos;
+            stats.t_sol   -= cstr_pos;
+        }
     } else {
-	THROW_EXCEPTION("No need to iterate");
+        THROW_EXCEPTION("No need to iterate");
     }
 
     if (!silent)
-	LLL_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        LLL_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
     else
-	LOG_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
+        LOG_INFO("#" << stats.niter << ": relative -> " << std::scientific << norm/init_norm << "   absolute -> " << norm);
 }

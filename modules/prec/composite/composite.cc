@@ -21,8 +21,8 @@ void CompositePrec::solve(Vector& f, Vector& x) const THROW {
     uvector<double> x1(x.size());
     precs[0]->solve(f, x);
     for (uint i = 1; i < precs.size(); i++) {
-	x1.swap(x);
-	precs[i]->solve(x1, x);
+        x1.swap(x);
+        precs[i]->solve(x1, x);
     }
 }
 

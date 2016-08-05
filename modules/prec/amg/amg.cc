@@ -5,11 +5,11 @@
 DEFINE_LOGGER("AMGPrec");
 
 extern "C" {
-  void FORTRAN(amg1r6)(double *a, int *ia, int *ja,  double *u, double *f, int *ig,
-			 int *nda, int *ndia, int *ndja, int *ndu, int *ndf, int *ndig,
-			 int *nnu, int *matrix, int *iswtch, int *iout, int *iprint,
-			 int *levelx, int *ifirst, int *ncyc, double *eps, int *madapt, int *nrd, int *nsolco,
-			 int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr);
+    void FORTRAN(amg1r6)(double *a, int *ia, int *ja,  double *u, double *f, int *ig,
+                         int *nda, int *ndia, int *ndja, int *ndu, int *ndf, int *ndig,
+                         int *nnu, int *matrix, int *iswtch, int *iout, int *iprint,
+                         int *levelx, int *ifirst, int *ncyc, double *eps, int *madapt, int *nrd, int *nsolco,
+                         int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr);
 }
 
 void AMGPrec::solve(Vector& f, Vector& x) const THROW {
@@ -20,25 +20,25 @@ void AMGPrec::solve(Vector& f, Vector& x) const THROW {
 
     int ierr;
     FORTRAN(amg1r6)(&a[0], &ia[0], &ja[0], &x[0], &f[0], &ig[0],
-		    &nda, &ndia, &ndja, &ndu, &ndf, &ndig, &n,
-		    &amg_config.matrix,
-		    &amg_config.iswtch,
-		    &amg_config.iout,
-		    &amg_config.iprint,
-		    &amg_config.levelx,
-		    &amg_config.ifirst,
-		    &amg_config.ncyc,
-		    &amg_config.eps,
-		    &amg_config.madapt,
-		    &amg_config.nrd,
-		    &amg_config.nsolco,
-		    &amg_config.nru,
-		    &amg_config.ecg1,
-		    &amg_config.ecg2,
-		    &amg_config.ewt2,
-		    &amg_config.nwt,
-		    &amg_config.ntr,
-		    &ierr);
+                    &nda, &ndia, &ndja, &ndu, &ndf, &ndig, &n,
+                    &amg_config.matrix,
+                    &amg_config.iswtch,
+                    &amg_config.iout,
+                    &amg_config.iprint,
+                    &amg_config.levelx,
+                    &amg_config.ifirst,
+                    &amg_config.ncyc,
+                    &amg_config.eps,
+                    &amg_config.madapt,
+                    &amg_config.nrd,
+                    &amg_config.nsolco,
+                    &amg_config.nru,
+                    &amg_config.ecg1,
+                    &amg_config.ecg2,
+                    &amg_config.ewt2,
+                    &amg_config.nwt,
+                    &amg_config.ntr,
+                    &ierr);
 
     // no setup after the first call
     amg_config.iswtch = 3;
@@ -54,11 +54,11 @@ AMGPrec::AMGPrec(const SkylineMatrix& A) {
 
     ia.resize(A.ia.size());
     for (uint i = 0; i < A.ia.size(); i++) {
-	ia[i] = A.ia[i] + 1;
+        ia[i] = A.ia[i] + 1;
     }
     ja.resize(A.ja.size());
     for (uint j = 0; j < A.ja.size(); j++)
-	ja[j] = A.ja[j] + 1;
+        ja[j] = A.ja[j] + 1;
     a = A.a;
 
     nnz = A.nnz();

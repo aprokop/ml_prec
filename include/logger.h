@@ -26,119 +26,119 @@ namespace log4cxx {
     /* ostringstream wrapper for SysLogger */
     class LoggerStream {
     private:
-	SysLogger* logger;
-	LevelPtr priority;
-	std::ostringstream* buf;
+        SysLogger* logger;
+        LevelPtr priority;
+        std::ostringstream* buf;
     public:
-	LoggerStream(const LoggerStream& ls);
-	LoggerStream(const LevelPtr& p, SysLogger* l);
-	~LoggerStream();
+        LoggerStream(const LoggerStream& ls);
+        LoggerStream(const LevelPtr& p, SysLogger* l);
+        ~LoggerStream();
 
-	/* To output class must support smth like ostringstream& operator<<(ostringstream&) */
-	template<class T>
-	LoggerStream& operator<<(const T& t) {
-	    if (buf)
-		(*buf) << t;
-	    return (*this);
-	}
+        /* To output class must support smth like ostringstream& operator<<(ostringstream&) */
+        template<class T>
+                LoggerStream& operator<<(const T& t) {
+                    if (buf)
+                        (*buf) << t;
+                    return (*this);
+                }
 
-	/* Manipulators std::hex, etc */
-	template<typename X, typename Y>
-	LoggerStream& operator<<(X& (*__pf)(Y&)) {
-	    if (buf)
-		(*buf) << __pf;
-	    return (*this);
-	}
+        /* Manipulators std::hex, etc */
+        template<typename X, typename Y>
+                LoggerStream& operator<<(X& (*__pf)(Y&)) {
+                    if (buf)
+                        (*buf) << __pf;
+                    return (*this);
+                }
     };
 
 
     class SysLogger : public LoggerPtr {
     private:
-	void valog(const LevelPtr& p, const char *fmt, va_list vl);
+        void valog(const LevelPtr& p, const char *fmt, va_list vl);
     public:
-	void logf(const LevelPtr& p, const char* fmt, ...);
+        void logf(const LevelPtr& p, const char* fmt, ...);
 
-	/* macro for Logger.info(char* fmt, ...), etc */
+        /* macro for Logger.info(char* fmt, ...), etc */
 #define __LOG_FUNC(fn_name, fn_prio) \
-	void fn_name(char* fmt, ...) \
-	{ \
-	    va_list vl; va_start(vl, fmt); \
-	    valog(Level::get##fn_prio(), fmt, vl); \
-	    va_end(vl); \
-	}
-	__LOG_FUNC(fatal, Fatal);
-	__LOG_FUNC(error, Error);
-	__LOG_FUNC(warn,  Warn);
-	__LOG_FUNC(info,  Info);
-	__LOG_FUNC(debug, Debug);
+        void fn_name(char* fmt, ...) \
+        { \
+            va_list vl; va_start(vl, fmt); \
+            valog(Level::get##fn_prio(), fmt, vl); \
+            va_end(vl); \
+        }
+        __LOG_FUNC(fatal, Fatal);
+        __LOG_FUNC(error, Error);
+        __LOG_FUNC(warn,  Warn);
+        __LOG_FUNC(info,  Info);
+        __LOG_FUNC(debug, Debug);
 #undef __LOG_FUNC
 
-	SysLogger(const LoggerPtr& b) : LoggerPtr(b) {
-	}
+        SysLogger(const LoggerPtr& b) : LoggerPtr(b) {
+        }
 
-	LevelPtr getLogLevel() const {
-	    return (*this)->getLevel();
-	}
+        LevelPtr getLogLevel() const {
+            return (*this)->getLevel();
+        }
 
-	void setLogLevel(const LevelPtr& level) {
-	    (*this)->setLevel(level);
-	}
+        void setLogLevel(const LevelPtr& level) {
+            (*this)->setLevel(level);
+        }
 
-	void addAppender(AppenderPtr newAppender) {
-	    (*this)->addAppender(newAppender);
-	}
+        void addAppender(AppenderPtr newAppender) {
+            (*this)->addAppender(newAppender);
+        }
 
-	void removeAllAppenders() {
-	    (*this)->removeAllAppenders();
-	}
+        void removeAllAppenders() {
+            (*this)->removeAllAppenders();
+        }
 
-	LoggerStream operator<<(const LevelPtr& p) {
-	    return LoggerStream(p, this);
-	}
+        LoggerStream operator<<(const LevelPtr& p) {
+            return LoggerStream(p, this);
+        }
     };
 
 
     inline void SysLogger::logf(const LevelPtr& p, const char* fmt, ...) {
-	va_list vl; va_start(vl, fmt);
-	valog(p, fmt, vl);
-	va_end(vl);
+        va_list vl; va_start(vl, fmt);
+        valog(p, fmt, vl);
+        va_end(vl);
     }
 
     /// First it dumps fmt+vl to some string. But it is only for standart objects, all implemented classes should suppor <<
     inline void SysLogger::valog(const LevelPtr& p_level, const char* fmt, va_list vl) {
-	int size = 1024;
-	char* buf = new char[size];
+        int size = 1024;
+        char* buf = new char[size];
 
-	while (vsnprintf(buf,size,fmt,vl) >= size-16) {
-	    delete buf;
-	    size += 1024;
-	    buf = new char[size];
-	}
+        while (vsnprintf(buf,size,fmt,vl) >= size-16) {
+            delete buf;
+            size += 1024;
+            buf = new char[size];
+        }
 
-	(*this)->log(p_level, std::string(buf));
-	delete buf;
+        (*this)->log(p_level, std::string(buf));
+        delete buf;
     }
 
     inline LoggerStream::LoggerStream(const LoggerStream& ls) {
-	logger = ls.logger;
-	priority = ls.priority;
-	if ((*logger)->isEnabledFor(priority))
-	    buf = new std::ostringstream;
-	else buf = NULL;
+        logger = ls.logger;
+        priority = ls.priority;
+        if ((*logger)->isEnabledFor(priority))
+            buf = new std::ostringstream;
+        else buf = NULL;
     }
 
     inline LoggerStream::LoggerStream(const LevelPtr& p, SysLogger* l) : logger(l), priority(p), buf(0) {
-	if ((*logger)->isEnabledFor(priority))
-	    buf = new std::ostringstream;
-	else buf = NULL;
+        if ((*logger)->isEnabledFor(priority))
+            buf = new std::ostringstream;
+        else buf = NULL;
     }
 
     inline LoggerStream::~LoggerStream() {
-	if (buf) {
-	    (*logger)->log(priority, (const std::string)(buf->str().c_str()));
-	    delete buf;
-	    buf = NULL;
-	}
+        if (buf) {
+            (*logger)->log(priority, (const std::string)(buf->str().c_str()));
+            delete buf;
+            buf = NULL;
+        }
     }
 } /* namespace log4cxx */
 
@@ -193,7 +193,7 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << " size = " << v.size() << std::endl;;
     for (typename std::vector<T>::const_iterator it = v.begin(); it != v.end(); it++)
-	os << " " << it - v.begin() << ": " << *it << std::endl;
+        os << " " << it - v.begin() << ": " << *it << std::endl;
     return os;
 }
 
@@ -205,14 +205,14 @@ std::ostream& operator<<(std::ostream& os, const std::pair<T1,T2>& p) {
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& os, const std::map<T1,T2>& p) {
     for (typename std::map<T1,T2>::const_iterator it = p.begin(); it != p.end(); it++)
-	os << *it << std::endl;
+        os << *it << std::endl;
     return os;
 }
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& s) {
     for (typename std::set<T>::const_iterator it = s.begin(); it != s.end(); it++)
-	os << " " << *it;
+        os << " " << *it;
     return os;
 }
 
@@ -220,12 +220,12 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, std::stack<T> s) {
     std::vector<T> v;
     while (!s.empty()) {
-	v.push_back(s.top());
-	s.pop();
+        v.push_back(s.top());
+        s.pop();
     }
     os << " size = " << v.size() << std::endl;;
     for (int i = v.size()-1; i >= 0; i--)
-	os << " " << v.size()-1-i << ": " << v[i] << std::endl;
+        os << " " << v.size()-1-i << ": " << v[i] << std::endl;
     return os;
 }
 

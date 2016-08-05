@@ -12,8 +12,8 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
 
     Vector f1(n1), f2(n2);
     for (uint z = 0; z*lN < n; z++)
-	if (!(z&1)) memcpy(&f1[(z/2)*lN], &f[z*lN], lN*sizeof(double));
-	else	    memcpy(&f2[(z/2)*lN], &f[z*lN], lN*sizeof(double));
+        if (!(z&1)) memcpy(&f1[(z/2)*lN], &f[z*lN], lN*sizeof(double));
+        else	    memcpy(&f2[(z/2)*lN], &f[z*lN], lN*sizeof(double));
 
     SolverStats stats;
 
@@ -38,8 +38,8 @@ void BGSPrec::solve(Vector& f, Vector& x) const THROW {
 #endif
 
     for (uint z = 0; z*lN < n; z++)
-	if (!(z&1)) memcpy(&x[z*lN], &x1[(z/2)*lN], lN*sizeof(double));
-	else	    memcpy(&x[z*lN], &x2[(z/2)*lN], lN*sizeof(double));
+        if (!(z&1)) memcpy(&x[z*lN], &x1[(z/2)*lN], lN*sizeof(double));
+        else	    memcpy(&x[z*lN], &x2[(z/2)*lN], lN*sizeof(double));
 }
 
 BGSPrec::BGSPrec(const SkylineMatrix& A, const Config& cfg) {
@@ -69,38 +69,38 @@ BGSPrec::BGSPrec(const SkylineMatrix& A, const Config& cfg) {
     uint ind1 = 0, ind2 = 0, ind21 = 0;
     uint i1 = 0, i2 = 0;
     for (uint i0 = 0, z = 0; i0 < n; i0 += lN, z++) {
-	uint i = i0;
+        uint i = i0;
 
-	if (!(z&1)) {
-	    /* Block A1 */
-	    uint i10 = i1;
-	    for (uint k = 0; k < lN; k++, i1++, i++) {
-		for (uint j = ia[i]; j < ia[i+1]; j++)
-		    if (i0 <= ja[j] && ja[j] < i0+lN) {
-			a1_ja[ind1] = i10 + (ja[j] - i0);
-			a1_a[ind1] = a[j];
-			ind1++;
-		    }
-		a1_ia.push_back(ind1);
-	    }
-	} else {
-	    /* Blocks A2, A21 */
-	    uint i20 = i2;
-	    for (uint k = 0; k < lN; k++, i2++, i++) {
-		for (uint j = ia[i]; j < ia[i+1]; j++)
-		    if (i0 <= ja[j] && ja[j] < i0+lN) {
-			a2_ja[ind2] = i20 + (ja[j] - i0);
-			a2_a[ind2] = a[j];
-			ind2++;
-		    } else if (ja[j] < i0) {
-			a21_ja[ind21] = i20 + (ja[j] - i0 + lN);
-			a21_a[ind21] = a[j];
-			ind21++;
-		    }
-		a2_ia.push_back(ind2);
-		a21_ia.push_back(ind21);
-	    }
-	}
+        if (!(z&1)) {
+            /* Block A1 */
+            uint i10 = i1;
+            for (uint k = 0; k < lN; k++, i1++, i++) {
+                for (uint j = ia[i]; j < ia[i+1]; j++)
+                    if (i0 <= ja[j] && ja[j] < i0+lN) {
+                        a1_ja[ind1] = i10 + (ja[j] - i0);
+                        a1_a[ind1] = a[j];
+                        ind1++;
+                    }
+                a1_ia.push_back(ind1);
+            }
+        } else {
+            /* Blocks A2, A21 */
+            uint i20 = i2;
+            for (uint k = 0; k < lN; k++, i2++, i++) {
+                for (uint j = ia[i]; j < ia[i+1]; j++)
+                    if (i0 <= ja[j] && ja[j] < i0+lN) {
+                        a2_ja[ind2] = i20 + (ja[j] - i0);
+                        a2_a[ind2] = a[j];
+                        ind2++;
+                    } else if (ja[j] < i0) {
+                        a21_ja[ind21] = i20 + (ja[j] - i0 + lN);
+                        a21_a[ind21] = a[j];
+                        ind21++;
+                    }
+                a2_ia.push_back(ind2);
+                a21_ia.push_back(ind21);
+            }
+        }
     }
     a1_ja.resize(a1_ia.back());
     a2_ja.resize(a2_ia.back());

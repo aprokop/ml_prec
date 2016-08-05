@@ -57,7 +57,7 @@ std::vector<T> new_vector(uint n, T t1, ...) {
     va_list ap;
     va_start(ap, t1);
     for (uint i = 0; i < n-1; i++)
-	v[i+1] = va_arg(ap, T);
+        v[i+1] = va_arg(ap, T);
     va_end(ap);
 
     return v;
@@ -87,7 +87,7 @@ uvector<T> new_uvector(uint n, T t1, ...) {
     va_list ap;
     va_start(ap, t1);
     for (uint i = 0; i < n-1; i++)
-	v[i+1] = va_arg(ap, T);
+        v[i+1] = va_arg(ap, T);
     va_end(ap);
 
     return v;
@@ -114,8 +114,8 @@ inline bool is_nan(const T& x) {
     pid_t ppid = getppid(); \
     std::ofstream os(".msg"); \
     if (os.good()) { \
-	os << msg << std::endl; \
-	kill(ppid, SIGUSR1); \
+        os << msg << std::endl; \
+        kill(ppid, SIGUSR1); \
     } \
 }
 #else

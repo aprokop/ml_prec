@@ -7,25 +7,25 @@
 class AMGPrec: public PrecBase {
 private:
     struct AMGConfig {
-	int matrix;
-	int iswtch;
-	int iout;
-	int iprint;
-	int levelx;
-	int ifirst;
-	int ncyc;
-	double eps;
-	int madapt;
-	int nrd;
-	int nsolco;
-	int nru;
-	double ecg1;
-	double ecg2;
-	double ewt2;
-	int nwt;
-	int ntr;
+        int matrix;
+        int iswtch;
+        int iout;
+        int iprint;
+        int levelx;
+        int ifirst;
+        int ncyc;
+        double eps;
+        int madapt;
+        int nrd;
+        int nsolco;
+        int nru;
+        double ecg1;
+        double ecg2;
+        double ewt2;
+        int nwt;
+        int ntr;
 
-	AMGConfig();
+        AMGConfig();
     };
     mutable AMGConfig amg_config;
 
