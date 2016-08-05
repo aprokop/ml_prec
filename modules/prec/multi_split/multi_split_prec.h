@@ -17,39 +17,42 @@ private:
     bool use_tails;
 
     struct Level {
-        /* Config variables */
-        double	q;		    /* Convergence factor */
-        uint	niter;		    /* Number of iterations on the level */
-        double	eps;		    /* Epsilon for residual norm stop criteria */
+        // Config variables
+        double	q;		        // convergence factor
+        uint	niter;		    // number of iterations on the level
+        double	eps;		    // epsilon for residual norm stop criteria
 
-        /* Info variables */
-        uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-        uint M;                     /* Size of the excluded block (not including diagonal block) */
-        uint Md;		    /* Size of the excluded diagonal block */
+        // Info variables
+        uint N, nnz;		    // number of nodes and nonzeros elements for the level
+        uint M;                 // size of the excluded block (not including diagonal block)
+        uint Md;		        // size of the excluded diagonal block
 
-        /* Data variables */
-        SkylineMatrix	A;	    /* Level matrix (for level 0 we use level0_A) */
-        CSRMatrix	L;	    /* L factor for the level (N x N) */
-        SkylineMatrix	U;	    /* U factor for the level (M x N) */
-        uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
+        // Data variables
+        SkylineMatrix	A;	    // level matrix (for level 0 we use level0_A)
+        CSRMatrix	    L;	    // L factor for the level (N x N)
+        SkylineMatrix	U;	    // U factor for the level (M x N)
+        uvector<double> dval;	// reciprocal of the diagonal of the diagonal block
 
-        uvector<uint>	map;	    /* Indices map: permuted -> original */
-        uvector<uint>	rmap;	    /* Indices map: original -> permuted */
+        uvector<uint>	map;	// indices map: permuted -> original
+        uvector<uint>	rmap;	// indices map: original -> permuted
 
-        /* Misc variables */
+        // Misc variables
         mutable
-                Vector r, w, x2, u0, F;	    /* Some auxilary vectors for internal iterations */
+        Vector r, w, x2, u0, F;	// some auxilary vectors for internal iterations
 
         Level() : q(0.0), niter(0), eps(0.0) { N = nnz = M = Md = 0; }
     };
 
-    enum {  INNER_ITER_FIXED,
+    enum {
+        INNER_ITER_FIXED,
         INNER_ITER_DYNAMIC
     } inner_iter_type;
-    enum {  LU_EXACT,
+    enum {
+        LU_EXACT,
         LU_ILUT
     } lu_type;
-    enum {  ORDER_NONE,
+    enum {
+        ORDER_NONE,
         ORDER_ORIGINAL,
         ORDER_BLOCK,
         ORDER_SIMPLE_1
@@ -59,16 +62,16 @@ private:
     double ilut_tau;
     uint   degree_max;
     double level_ratio;
-    uint coarse_n;
+    uint   coarse_n;
 
     uint nlevels;
     std::vector<Level> levels;
 
-    const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
-                                       need to make a copy */
+    const SkylineMatrix& level0_A;  // Matrix for level 0 is not kept in levels so that we don't
+                                    // need to make a copy
 
 #ifdef HAVE_UMFPACK
-    /* UMFPACK factorization of the coarsest level */
+    // UMFPACK factorization of the coarsest level
     mutable void *Ac_symbolic, *Ac_numeric;
 #endif
 
@@ -102,7 +105,7 @@ public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);
     ~MultiSplitPrec();
 
-    void solve(Vector& f, Vector& x) const THROW; /* Wrapper for solve(level,f,x) */
+    void solve(Vector& f, Vector& x) const THROW; // Wrapper for solve(level,f,x)
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     friend std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p);

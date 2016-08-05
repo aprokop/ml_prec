@@ -19,12 +19,10 @@ DEFINE_LOGGER("MultiSplitPrec");
 
 typedef class LinkTypeMultiSplit LinkType;
 
-/*
- * Insertion sort of vector sorted with respect to absolute values in vector a
- * NOTE: later if for some matrices we would get many elements in a row we could
- * replace this sort with a faster one (think heapsort)
- * T must support fabs and < operators
- */
+// Insertion sort of vector sorted with respect to absolute values in vector a
+// NOTE: later if for some matrices we would get many elements in a row we could
+// replace this sort with a faster one (think heapsort)
+// T must support fabs and < operators
 static void psort(const double *a, uint n, uvector<uint>& sorted) {
     sorted[0] = 0;
     double v;
@@ -56,23 +54,23 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
         return;
     }
 
-    /* Number of nodes in the subdomain */
+    // Number of nodes in the subdomain
     uint N = li.N;
 
     uvector<int> nlinks_out(N);
     uvector<int> nlinks_in(N, 0);
     LinkType ltype(A);
 
-    /* Marking stage */
+    // Marking stage
     // uint MAX_NUM = 100; /* Maximum number of elements in a row */
     uint MAX_NUM = 10000; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     aux.resize(N);
     const double* adata = &(A.a[0]);
     for (uint i = 0; i < N; i++) {
-        uint rstart = A.ia[i];		    /* Row start */
-        uint rend   = A.ia[i+1];	    /* Row end */
-        uint nrz    = rend - rstart - 1;    /* Number of outgoing links */
+        uint rstart = A.ia[i];		        // row start
+        uint rend   = A.ia[i+1];	        // row end
+        uint nrz    = rend - rstart - 1;    // number of outgoing links
 
         nlinks_out[i] = nrz;
 
@@ -86,7 +84,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
             aux[i] += A.a[j_];
         }
 
-        /* Sort off-diagonal elements wrt their abs values */
+        // Sort off-diagonal elements wrt their abs values
         psort(adata + rstart+1, nrz, sorted);
 
         double s = li.q/(1 - li.q) * aux[i];
@@ -97,22 +95,20 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
             if (aij <= s) {
                 uint j = A.ja[j_];
 
-                ltype.remove(j_); /* mark outgoing link as removable */
+                ltype.remove(j_);           // mark outgoing link as removable
                 nlinks_out[i]--;
                 nlinks_in[j]--;
 
                 s -= aij;
             } else {
-                /*
-                 * We exhausted available value of c.
-                 * No other adjoint links can be removed
-                 * One could split (if s > 0) but we don't do it now
-                 */
+                // We exhausted available value of c.
+                // No other adjoint links can be removed
+                // One could split (if s > 0) but we don't do it now
                 break;
             }
         }
 
-        /* Update c value */
+        // Update c value
         aux[i] *= 1./(1-li.q);
     }
 
@@ -122,13 +118,11 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     uvector<uint>& rmap = li.rmap;
 
     map.resize(N);
-    /*
-     * Construct node perumutation.
-     * All nodes are divided into three groups:
-     *	0, ..., M-1   : Nodes which are connected to some nodes and which will be excluded
-     *  M, ..., N-Md  : Nodes which go to the next level
-     *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
-     */
+    // Construct node perumutation.
+    // All nodes are divided into three groups:
+    //	0, ..., M-1   : Nodes which are connected to some nodes and which will be excluded
+    //  M, ..., N-Md  : Nodes which go to the next level
+    //  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
     switch (order) {
         case ORDER_NONE    : order_none    (A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
         case ORDER_ORIGINAL: order_original(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
@@ -136,7 +130,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
         case ORDER_SIMPLE_1: order_simple_1(A, ltype, aux, nlinks_in, nlinks_out, Md, M, map); break;
     }
 
-    /* Construct reverse map */
+    // Construct reverse map
     rmap.resize(N);
     for (uint i = 0; i < N; i++)
         rmap[map[i]] = i;
@@ -149,11 +143,11 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
     LOG_DEBUG("L: " << L.rows() << " x " << L.cols() << ", nnz = " << L.nnz());
     LOG_DEBUG("U: " << U.rows() << " x " << U.cols() << ", nnz = " << U.nnz());
 
-    /* Process diagonal block */
+    // Process diagonal block
     uvector<double>& dval = li.dval;
     dval.resize(Md);
     for (uint i = 0; i < Md; i++)
-        /* Instead of keeping diagonal, keep its reciprocal */
+        // Instead of keeping diagonal, keep its reciprocal
         dval[i] = 1./aux[map[i+(N-Md)]];
 
     li.u0.resize(N);
@@ -162,7 +156,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 
     const uint n = nA.size();
     if (n) {
-        /* Allocate space for Chebyshev vectors */
+        // Allocate space for Chebyshev vectors
         li.x2.resize(n);
         li.F.resize(n);
 
@@ -174,7 +168,7 @@ void MultiSplitPrec::construct_level(uint level, const SkylineMatrix& A) {
 }
 
 MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
-    /* Read parameters from the config file */
+    // Read parameters from the config file
     std::string inner_iter_type, lu_type, elim_order_type, elim_stop_type;
     std::string qs_str, niters_str, epss_str;
 
@@ -188,34 +182,39 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
             ConfigFile config(cfg.prec_conf_file);
 
             /*                                          name in file  | default value */
-            qs_str	    = config.read<std::string>	("q",		"0.8"	    );
+            qs_str	        = config.read<std::string>	("q",		    "0.8"	    );
             inner_iter_type = config.read<std::string>	("inner_iter",	"fixed"	    );
             lu_type         = config.read<std::string>	("lu_method",	"exact"	    );
             elim_order_type = config.read<std::string>	("elim_order",	"original"  );
             elim_stop_type  = config.read<std::string>	("elim_stop",	"degree"    );
-            coarse_n        = config.read<uint>		("coarse_n",	0	    );
-            nlevels         = config.read<uint>		("max_levels",	15	    );
+            coarse_n        = config.read<uint>		    ("coarse_n",	0	        );
+            nlevels         = config.read<uint>		    ("max_levels",	15	        );
 
-            qs		    = new_vector<double>(qs_str);
+            qs= new_vector<double>(qs_str);
 
             if (inner_iter_type == "fixed") {
                 niters_str  = config.read<std::string>	("level_niter", "5"	    );
                 niters	    = new_vector<uint>(niters_str);
+
             } else if (inner_iter_type == "dynamic") {
                 epss_str    = config.read<std::string>	("level_eps",	"1e-2"	    );
                 epss	    = new_vector<double>(epss_str);
-            } else
+
+            } else {
                 THROW_EXCEPTION("Unknown inner_iter type: " << inner_iter_type);
+            }
 
             if (lu_type == "ilut") {
                 ilut_p	    = config.read<uint>		("ilut_p",	7	    );
                 ilut_tau    = config.read<double>	("ilut_tau",	1e-4	    );
-            } else if (lu_type != "exact")
-                THROW_EXCEPTION("Unknown lu type: " << lu_type);
 
-            if (elim_order_type != "none" &&
-                elim_order_type != "original" &&
-                elim_order_type != "block" &&
+            } else if (lu_type != "exact") {
+                THROW_EXCEPTION("Unknown lu type: " << lu_type);
+            }
+
+            if (elim_order_type != "none"       &&
+                elim_order_type != "original"   &&
+                elim_order_type != "block"      &&
                 elim_order_type != "simple_1")
                 THROW_EXCEPTION("Unknown elim_order type: " << elim_order_type);
 
@@ -231,6 +230,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
         } catch (ConfigFile::file_not_found) {
             LOG_INFO("Config file \"" << cfg.prec_conf_file << "\" is absent");
         }
+
     } else { // if (cfg.prec_conf_file)
         inner_iter_type = "fixed";
         lu_type         = "exact";
@@ -279,7 +279,7 @@ MultiSplitPrec::MultiSplitPrec(const SkylineMatrix& A, const Config& cfg) : leve
 #endif
 
 #ifdef PRINT_NORMS
-    /* Initialize stream for dumping norms */
+    // Initialize stream for dumping norms
     norm_oss = new std::ostringstream;
     (*norm_oss) << std::scientific;
 #endif

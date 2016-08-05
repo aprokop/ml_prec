@@ -13,7 +13,7 @@ private:
     const SkylineMatrix& A;
     uvector<char> a;
 
-    /* Checks indices i and j (with ASSERT) and returns index in a */
+    // checks indices i and j (with ASSERT) and returns index in a
     uint index(uint i, uint j) const THROW {
         ASSERT(i != j, "i == j == " << i);
         return A.index(i,j);
@@ -25,7 +25,7 @@ public:
         a.resize(A.get_ja().size(), 1);
     }
 
-    /* Check link status */
+    // check link status
     LinkStatus stat(uint _j) const {   return a[_j] ? PRESENT : REMOVED;   }
     LinkStatus stat(uint i, uint j) const {
         uint ind = index(i,j);
@@ -34,10 +34,10 @@ public:
         return stat(ind);
     }
 
-    /* Extra function not used here */
+    // extra function not used here
     void set_row(uint i) const { }
 
-    /* Mark link as removed */
+    // mark link as removed
     void remove(uint _j) {   a[_j] = 0;   }
     void remove(uint i, uint j) {
         uint ind = index(i,j);
@@ -45,11 +45,9 @@ public:
         a[ind] = 0;
     }
 
-    /*
-     * Find the remaining link from a point (actually it finds the first one).
-     * Returns index in ja
-     * The caller must be sure that only one link remains
-     */
+    // Find the remaining link from a point (actually it finds the first one).
+    // Returns index in ja
+    // The caller must be sure that only one link remains
     bool find_remaining_link(uint i, uint& _j) {
         ASSERT(i < n, "i = " << i << ", n = " << n);
 
@@ -63,11 +61,9 @@ public:
         return false;
     }
 
-    /*
-     * Remove remaining link from a point
-     * As in find_remaining_link, it actually removes the first one
-     * The caller must be sure that only one link remains
-     */
+    // Remove remaining link from a point
+    // As in find_remaining_link, it actually removes the first one
+    // The caller must be sure that only one link remains
     bool remove_remaining_link(uint i, uint& _j) {
         bool ret = find_remaining_link(i, _j);
         if (ret)

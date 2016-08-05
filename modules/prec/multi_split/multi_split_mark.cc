@@ -29,32 +29,30 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
                                     uint& Md, uint& M, uvector<uint>& map) const {
     uint N = A.size();
 
-    /*
-     * We make a copy 'cause we might modify during the construction
-     * Takes about 2-3% of total time
-     */
+    // We make a copy 'cause we might modify during the construction
+    // Takes about 2-3% of total time
     LinkTypeMultiSplit ltype(ltype_);
 
     uint pind = 0;
 
-    /* Set the marking of all nodes to default */
+    // Set the marking of all nodes to default
     uvector<uint> marked(N, 0);
 
-    /* Group 1: all tails */
+    // Group 1: all tails
     if (use_tails) {
         uint i0 = -1, i1 = -1;
 
         for (uint i = 0; i < N; i++)
             if (nlinks_out[i] == 1 && nlinks_in[i] <= 1) {
-                /* Start tail with node i */
+                // Start tail with node i
                 i0 = i;
 
                 do {
-                    /* Step 1: check that there is only one outgoing link */
+                    // Step 1: check that there is only one outgoing link
                     if (nlinks_out[i0] != 1)
                         break;
 
-                    /* Step 2: find the remaining link */
+                    // Step 2: find the remaining link
                     uint j_;
                     for (j_ = A.ia[i0]+1; j_ < A.ia[i0+1]; j_++)
                         if (ltype.stat(j_) == PRESENT)
@@ -63,21 +61,18 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
                         THROW_EXCEPTION("Row " << i0 << ": remaining link was not found");
                     i1 = A.ja[j_];
 
-                    /* Step 3: check that there is either no incoming connections,
-                     *	       or one incoming connection with the same point, as
-                     *	       outgoing
-                     */
+                    // Step 3: check that there is either no incoming connections,
+                    //	       or one incoming connection with the same point, as
+                    //	       outgoing
                     bool aji_present = (ltype.stat(i1,i0) == PRESENT);
                     if (!( nlinks_in[i0] == 0 ||
                            (nlinks_in[i0] == 1 && aji_present))) {
-                        /*
-                         * Node i0 has more than one incoming connection, or
-                         * it has one incoming connection but not from i1
-                         */
+                        // Node i0 has more than one incoming connection, or
+                        // it has one incoming connection but not from i1
                         break;
                     }
 
-                    /* Everything is fine. Mark the node and set new index */
+                    // Everything is fine. Mark the node and set new index
                     map[pind++] = i0;
                     marked[i0]  = 1;
 
@@ -97,7 +92,7 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
                 } while (true);
 
                 if (nlinks_out[i0] == 0 && nlinks_in[i0] == 0) {
-                    /* i0 is the end node in fully tridiagonal matrix */
+                    // i0 is the end node in fully tridiagonal matrix
                     map[pind++] = i0;
                     marked[i0]  = 1;
 
@@ -107,7 +102,7 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
     }
 
 #if 0
-    /* Group 2 : all nodes with very small c */
+    // Group 2 : all nodes with very small c
     uint c_marked = 0;
     for (uint i = 0; i < N; i++)
         if (marked[i] == 0) {
@@ -130,8 +125,8 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
 #endif
 
 #if 1
-    /* Group 2 : all nodes with two links
-     * NOTE: we don't mark links as removed, as we assume that this is the last step */
+    // Group 2 : all nodes with two links
+    // NOTE: we don't mark links as removed, as we assume that this is the last step */
     const int max_links = 2;
     for (uint i = 0; i < N; i++)
         if (marked[i] == 0 && (nlinks_in[i] <= max_links || nlinks_out[i] <= max_links)) {
@@ -145,7 +140,7 @@ void MultiSplitPrec::order_original(const SkylineMatrix& A, const LinkTypeMultiS
 
     M = pind;
 
-    /* Mark the diagonal nodes last */
+    // Mark the diagonal nodes last
     uint eind = N-1;
     for (uint i = 0; i < N; i++)
         if (marked[i] == 0) {
@@ -187,7 +182,7 @@ void MultiSplitPrec::order_simple_1(const SkylineMatrix& A, const LinkTypeMultiS
             M = pind;
     }
 
-    /* Mark the diagonal nodes last */
+    // Mark the diagonal nodes last
     Md = pind;
     for (uint k = 0; k < list0.size(); k++)
         if (nlinks_in[list0[k]] == 0)
@@ -208,7 +203,7 @@ void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSpli
         THROW_EXCEPTION("Wrong mesh size: " << N << " (expected 1122000)");
     LOG_WARN("Mesh is assumed to be cartesian 3D 60x220x85");
 
-    /* Set the marking of all nodes to default */
+    // Set the marking of all nodes to default
     uvector<uint> marked(N, 0);
 
     uint pind = 0;
@@ -243,7 +238,7 @@ void MultiSplitPrec::order_block(const SkylineMatrix& A, const LinkTypeMultiSpli
 #endif
     M = pind;
 
-    /* Mark the remaining nodes, diagonal nodes */
+    // Mark the remaining nodes, diagonal nodes
     uint eind = N-1;
     for (uint i = 0; i < N; i++)
         if (marked[i] == 0) {
