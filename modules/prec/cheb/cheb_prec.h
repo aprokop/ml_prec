@@ -15,46 +15,45 @@ private:
     bool use_tails;
 
     struct Level {
-        uint N, nnz;		    /* Number of nodes and nonzeros elements for the level */
-        uint M;                     /* Size of the excluded block (not including diagonal block) */
-        uint Md;		    /* Size of the excluded diagonal block */
+        uint N, nnz;		        // number of nodes and nonzeros elements for the level
+        uint M;                     // size of the excluded block (not including diagonal block)
+        uint Md;		            // size of the excluded diagonal block
 
-        double alpha, beta;	    /* Spectral constants used for the level */
-        double lmin, lmax;	    /* Spectral boundaries for the level */
-        uint ncheb;		    /* Number of Chebyshev iterations on the level */
+        double alpha, beta;	        // spectral constants used for the level
+        double lmin, lmax;	        // spectral boundaries for the level
+        uint ncheb;		            // number of Chebyshev iterations on the level
 
-        SkylineMatrix A;	    /* Level matrix (for level 0 we use level0_A) */
-        CSRMatrix     L;	    /* L factor for the level (N x N) */
-        SkylineMatrix U;	    /* U factor for the level (M x N) */
+        SkylineMatrix A;	        // level matrix (for level 0 we use level0_A)
+        CSRMatrix     L;	        // L factor for the level (N x N)
+        SkylineMatrix U;	        // U factor for the level (M x N)
 
-        uvector<uint> map;	    /* Indices map: permuted -> original */
-        uvector<uint> rmap;	    /* Indices map: original -> permuted */
+        uvector<uint> map;	        // indices map: permuted -> original
+        uvector<uint> rmap;	        // indices map: original -> permuted
 
-        uvector<double> dval;	    /* Reciprocal of the diagonal of the diagonal block */
+        uvector<double> dval;	    // reciprocal of the diagonal of the diagonal block
 
         mutable
-                Vector w, tmp, x2, u1, u0;  /* Some auxilary vectors for Chebyshev iterations and Schur */
+        Vector w, tmp, x2, u1, u0;  // Some auxilary vectors for Chebyshev iterations and Schur
 
-        uvector<double> aux;	    /* Auxilary array, corresponds to value c of the node; also
-                                       used in tail elimination. Don't actually need to keep it */
+        uvector<double> aux;	    // Auxilary array, corresponds to value c of the node; also
+                                    // used in tail elimination. Don't actually need to keep it
     };
 
     uint nlevels;
     std::vector<Level> levels;
 
-    const SkylineMatrix& level0_A;  /* Matrix for level 0 is not kept in levels so that we don't
-                                       need to make a copy */
+    const SkylineMatrix& level0_A;  // Matrix for level 0 is not kept in levels so that we don't
+                                    // need to make a copy
 
-    /*
-     * This function tries to increase s by amount necessary to mark v as removable.
-     * If it can not be done (i.e. there is not enough value of c for that then s
-     * is not changed
-     * NOTE: if matrix contains positive offdiagonal elements (as in the
-     * case when we take Schur complement to u and p in mixed hybrid FEM)
-     * removing negative offdiagonal elements may result in matrix which is
-     * not positive definite. Sometimes we can assume that if c is big
-     * enough new matrix would still be positive definite
-     */
+    // This function tries to increase s by amount necessary to mark v as
+    // removable. If it can not be done (i.e. there is not enough value of c
+    // for that then s is not changed
+    //
+    // NOTE: if matrix contains positive offdiagonal elements (as in the case
+    // when we take Schur complement to u and p in mixed hybrid FEM) removing
+    // negative offdiagonal elements may result in matrix which is not positive
+    // definite. Sometimes we can assume that if c is big enough new matrix
+    // would still be positive definite
     bool to_remove(double c, double v, double beta, double& s) {
 #if 1
         /* Dynamic variant */

@@ -5,8 +5,8 @@
 
 class DiagPrec: public PrecBase {
 private:
-    uint n;
-    uvector<double> d;	/* d containce inverse of the diagonal */
+    uint            n;
+    uvector<double> d;	// inverse of the matrix diagonal
 
 public:
     DiagPrec(const SkylineMatrix& A);

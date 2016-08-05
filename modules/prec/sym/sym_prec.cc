@@ -6,7 +6,8 @@
 DEFINE_LOGGER("SymPrec");
 
 void SymPrec::solve(Vector& f, Vector& x) const THROW {
-    ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
+    ASSERT(f.size() == n && x.size() == n, "Wrong dimension: "
+           << "n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     SolverStats stats;
     PCGSolver(Asym, f, *B, x, stats, eps, NORM_L2, true);
