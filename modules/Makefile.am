@@ -22,11 +22,11 @@ libmodules_a_SOURCES = \
 		       prec/cheb/cheb_solve.cc \
 		       prec/cheb/cheb_misc.h \
 		       prec/cheb/cheb_prec.h \
-		       prec/composite/composite.cc \
+		       prec/composite/composite_prec.cc \
 		       prec/composite/composite_prec.h \
 		       prec/diag/diag_prec.cc \
 		       prec/diag/diag_prec.h \
-		       prec/gs/gs.cc \
+		       prec/gs/gs_prec.cc \
 		       prec/gs/gs_prec.h \
 		       prec/id/id_prec.h \
 		       prec/misc/misc.cc \
