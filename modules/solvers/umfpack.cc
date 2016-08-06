@@ -3,7 +3,14 @@
 #include "include/tools.h"
 #include "include/time.h"
 
-#include "umfpack.h"
+
+#ifdef HAVE_UMFPACK_H
+# include "umfpack.h"
+#endif
+
+#ifdef HAVE_SUITESPARSE_UMFPACK_H
+# include <suitesparse/umfpack.h>
+#endif
 
 DEFINE_LOGGER("DirectSolver");
 

@@ -71,7 +71,7 @@ fi
 LIBS="$BLAS_LIBS $LIBS $FLIBS"
 
 # UMFPACK
-AC_CHECK_HEADER([umfpack.h], [enable_umfpack="yes"], [enable_umfpack="no"])
+AC_CHECK_HEADERS([umfpack.h suitesparse/umfpack.h], [enable_umfpack="yes"], [enable_umfpack="no"])
 if test x$enable_umfpack = xyes; then
     AC_DEFINE([HAVE_UMFPACK], [1], [Define to 1 if you have UMFPACK library])
     LIBS="-lumfpack $LIBS"
