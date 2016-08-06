@@ -6,11 +6,11 @@ else
     HYP=
 endif
 
-bin_PROGRAMS = spe_prec $(HYP) convert
-spe_prec_SOURCES = main.cc main_helper.cc analysis.cc transform.cc main.h config.h
+bin_PROGRAMS = ml_prec $(HYP) convert
+ml_prec_SOURCES = main.cc main_helper.cc analysis.cc transform.cc main.h config.h
 hypre_SOURCES = hypre.cc
 
-spe_prec_LDADD = \
+ml_prec_LDADD = \
 	$(top_builddir)/modules/libmodules.a \
 	-lrt
 
@@ -21,7 +21,7 @@ hypre_LDADD = \
 convert_SOURCES = convert.cc
 convert_LDADD = $(top_builddir)/modules/libmodules.a
 
-all: prereq spe_prec $(HYP)
+all: prereq ml_prec $(HYP)
 
 prereq:
 	$(MAKE) -C $(top_srcdir)/modules
