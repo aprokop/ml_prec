@@ -144,31 +144,30 @@ namespace log4cxx {
 
 /* Some useful macro for the case we have one instance of logger for the module */
 #define DEFINE_LOGGER(l)	static log4cxx::SysLogger logger = log4cxx::Logger::getLogger(l)
-#define _LOG_DEBUG(lvl,v)	logger << log4cxx::Level::getDebug() << __func__ << " " << v
-#define _LOG_INFO(lvl,v)	logger << log4cxx::Level::getInfo () << __func__ << " " << v
-#define _LOG_WARN(lvl,v)	logger << log4cxx::Level::getWarn () << __func__ << " " << v
-#define _LOG_ERROR(lvl,v)	logger << log4cxx::Level::getError() << __func__ << " " << v
-#define _LOG_FATAL(lvl,v)	logger << log4cxx::Level::getFatal() << __func__ << " " << v
+#define _LOG_DEBUG(lvl,v)	logger << log4cxx::Level::getDebug() << __func__ << ": " << v << std::endl
+#define _LOG_INFO(lvl,v)	logger << log4cxx::Level::getInfo () << __func__ << ": " << v << std::endl
+#define _LOG_WARN(lvl,v)	logger << log4cxx::Level::getWarn () << __func__ << ": " << v << std::endl
+#define _LOG_ERROR(lvl,v)	logger << log4cxx::Level::getError() << __func__ << ": " << v << std::endl
+#define _LOG_FATAL(lvl,v)	logger << log4cxx::Level::getFatal() << __func__ << ": " << v << std::endl
 
 #define _LOG_DEBUG_P(fmt,...)	logger.logf(log4cxx::Level::getDebug(), fmt, __VA_ARGS__)
 
 #else // #ifndef NO_LOGGER
 
 #define DEFINE_LOGGER(l)	static int ____logger____
-#define _LOG(lvl,v)		std::cout << #lvl " : " << __func__ << " : " << v << std::endl
-#define _LOG_DEBUG(lvl,v)	std::cout << "DEBUG : " << __func__ << " " << v
-#define _LOG_INFO(lvl,v)	std::cout << "INFO : " << __func__ << " " << v
-#define _LOG_WARN(lvl,v)	std::cout << "WARN : " << __func__ << " " << v
-#define _LOG_ERROR(lvl,v)	std::cout << "ERROR : " << __func__ << " " << v
-#define _LOG_FATAL(lvl,v)	std::cout << "FATAL : " << __func__ << " " << v
+#define _LOG_DEBUG(lvl,v)	std::cout << "DEBUG : " << __func__ << ": " << v << std::endl
+#define _LOG_INFO(lvl,v)	std::cout << "INFO  : " << __func__ << ": " << v << std::endl
+#define _LOG_WARN(lvl,v)	std::cout << "WARN  : " << __func__ << ": " << v << std::endl
+#define _LOG_ERROR(lvl,v)	std::cout << "ERROR : " << __func__ << ": " << v << std::endl
+#define _LOG_FATAL(lvl,v)	std::cout << "FATAL : " << __func__ << ": " << v << std::endl
 
 #define _LOG_DEBUG_P(fmt,...)	printf("DEBUG : " fmt, __VA_ARGS__)
 
 #endif // #ifndef NO_LOGGER
 
 #define LOG_DEBUG(v)		_LOG_DEBUG(DEBUG,v)
-#define LOG_INFO(v)		_LOG_INFO(INFO,v)
-#define LOG_WARN(v)		_LOG_WARN(WARN,v)
+#define LOG_INFO(v)		    _LOG_INFO (INFO, v)
+#define LOG_WARN(v)		    _LOG_WARN (WARN, v)
 #define LOG_ERROR(v)		_LOG_ERROR(ERROR,v)
 #define LOG_FATAL(v)		_LOG_FATAL(FATAL,v)
 
@@ -177,9 +176,9 @@ namespace log4cxx {
 #define LOG_VAR(v) LOG_DEBUG(#v " = " << std::scientific << (v))
 
 #ifndef NO_LOGGER
-#define LLL_INFO(v)  LOG_INFO(v),  std::cout << "INFO : " << v << std::endl
+#define LLL_INFO(v)  LOG_INFO(v),  std::cout << "INFO  : " << v << std::endl
 #define LLL_DEBUG(v) LOG_DEBUG(v), std::cout << "DEBUG : " << v << std::endl
-#define LLL_WARN(v)  LOG_WARN(v),  std::cout << "WARN : " << v << std::endl
+#define LLL_WARN(v)  LOG_WARN(v),  std::cout << "WARN  : " << v << std::endl
 #define LLL_ERROR(v) LOG_ERROR(v), std::cout << "ERROR : " << v << std::endl
 #else
 #define LLL_INFO(v)  LOG_INFO(v)
