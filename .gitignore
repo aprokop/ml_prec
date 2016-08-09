@@ -36,7 +36,7 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 doc/*/out/
 *.trace
-project/spe_prec
+project/ml_prec
 project/hypre
 tools/check_memory/check_memory
 project/fading/*.bin
