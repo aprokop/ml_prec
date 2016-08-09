@@ -236,7 +236,7 @@ void anal_unused1(const SkylineMatrix& A) {
 /*
  * Creates and saves 1D z-matrices
  * This procedure assumes that the matrix A came from the standard 7-point
- * stencil discretization of the SPE test (it might be unsymmetric).
+ * stencil discretization of the SPE test (it might be nonsymmetric).
  * If we present matrix in the form A = D + A_xy + A_z, then the procedure
  * saves tridiagonal blocks of the matrix (D+A_z)
  * It is assumed, that the numeration is XYZ, i.e. index(i,j,k) = k*ny*nx + j*nx + k
@@ -387,7 +387,7 @@ void anal_2level_convergence(const SkylineMatrix& A, const Config& cfg_) {
     Config cfg = cfg_;
     cfg.sigmas.resize(4);
     cfg.max_levels = 5;
-    cfg.unsym_matrix = true;
+    cfg.nonsym_matrix = true;
     cfg.use_tails = false;
     cfg.prec = MULTI_SPLIT_PREC;
     cfg.niters = new_vector<uint>(1, 1);

@@ -88,18 +88,18 @@ int main (int argc, char * argv[]) {
         cstart = cfinish = 0;
         cstart = pclock();
         switch (cfg.prec) {
-            case AMG_PREC         : B_ = new AMGPrec(A);		break;
-            case COMP_PREC	  : B_ = new CompositePrec(A, cfg);	break;
-            case DIAG_PREC        : B_ = new DiagPrec(A);		break;
-            case GS_PREC          : B_ = new GSPrec(A);			break;
-            case ID_PREC	  : B_ = new IdPrec(A);			break;
+            case AMG_PREC         : B_ = new AMGPrec(A);                break;
+            case COMP_PREC        : B_ = new CompositePrec(A, cfg);     break;
+            case DIAG_PREC        : B_ = new DiagPrec(A);               break;
+            case GS_PREC          : B_ = new GSPrec(A);                 break;
+            case ID_PREC          : B_ = new IdPrec(A);                 break;
 #ifdef HAVE_UMFPACK
-            case BGS_PREC         : B_ = new BGSPrec(A, cfg);		break;
-            case RBGS_PREC        : B_ = new RBGSPrec(A, cfg);		break;
+            case BGS_PREC         : B_ = new BGSPrec(A, cfg);           break;
+            case RBGS_PREC        : B_ = new RBGSPrec(A, cfg);          break;
 #endif
-            case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);	break;
-            case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);		break;
-            case UH_CHEB_PREC     : B_ = new Prec(A, cfg);		break;
+            case MULTI_SPLIT_PREC : B_ = new MultiSplitPrec(A, cfg);    break;
+            case SYM_SPLIT_PREC   : B_ = new SymPrec(A, cfg);           break;
+            case UH_CHEB_PREC     : B_ = new Prec(A, cfg);              break;
         }
         cfinish = pclock();
         ctimes.push_back(cfinish - cstart);
@@ -134,8 +134,8 @@ int main (int argc, char * argv[]) {
         SolverStats stats;
         switch (cfg.solver) {
             case PCG_SOLVER : {
-                                  if (cfg.unsym_matrix)
-                                      LOG_WARN("Applying PCGSolver for unsymmetric matrix");
+                                  if (cfg.nonsym_matrix)
+                                      LOG_WARN("Applying PCGSolver for nonsymmetric matrix");
                                   PCGSolver(A, b, B, x, stats, eps);
                                   break;
                               }

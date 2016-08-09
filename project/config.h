@@ -19,18 +19,18 @@ enum SolverType {
 };
 
 enum PrecType {
-    AMG_PREC,		// AMG (Stüben)
-    DIAG_PREC,		// Jacobi
-    COMP_PREC,		// composite
-    GS_PREC,		// Gauss-Seidel
-    ID_PREC,		// Identity matrix
+    AMG_PREC,           // AMG (Stüben)
+    DIAG_PREC,          // Jacobi
+    COMP_PREC,          // composite
+    GS_PREC,            // Gauss-Seidel
+    ID_PREC,            // Identity matrix
 #ifdef HAVE_UMFPACK
-    BGS_PREC,		// block Gauss-Seidel
-    RBGS_PREC,		// block Gauss-Seidel with a nonzero upper triangle ("relaxed" BGS)
+    BGS_PREC,           // block Gauss-Seidel
+    RBGS_PREC,          // block Gauss-Seidel with a nonzero upper triangle ("relaxed" BGS)
 #endif
-    SYM_SPLIT_PREC,	// Kuznetsov-Prokopenko for symmetrized matrix
-    MULTI_SPLIT_PREC,	// Kuznetsov-Prokopenko (nested iterations for unsymmetric matrix)
-    UH_CHEB_PREC	// Kuznetsov-Prokopenko
+    SYM_SPLIT_PREC,     // Kuznetsov-Prokopenko for symmetrized matrix
+    MULTI_SPLIT_PREC,   // Kuznetsov-Prokopenko (nested iterations for nonsymmetric matrix)
+    UH_CHEB_PREC        // Kuznetsov-Prokopenko
 };
 
 enum AnalType {
@@ -53,34 +53,34 @@ enum TransType {
 
 struct Config {
     /* Chebyshev iterations parameters */
-    std::vector<uint>   niters;		/* Number of level iterations */
-    std::vector<double> sigmas;		/* Level sigmas (or q for unsymmetric) */
+    std::vector<uint>   niters;         /* Number of level iterations */
+    std::vector<double> sigmas;         /* Level sigmas (or q for nonsymmetric) */
 
     /* Mesh parameters */
-    double	c;			/* Reaction coefficient */
-    uint	nx, ny, nz;		/* Mesh dimensions */
+    double    c;                        /* Reaction coefficient */
+    uint    nx, ny, nz;                 /* Mesh dimensions */
 
     /* Run parameters */
-    uint	ntests;			/* Number of tests for averaging */
-    bool	use_tails;		/* Optional use of tail elimination */
-    bool	optimize_storage;	/* Storage optimization for symmetric matrices */
-    bool	unsym_matrix;		/* Symmetricity of the matrix */
-    double	unsym_shift;		/* Degree of the generated unsymmetry */
-    SolverType	solver;			/* External solver */
-    PrecType	prec;			/* Preconditioner */
+    uint        ntests;                 /* Number of tests for averaging */
+    bool        use_tails;              /* Optional use of tail elimination */
+    bool        optimize_storage;       /* Storage optimization for symmetric matrices */
+    bool        nonsym_matrix;          /* Symmetricity of the matrix */
+    double      nonsym_shift;           /* Degree of the generated nonsymmetry */
+    SolverType  solver;                 /* External solver */
+    PrecType    prec;                   /* Preconditioner */
 
-    uint	coarse_n;		/* Coarse system for direct solver */
-    uint	max_levels;		/* Maximum number of levels for constructed preconditioner */
+    uint    coarse_n;                   /* Coarse system for direct solver */
+    uint    max_levels;                 /* Maximum number of levels for constructed preconditioner */
 
     /* Other */
-    bool	dump_data;		/* Dumping matrix and rhs */
-    AnalType	analysis;		/* Type of matrix analysis */
-    TransType	transform;		/* Type of matrix transformation */
-    std::string prec_conf_file;		/* Config file for the preconditioner */
-    std::string dir;			/* Directory to dump the results */
+    bool        dump_data;              /* Dumping matrix and rhs */
+    AnalType    analysis;               /* Type of matrix analysis */
+    TransType   transform;              /* Type of matrix transformation */
+    std::string prec_conf_file;         /* Config file for the preconditioner */
+    std::string dir;                    /* Directory to dump the results */
 
-    std::string matrix;			/* Mesh file */
-    std::string vector;			/* Vector file */
+    std::string matrix;                 /* Mesh file */
+    std::string vector;                 /* Vector file */
 
     friend std::ostream& operator<<(std::ostream& os, const Config& config);
 };

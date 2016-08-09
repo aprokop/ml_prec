@@ -58,7 +58,7 @@ int main (int argc, char * argv[]) {
     double eps = 1e-13;
 
     Vector x(A.size());
-    if (!cfg.unsym_matrix) {
+    if (!cfg.nonsym_matrix) {
         if (cfg.solver == PCG_SOLVER)
             PCGSolver(A, b, B, x, eps);
         else {

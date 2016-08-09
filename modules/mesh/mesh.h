@@ -62,7 +62,7 @@ public:
     SPEMesh(uint _nx = 60, uint _ny = 220, uint _nz = 85);
 
     void construct_matrix(SkylineMatrix& A, double c) const;
-    void construct_matrix_unsym(SkylineMatrix& A, double c, double shift) const;
+    void construct_matrix_nonsym(SkylineMatrix& A, double c, double shift) const;
 
     uint index(uint i, uint j, uint k) const THROW {
         ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");

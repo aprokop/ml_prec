@@ -22,7 +22,7 @@ static void usage() {
     std::cout << "Usage: ./spe_prec [options]" << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  -a|--ntests                     Number of tests to perform" << std::endl;
-    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance|unsym_convergence}" << std::endl;
+    std::cout << "  -A|--analysis={qdropped|histogramm|q_rem_fixed_row|offdiag_ratios|1D_jacobi|col_dominance|nonsym_convergence}" << std::endl;
     std::cout << "                                  Matrix analysis to perform" << std::endl;
     std::cout << "  -b|--niters                     Number of iterations per level" << std::endl;
     std::cout << "  -c                              Value of reaction coefficient" << std::endl;
@@ -46,11 +46,11 @@ static void usage() {
     std::cout << "                                  Preconditioner type" << std::endl;
 #endif
     std::cout << "  -s|--sigmas                     Level sigmas (for cheb prec, > 1) or q (for multi-split prec, < 1)" << std::endl;
-    std::cout << "  -S|--unsym-shift                Unsymmetric shift" << std::endl;
+    std::cout << "  -S|--nonsym-shift               Nonnsymmetric shift" << std::endl;
     std::cout << "  -t|--use_tails={yes|no}         Do not use tail removing" << std::endl;
     std::cout << "  -T|--transform={none|IL|IU|ILU}" << std::endl;
     std::cout << "                                  Transformation to perform" << std::endl;
-    std::cout << "  -u                              Construct unsymmetric matrix" << std::endl;
+    std::cout << "  -u                              Construct nonsymmetric matrix" << std::endl;
     std::cout << "  -v|--vector                     Vector input file" << std::endl;
     std::cout << "  -x|--nx                         Number of points in x direction for SPE" << std::endl;
     std::cout << "  -y|--ny                         Number of points in y direction for SPE" << std::endl;
@@ -67,8 +67,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.ny               = 220;
     cfg.nz               = 85;
 
-    cfg.unsym_matrix	 = false;
-    cfg.unsym_shift	 = 0.1;
+    cfg.nonsym_matrix	 = false;
+    cfg.nonsym_shift	 = 0.1;
 
     cfg.ntests           = 1;
     cfg.use_tails        = true;
@@ -99,7 +99,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
         {"solver",		required_argument,  NULL, 'o'},
         {"prec",		required_argument,  NULL, 'p'},
         {"sigmas",		required_argument,  NULL, 's'},
-        {"unsym-shift",		required_argument,  NULL, 'S'},
+        {"nonsym-shift",		required_argument,  NULL, 'S'},
         {"use_tails",		required_argument,  NULL, 't'},
         {"transform",		required_argument,  NULL, 'T'},
         {"vector",		required_argument,  NULL, 'v'},
@@ -177,8 +177,8 @@ int set_params(int argc, char * argv[], Config& cfg) {
                       else CHECK_AND_SET("multi_split", cfg.prec, MULTI_SPLIT_PREC);
                       else THROW_EXCEPTION("Unknown prec type \"" << optarg << "\"");
                       break;
-            case 'u': cfg.unsym_matrix = true; break;
-            case 'S': cfg.unsym_shift = atof(optarg); break;
+            case 'u': cfg.nonsym_matrix = true; break;
+            case 'S': cfg.nonsym_shift = atof(optarg); break;
             case 'd': cfg.dump_data = true; break;
             case 'C': cfg.prec_conf_file = std::string(optarg); break;
             case 'D': cfg.dir = std::string(optarg); break;
@@ -189,7 +189,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
                       else CHECK_AND_SET("offdiag_ratios", cfg.analysis, ANAL_OFFDIAGONAL_RATIOS);
                       else CHECK_AND_SET("1D_Jacobi", cfg.analysis, ANAL_1D_JACOBI);
                       else CHECK_AND_SET("col_dominance", cfg.analysis, ANAL_COL_DOMINANCE);
-                      else CHECK_AND_SET("unsym_convergence", cfg.analysis, ANAL_2LEVEL_CONVERGENCE);
+                      else CHECK_AND_SET("nonsym_convergence", cfg.analysis, ANAL_2LEVEL_CONVERGENCE);
                       else THROW_EXCEPTION("Unknown analysis type \"" << optarg << "\"");
                       break;
             case 'T': CHECK_AND_SET("none", cfg.transform, TRANS_NONE);
@@ -241,7 +241,7 @@ int set_params(int argc, char * argv[], Config& cfg) {
             if (cfg.sigmas[i] >= 1)
                 THROW_EXCEPTION("All sigmas must be < 1");
 
-    if (cfg.unsym_matrix == true &&
+    if (cfg.nonsym_matrix == true &&
         (cfg.solver != SIMPLE_SOLVER && cfg.solver != GMRES_SOLVER))
         cfg.solver = SIMPLE_SOLVER;
 
@@ -264,8 +264,8 @@ double avg_time(const std::vector<double>& times) {
 void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) {
     if (cfg.matrix.empty()) {
         /* Construct the matrix */
-        if (!cfg.unsym_matrix)	mesh.construct_matrix(A, cfg.c);
-        else			mesh.construct_matrix_unsym(A, cfg.c, cfg.unsym_shift);
+        if (!cfg.nonsym_matrix)	mesh.construct_matrix(A, cfg.c);
+        else			mesh.construct_matrix_nonsym(A, cfg.c, cfg.nonsym_shift);
     } else {
         /*
          * Read the matrix.
@@ -313,9 +313,9 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     if (cfg.matrix.empty()) {
         os << "c                : " << cfg.c << std::endl;
         os << "Geometry         : " << cfg.nx << " x " << cfg.ny << " x " << cfg.nz << std::endl;
-        os << "Unsymmetric      : " << (cfg.unsym_matrix ? "true" : "false") << std::endl;
-        if (cfg.unsym_matrix)
-            os << "Unsymmetrix shift: " << cfg.unsym_shift << std::endl;
+        os << "Nonsymmetric     : " << (cfg.nonsym_matrix ? "true" : "false") << std::endl;
+        if (cfg.nonsym_matrix)
+            os << "Nonsymmetrix shift: " << cfg.nonsym_shift << std::endl;
     } else {
         os << "Matrix file      : " << cfg.matrix << std::endl;
     }
@@ -331,7 +331,7 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
             CASE_PRINT(ANAL_OFFDIAGONAL_RATIOS, "offdiag_ratios");
             CASE_PRINT(ANAL_1D_JACOBI, "1D_jacobi");
             CASE_PRINT(ANAL_COL_DOMINANCE, "col_dominance");
-            CASE_PRINT(ANAL_2LEVEL_CONVERGENCE, "unsym_convergence");
+            CASE_PRINT(ANAL_2LEVEL_CONVERGENCE, "nonsym_convergence");
             case ANAL_NONE: break;
         }
         os << std::endl;

@@ -6,7 +6,7 @@
 #include <memory>
 
 /*
- * Given an unsymmetric M-matrix constructs an easy way to invert its symmetric part
+ * Given an nonsymmetric M-matrix constructs an easy way to invert its symmetric part
  * with the accuracy eps
  */
 class SymPrec: public PrecBase {

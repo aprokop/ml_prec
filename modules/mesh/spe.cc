@@ -106,25 +106,25 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
         LEAVE_MESSAGE("Matrix constructed");
     }
 
-/* Construct unsymmetric M-matrix with diagonal domination
+/* Construct nonsymmetric M-matrix with diagonal domination
  * Parameter tau's role may vary
  *  - it may serve to determine the random shift percentage in the matrix coefficients
  *  - it may serve as a value q in the speed of convergence (see mini-report on regular splitting)
  */
-void SPEMesh::construct_matrix_unsym(SkylineMatrix& A, double c, double tau) const {
+void SPEMesh::construct_matrix_nonsym(SkylineMatrix& A, double c, double tau) const {
     construct_matrix(A, c);
 
-    LOG_INFO("Constructing unsymmetric part");
+    LOG_INFO("Constructing nonsymmetric part");
 
     if (!tau)
-        THROW_EXCEPTION("Unsymmetricity parameter is 0");
+        THROW_EXCEPTION("Nonsymmetricity parameter is 0");
 
     const uvector<uint>& ia = A.ia;
     const uvector<uint>& ja = A.ja;
     uvector<double>&	  a = A.a;
 
     const uint n = A.size();
-    /* Add unsymmetric part */
+    /* Add nonsymmetric part */
     for (uint i = 0; i < n; i++) {
         uint dind = ia[i];
 

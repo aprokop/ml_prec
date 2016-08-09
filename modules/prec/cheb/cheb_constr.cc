@@ -185,7 +185,7 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
     }
 
     SkylineMatrix* Asym;
-    if (!cfg.unsym_matrix) {
+    if (!cfg.nonsym_matrix) {
         /* Given matrix is described as symmetric. Do nothing */
         Asym = const_cast<SkylineMatrix*>(&A);
     } else {
@@ -197,7 +197,7 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
          * Our hope is that the preconditioner for the symmetrized matrix would be a good
          * preconditioner for the original matrix
          */
-        /* NOTE: level0_A reference WILL BE incorrect, as it references the unsymmetric matrix */
+        /* NOTE: level0_A reference WILL BE incorrect, as it references the nonsymmetric matrix */
         Asym = new SkylineMatrix(A);
 
         uint N = Asym->size();
@@ -241,7 +241,7 @@ Prec::Prec(const SkylineMatrix& A, const Config& cfg) : level0_A(A) {
         LOG_DEBUG(TIME_INFO("Storage optimization"));
     }
 
-    if (cfg.unsym_matrix)
+    if (cfg.nonsym_matrix)
         delete Asym;
 }
 

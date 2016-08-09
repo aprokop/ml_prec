@@ -32,7 +32,7 @@ SymPrec::SymPrec(const SkylineMatrix& A, const Config& cfg) {
         }
 
     Config cfg1 = cfg;
-    cfg1.unsym_matrix = false;
+    cfg1.nonsym_matrix = false;
 
     B.reset(new Prec(Asym, cfg1));
 
