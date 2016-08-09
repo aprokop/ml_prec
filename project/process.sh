@@ -1,20 +1,7 @@
 #!/bin/bash
 
 # Homogeneous
-# DIR="results/EM_matrices_3D_unsym/homogeneous/250x250x10/cfl-0.25/time-020"
-
-# Heterogeneous 3D
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/3D/cfl-1/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/3D/cfl-4/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/3D/cfl-8/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/3D/cfl-8/time-100"
-
-# Heterogeneous 2D
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/2D/layer_1/cfl-1/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/2D/layer_22/cfl-1/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/2D/layer_43/cfl-1/time-020"
-DIR="results/EM_matrices_3D_unsym/heterogeneous/2D/layer_64/cfl-1/time-020"
-# DIR="results/EM_matrices_3D_unsym/heterogeneous/2D/layer_85/cfl-1/time-020"
+# DIR="results/matrix0/homogeneous/250x250x10/cfl-0.25/time-020"
 
 pushd .
 cd $DIR
