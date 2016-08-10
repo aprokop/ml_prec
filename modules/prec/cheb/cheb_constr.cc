@@ -58,21 +58,22 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     uint MAX_NUM = 1000; /* Maximum number of elements in a row */
     uvector<uint> sorted(MAX_NUM);
     const double* adata = A.a.data();
+    uint num_removed = 0;
     for (uint i = 0; i < N; i++) {
-        uint rstart = A.ia[i];		    /* Row start */
-        uint rend   = A.ia[i+1];	    /* Row end */
-        uint nrz    = rend - rstart - 1;    /* Number of links */
+        uint rstart = A.ia[i];		        // row start
+        uint rend   = A.ia[i+1];	        // row end
+        uint nrz    = rend - rstart - 1;    // number of links
 
         ASSERT(nrz <= MAX_NUM, "Number of nonzero elements in a row = " << nrz);
 
         nlinks[i] += nrz;
 
-        /* TODO: do not compute aux[i] every level; translate from upper to lower */
+        // TODO: do not compute aux[i] every level; translate from upper to lower
         aux[i] = 0.0;
         for (uint j_ = rstart; j_ < rend; j_++)
             aux[i] += A.a[j_];
 
-        /* Sort off-diagonal elements wrt their abs values */
+        // Sort off-diagonal elements wrt their abs values
         psort(adata + rstart+1, nrz, sorted);
 
         double s = 0.;
@@ -81,18 +82,21 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
             double v = A.a[rstart+1 + sorted[_j]];
 
             if (to_remove(aux[i], v, li.beta, s)) {
-                /* It is possible to remove the link from i-th end */
+                // It is possible to remove the link from i-th end
                 uint j_ = rstart+1 + sorted[_j];
                 uint j = A.ja[j_];
 
-                /* Mark the link for removal from i-th end; the new link status is returned */
+                // Mark the link for removal from i-th end; the new link status is returned
                 if (ltype.mark(j_) == REMOVED) {
-                    /* This link is marked as removable from both ends so it is removed */
+                    // This link is marked as removable from both ends so it is removed
                     nlinks[i]--;
                     nlinks[j]--;
+
+                    num_removed += 2; // removed in both rows
                 }
             } else {
-                /* We exhausted available value of c. No other adjoint links can be removed */
+                // We exhausted available value of c.
+                // No other adjoint links can be removed
                 break;
             }
         }
@@ -100,19 +104,17 @@ void Prec::construct_level(uint level, const SkylineMatrix& A) {
     log_state("d");
 
     uint& M             = li.M;
-    uint& Md		= li.Md;
+    uint& Md		    = li.Md;
     uvector<uint>& map  = li.map;
     uvector<uint>& rmap = li.rmap;
 
     map.resize(N);
     log_state("P");
-    /*
-     * Construct node perumutation.
-     * All nodes are divided into three groups:
-     *	0, ..., M-1   : Nodes which are connected to some nodes and which will be excluded
-     *  M, ..., N-Md  : Nodes which go to the next level
-     *  Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
-     */
+    // Construct node perumutation.
+    // All nodes are divided into three groups:
+    //	   0, ..., M-1   : Nodes which are connected to some nodes and which will be excluded
+    //     M, ..., N-Md  : Nodes which go to the next level
+    //     Md, ..., N    : Nodes which have no connections to other nodes (diagonal submatrix). Excluded
     construct_permutation(A, ltype, nlinks, Md, M, map);
     log_state("d");
 

@@ -11,9 +11,11 @@ DEFINE_LOGGER("SPEMesh");
 SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
     ASSERT(_nx && _ny && _nz, "Wrong mesh dimensions: " << _nx << " x " << _ny << " x " << _nz);
     knx = 60;	    kny = 220;	    knz = 85;	    kN = knx*kny*knz;
-    hx = 20;	    hy = 10;	    hz = 2;
-    nx = _nx; ny = _ny; nz = _nz;
+    hx  = 20;	    hy  = 10;	    hz  = 2;
+    nx  = _nx;      ny  = _ny;      nz  = _nz;
+
     N = nx*ny*nz;
+
     size_x = nx*hx;
     size_y = ny*hy;
     size_z = nz*hz;
@@ -54,7 +56,7 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
 
     A.ia.reserve(N+1);
     A.ja.reserve(7*N);
-    A.a.reserve(7*N);
+    A.a .reserve(7*N);
 
 #define ADD(di,dj,dk,axis) { \
     i1 = index(i+di, j+dj, k+dk); \

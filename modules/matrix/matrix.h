@@ -15,8 +15,8 @@ protected:
     uint ncol;
 
     void check_indices(uint i, uint j) const THROW {
-	ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
-	ASSERT(j < ncol, "Col index is out of boudaries: j = " << j << ", ncol = " << ncol);
+        ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
+        ASSERT(j < ncol, "Col index is out of boudaries: j = " << j << ", ncol = " << ncol);
     }
 
 public:
@@ -26,15 +26,15 @@ public:
     uint rows() const { return nrow; }
     uint cols() const { return ncol; }
     uint size() const THROW {
-	ASSERT(nrow == ncol, "size was called for rectangular matrix: nrow = " << nrow << ", ncol = " << ncol);
-	return nrow;
+        ASSERT(nrow == ncol, "size was called for rectangular matrix: nrow = " << nrow << ", ncol = " << ncol);
+        return nrow;
     }
 
     virtual double  operator()(uint i, uint j) const THROW = 0;
     virtual double& operator()(uint i, uint j) THROW = 0;
 
     std::pair<uint,uint> sizes() const {
-	return std::pair<uint,uint>(nrow,ncol);
+        return std::pair<uint,uint>(nrow,ncol);
     }
 };
 
@@ -55,9 +55,9 @@ private:
 
 public:
     enum Type {
-	NONE,
-	ZERO,
-	IDENTITY
+        NONE,
+        ZERO,
+        IDENTITY
     };
 
 public:
@@ -70,12 +70,12 @@ public:
     ~DMatrix() {}
 
     double operator()(uint i, uint j) const THROW {
-	check_indices(i,j);
-	return data[i*ncol+j];
+        check_indices(i,j);
+        return data[i*ncol+j];
     }
     double& operator()(uint i, uint j) THROW {
-	check_indices(i,j);
-	return data[i*ncol+j];
+        check_indices(i,j);
+        return data[i*ncol+j];
     }
 
     bool operator==(const DMatrix& m) const THROW;
@@ -104,14 +104,14 @@ public:
     double norm_F() const;
 
     const double* as_vector() const {
-	return &data[0];
+        return &data[0];
     }
     double* as_vector() {
-	return &data[0];
+        return &data[0];
     }
 
     bool is_factored() const {
-	return factored;
+        return factored;
     }
 
     DMatrix inv() const THROW;
@@ -133,7 +133,7 @@ void eigs3(const DMatrix& A, double r[3]);
 
 
 // void dgemm(double alpha, const DMatrix& A, CBLAS_TRANSPOSE opA, const DMatrix& B, CBLAS_TRANSPOSE opB,
-	   // double beta, DMatrix& C);
+// double beta, DMatrix& C);
 
 class MapMatrix : public Matrix {
 private:
@@ -142,37 +142,37 @@ private:
 
 public:
     MapMatrix(uint n) {
-	nrow = ncol = n;
-	data.resize(n);
+        nrow = ncol = n;
+        data.resize(n);
     }
     MapMatrix(const CSRMatrix& sm);
 
     void set_size(uint r, uint c) {
-	nrow = r;
-	ncol = c;
-	data.resize(r);
+        nrow = r;
+        ncol = c;
+        data.resize(r);
     }
 
     double operator()(uint i, uint j) const THROW {
-	check_indices(i,j);
+        check_indices(i,j);
 
-	Row::const_iterator it = data[i].find(j);
-	if (it == data[i].end())
-	    return 0.0;
-	return it->second;
+        Row::const_iterator it = data[i].find(j);
+        if (it == data[i].end())
+            return 0.0;
+        return it->second;
     }
     double& operator()(uint i, uint j) THROW {
-	check_indices(i,j);
-	return data[i][j];
+        check_indices(i,j);
+        return data[i][j];
     }
 
     const std::map<uint,double>& operator()(uint i) const THROW {
-	ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
-	return data[i];
+        ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
+        return data[i];
     }
     std::map<uint,double>& operator()(uint i) THROW {
-	ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
-	return data[i];
+        ASSERT(i < nrow, "Row index is out of boudaries: i = " << i << ", nrow = " << nrow);
+        return data[i];
     }
 
     friend class CSRMatrix;
@@ -210,9 +210,9 @@ public:
     const uvector<double>& get_a() const { return a; }
 
     Vector operator*(const Vector& v) const THROW {
-	Vector x(nrow);
-	multiply(*this, v, x);
-	return x;
+        Vector x(nrow);
+        multiply(*this, v, x);
+        return x;
     }
 
     virtual double  operator()(uint i, uint j) const THROW;
@@ -229,17 +229,17 @@ public:
     virtual uint nnz() const { return ((nrow && ncol) ? ia.back() : 0); }
 
     void swap(CSRMatrix& B) {
-	ia.swap(B.ia);
-	ja.swap(B.ja);
-	a.swap(B.a);
-	std::swap(nrow, B.nrow);
-	std::swap(ncol, B.ncol);
+        ia.swap(B.ia);
+        ja.swap(B.ja);
+        a.swap(B.a);
+        std::swap(nrow, B.nrow);
+        std::swap(ncol, B.ncol);
     }
 
     virtual void reserve(uint n, uint nnz) {
-	ia.reserve(n+1);
-	ja.reserve(nnz);
-	a.reserve(nnz);
+        ia.reserve(n+1);
+        ja.reserve(nnz);
+        a.reserve(nnz);
     }
 
     // Friend classes
@@ -258,7 +258,7 @@ public:
 
     friend void get_matrix_part(const SkylineMatrix& A, SkylineMatrix& lA, uint start, uint end);
     friend void construct_local_matrix(const SkylineMatrix& A, SkylineMatrix& locA,
-				       std::vector<uint>& r, uint my_rank, uint ncpus);
+                                       std::vector<uint>& r, uint my_rank, uint ncpus);
 };
 void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW;
 void scale_c(CSRMatrix& A, double alpha);
@@ -283,9 +283,9 @@ public:
     uint index(uint i, uint j) const;
 
     void swap(SkylineMatrix& B) {
-	CSRMatrix::swap(B);
-	iasym.swap(B.iasym);
-	jasym.swap(B.jasym);
+        CSRMatrix::swap(B);
+        iasym.swap(B.iasym);
+        jasym.swap(B.jasym);
     }
     friend void sym_multiply(const SkylineMatrix& A, const Vector& v, Vector& res) THROW;
 };

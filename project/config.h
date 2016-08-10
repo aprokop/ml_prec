@@ -57,8 +57,8 @@ struct Config {
     std::vector<double> sigmas;         /* Level sigmas (or q for nonsymmetric) */
 
     /* Mesh parameters */
-    double    c;                        /* Reaction coefficient */
-    uint    nx, ny, nz;                 /* Mesh dimensions */
+    double      c;                      /* Reaction coefficient */
+    uint        nx, ny, nz;             /* Mesh dimensions */
 
     /* Run parameters */
     uint        ntests;                 /* Number of tests for averaging */
@@ -69,8 +69,8 @@ struct Config {
     SolverType  solver;                 /* External solver */
     PrecType    prec;                   /* Preconditioner */
 
-    uint    coarse_n;                   /* Coarse system for direct solver */
-    uint    max_levels;                 /* Maximum number of levels for constructed preconditioner */
+    uint        coarse_n;               /* Coarse system for direct solver */
+    uint        max_levels;             /* Maximum number of levels for constructed preconditioner */
 
     /* Other */
     bool        dump_data;              /* Dumping matrix and rhs */

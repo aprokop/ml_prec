@@ -62,50 +62,50 @@ int set_params(int argc, char * argv[], Config& cfg) {
     cfg.niters.push_back(2);
     cfg.sigmas.push_back(3);
 
-    cfg.c                = 1.;
-    cfg.nx               = 60;
-    cfg.ny               = 220;
-    cfg.nz               = 85;
+    cfg.c                   = 1.;
+    cfg.nx                  = 60;
+    cfg.ny                  = 220;
+    cfg.nz                  = 85;
 
-    cfg.nonsym_matrix	 = false;
-    cfg.nonsym_shift	 = 0.1;
+    cfg.nonsym_matrix       = false;
+    cfg.nonsym_shift        = 0.1;
 
-    cfg.ntests           = 1;
-    cfg.use_tails        = true;
-    cfg.coarse_n	 = 0;
-    cfg.max_levels	 = DEFAULT_MAX_LEVELS;
-    cfg.optimize_storage = true;
-    cfg.solver           = PCG_SOLVER;
-    cfg.prec             = UH_CHEB_PREC;
+    cfg.ntests              = 1;
+    cfg.use_tails           = true;
+    cfg.coarse_n            = 0;
+    cfg.max_levels          = DEFAULT_MAX_LEVELS;
+    cfg.optimize_storage    = true;
+    cfg.solver              = PCG_SOLVER;
+    cfg.prec                = UH_CHEB_PREC;
 
-    cfg.dump_data        = false;
-    cfg.dir	         = std::string("results/");
-    cfg.analysis         = ANAL_NONE;
-    cfg.transform	 = TRANS_NONE;
+    cfg.dump_data           = false;
+    cfg.dir                 = std::string("results/");
+    cfg.analysis            = ANAL_NONE;
+    cfg.transform           = TRANS_NONE;
 
     static struct option long_options[] = {
-        {"ntests",		required_argument,  NULL, 'a'},
-        {"analysis",		required_argument,  NULL, 'A'},
-        {"niters",		required_argument,  NULL, 'b'},
-        {"c",			required_argument,  NULL, 'c'},
-        {"prec-config-file",	required_argument,  NULL, 'C'},
-        {"dump",		no_argument,	    NULL, 'd'},
-        {"dir",			required_argument,  NULL, 'D'},
-        {"help",		no_argument,	    NULL, 'h'},
-        {"matrix",		required_argument,  NULL, 'm'},
-        {"max-levels",		required_argument,  NULL, 'M'},
-        {"coarse-n",		required_argument,  NULL, 'N'},
-        {"optimize-storage",	required_argument,  NULL, 'O'},
-        {"solver",		required_argument,  NULL, 'o'},
-        {"prec",		required_argument,  NULL, 'p'},
-        {"sigmas",		required_argument,  NULL, 's'},
-        {"nonsym-shift",		required_argument,  NULL, 'S'},
-        {"use_tails",		required_argument,  NULL, 't'},
-        {"transform",		required_argument,  NULL, 'T'},
-        {"vector",		required_argument,  NULL, 'v'},
-        {"nx",			required_argument,  NULL, 'x'},
-        {"ny",			required_argument,  NULL, 'y'},
-        {"nz",			required_argument,  NULL, 'z'},
+        {"ntests",              required_argument,  NULL, 'a'},
+        {"analysis",            required_argument,  NULL, 'A'},
+        {"niters",              required_argument,  NULL, 'b'},
+        {"c",                   required_argument,  NULL, 'c'},
+        {"prec-config-file",    required_argument,  NULL, 'C'},
+        {"dump",                no_argument,        NULL, 'd'},
+        {"dir",                 required_argument,  NULL, 'D'},
+        {"help",                no_argument,        NULL, 'h'},
+        {"matrix",              required_argument,  NULL, 'm'},
+        {"max-levels",          required_argument,  NULL, 'M'},
+        {"coarse-n",            required_argument,  NULL, 'N'},
+        {"optimize-storage",    required_argument,  NULL, 'O'},
+        {"solver",              required_argument,  NULL, 'o'},
+        {"prec",                required_argument,  NULL, 'p'},
+        {"sigmas",              required_argument,  NULL, 's'},
+        {"nonsym-shift",        required_argument,  NULL, 'S'},
+        {"use_tails",           required_argument,  NULL, 't'},
+        {"transform",           required_argument,  NULL, 'T'},
+        {"vector",              required_argument,  NULL, 'v'},
+        {"nx",                  required_argument,  NULL, 'x'},
+        {"ny",                  required_argument,  NULL, 'y'},
+        {"nz",                  required_argument,  NULL, 'z'},
         {0, 0, 0, 0}
     };
 
@@ -264,8 +264,8 @@ double avg_time(const std::vector<double>& times) {
 void construct_matrix(const Config& cfg, const SPEMesh& mesh, SkylineMatrix& A) {
     if (cfg.matrix.empty()) {
         /* Construct the matrix */
-        if (!cfg.nonsym_matrix)	mesh.construct_matrix(A, cfg.c);
-        else			mesh.construct_matrix_nonsym(A, cfg.c, cfg.nonsym_shift);
+        if (!cfg.nonsym_matrix)    mesh.construct_matrix(A, cfg.c);
+        else            mesh.construct_matrix_nonsym(A, cfg.c, cfg.nonsym_shift);
     } else {
         /*
          * Read the matrix.
@@ -325,12 +325,12 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     if (cfg.analysis != ANAL_NONE) {
         os << "Analysis         : ";
         switch(cfg.analysis) {
-            CASE_PRINT(ANAL_HISTOGRAMM, "histogramm");
-            CASE_PRINT(ANAL_QDROPPED, "qdropped");
-            CASE_PRINT(ANAL_Q_REM_FIXED_ROW, "q_rem_fixed_row");
+            CASE_PRINT(ANAL_HISTOGRAMM,         "histogramm");
+            CASE_PRINT(ANAL_QDROPPED,           "qdropped");
+            CASE_PRINT(ANAL_Q_REM_FIXED_ROW,    "q_rem_fixed_row");
             CASE_PRINT(ANAL_OFFDIAGONAL_RATIOS, "offdiag_ratios");
-            CASE_PRINT(ANAL_1D_JACOBI, "1D_jacobi");
-            CASE_PRINT(ANAL_COL_DOMINANCE, "col_dominance");
+            CASE_PRINT(ANAL_1D_JACOBI,          "1D_jacobi");
+            CASE_PRINT(ANAL_COL_DOMINANCE,      "col_dominance");
             CASE_PRINT(ANAL_2LEVEL_CONVERGENCE, "nonsym_convergence");
             case ANAL_NONE: break;
         }
@@ -342,9 +342,9 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
     if (cfg.transform != TRANS_NONE) {
         os << "Transformation   : ";
         switch(cfg.transform) {
-            CASE_PRINT(TRANS_IL, "IL");
-            CASE_PRINT(TRANS_IU, "IU");
-            CASE_PRINT(TRANS_ILU, "ILU");
+            CASE_PRINT(TRANS_IL,    "IL");
+            CASE_PRINT(TRANS_IU,    "IU");
+            CASE_PRINT(TRANS_ILU,   "ILU");
             case TRANS_NONE: break;
         }
         os << std::endl;
@@ -363,31 +363,32 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
     os << "Solver           : ";
     switch(cfg.solver) {
-        CASE_PRINT(PCG_SOLVER, "pcg");
-        CASE_PRINT(CHEB_SOLVER, "cheb");
-        CASE_PRINT(SIMPLE_SOLVER, "simple");
-        CASE_PRINT(GMRES_SOLVER, "gmres");
+        CASE_PRINT(PCG_SOLVER,      "pcg");
+        CASE_PRINT(CHEB_SOLVER,     "cheb");
+        CASE_PRINT(SIMPLE_SOLVER,   "simple");
+        CASE_PRINT(GMRES_SOLVER,    "gmres");
 #ifdef HAVE_UMFPACK
         CASE_PRINT(DIRECT_SOLVER, "direct");
 #endif
-        default		: THROW_EXCEPTION("Unknown SolverType");
+        default        : THROW_EXCEPTION("Unknown SolverType");
     }
     os << std::endl;
 
     os << "Preconditioner   : ";
     switch(cfg.prec) {
-        CASE_PRINT(AMG_PREC, "amg");
-        CASE_PRINT(COMP_PREC, "composite");
-        CASE_PRINT(DIAG_PREC, "diag");
-        CASE_PRINT(GS_PREC, "gs");
-        CASE_PRINT(ID_PREC, "id");
+        CASE_PRINT(AMG_PREC,            "amg");
+        CASE_PRINT(COMP_PREC,           "composite");
+        CASE_PRINT(DIAG_PREC,           "diag");
+        CASE_PRINT(GS_PREC,             "gs");
+        CASE_PRINT(ID_PREC,             "id");
 #ifdef HAVE_UMFPACK
-        CASE_PRINT(BGS_PREC, "bgs");
-        CASE_PRINT(RBGS_PREC, "rbgs");
+        CASE_PRINT(BGS_PREC,            "bgs");
+        CASE_PRINT(RBGS_PREC,           "rbgs");
 #endif
-        CASE_PRINT(MULTI_SPLIT_PREC, "multi_split");
-        CASE_PRINT(SYM_SPLIT_PREC, "sym_split");
-        CASE_PRINT(UH_CHEB_PREC, "uh_cheb");
+        CASE_PRINT(MULTI_SPLIT_PREC,    "multi_split");
+        CASE_PRINT(SYM_SPLIT_PREC,      "sym_split");
+        CASE_PRINT(UH_CHEB_PREC,        "uh_cheb");
+
         default: THROW_EXCEPTION("Unknown PrecType");
     }
     os << std::endl;
@@ -399,8 +400,8 @@ std::ostream& operator<<(std::ostream& os, const Config& cfg) {
 
 void GlobalStats::dump(const std::string& dir) const {
     std::ofstream ofs_const((dir + "t_const").c_str()); ofs_const << std::fixed << std::setprecision(3) << t_const; ofs_const.close();
-    std::ofstream ofs_prec((dir + "t_prec").c_str());   ofs_prec  << std::fixed << std::setprecision(3) << t_prec;  ofs_prec.close();
-    std::ofstream ofs_sol((dir + "t_sol").c_str());     ofs_sol   << std::fixed << std::setprecision(3) << t_sol;   ofs_sol.close();
+    std::ofstream ofs_prec ((dir + "t_prec" ).c_str()); ofs_prec  << std::fixed << std::setprecision(3) << t_prec;  ofs_prec.close();
+    std::ofstream ofs_sol  ((dir + "t_sol"  ).c_str()); ofs_sol   << std::fixed << std::setprecision(3) << t_sol;   ofs_sol.close();
     std::ofstream ofs_total((dir + "t_total").c_str()); ofs_total << std::fixed << std::setprecision(3) << t_total; ofs_total.close();
-    std::ofstream ofs_niter((dir + "niter").c_str());   ofs_niter << std::fixed << std::setprecision(3) << niter;   ofs_niter.close();
+    std::ofstream ofs_niter((dir + "niter"  ).c_str()); ofs_niter << std::fixed << std::setprecision(3) << niter;   ofs_niter.close();
 }
