@@ -24,14 +24,34 @@ SPEMesh::SPEMesh(uint _nx, uint _ny, uint _nz) {
     ky.resize(kN);
     kz.resize(kN);
 
+
+#if 1
+    std::vector<double> kxyz;
+    kxyz.reserve(3*kN);
+
+    std::ifstream is("spe_perm.dat");
+
+    if (!is.good())
+        THROW_EXCEPTION("Problem reading file \"spe_perm.dat\"");
+
+    std::copy(std::istream_iterator<double>(is), std::istream_iterator<double>(),
+              std::back_inserter(kxyz));
+    ASSERT(kxyz.size() == 3*kN, "Wrong spe_perm.dat size");
+
+    memcpy(&kx[0], &kxyz[   0], kN*sizeof(double));
+    memcpy(&ky[0], &kxyz[  kN], kN*sizeof(double));
+    memcpy(&kz[0], &kxyz[2*kN], kN*sizeof(double));
+#else
     std::ifstream is("spe_perm.dat", std::ifstream::binary);
 
     if (!is.good())
         THROW_EXCEPTION("Problem reading file \"spe_perm.dat\"");
 
+    // Binary read (the file must have been converted first)
     is.read(reinterpret_cast<char*>(&kx[0]),  kN*sizeof(double));
     is.read(reinterpret_cast<char*>(&ky[0]),  kN*sizeof(double));
     is.read(reinterpret_cast<char*>(&kz[0]),  kN*sizeof(double));
+#endif
 
     /* Construct nodes */
     nodes.resize(N);
@@ -71,42 +91,44 @@ void SPEMesh::construct_matrix(SkylineMatrix& A, double c) const {
     A.ia.push_back(0);
 #ifdef XYZ
     for (uint k = 0; k < nz; k++)
-    for (uint j = 0; j < ny; j++)
-    for (uint i = 0; i < nx; i++) {
-#elif defined ZXY
         for (uint j = 0; j < ny; j++)
-            for (uint i = 0; i < nx; i++)
-                for (uint k = 0; k < nz; k++) {
+            for (uint i = 0; i < nx; i++) {
+#elif defined ZXY
+    for (uint j = 0; j < ny; j++)
+        for (uint i = 0; i < nx; i++)
+            for (uint k = 0; k < nz; k++) {
 #endif
-                    i0 = index(i, j, k);
-                    A.ja.push_back(i0);
-                    A.a.push_back(c);
+                i0 = index(i, j, k);
 
-                    uint dind = A.a.size() - 1;
-                    double v;
+                A.ja.push_back(i0);
+                A.a .push_back(c);
+
+                uint dind = A.a.size() - 1;
+                double v;
 
 #ifdef XYZ
-                    if (k)	      ADD( 0,  0, -1, z);
-                    if (j)	      ADD( 0, -1,  0, y);
-                    if (i)	      ADD(-1,  0,  0, x);
-                    if (i < nx-1) ADD(+1,  0,  0, x);
-                    if (j < ny-1) ADD( 0, +1,  0, y);
-                    if (k < nz-1) ADD( 0,  0, +1, z);
+                if (k)	      ADD( 0,  0, -1, z);
+                if (j)	      ADD( 0, -1,  0, y);
+                if (i)	      ADD(-1,  0,  0, x);
+                if (i < nx-1) ADD(+1,  0,  0, x);
+                if (j < ny-1) ADD( 0, +1,  0, y);
+                if (k < nz-1) ADD( 0,  0, +1, z);
 #elif defined ZXY
-                    if (j)	      ADD( 0, -1,  0, y);
-                    if (i)	      ADD(-1,  0,  0, x);
-                    if (k)	      ADD( 0,  0, -1, z);
-                    if (k < nz-1) ADD( 0,  0, +1, z);
-                    if (i < nx-1) ADD(+1,  0,  0, x);
-                    if (j < ny-1) ADD( 0, +1,  0, y);
+                if (j)	      ADD( 0, -1,  0, y);
+                if (i)	      ADD(-1,  0,  0, x);
+                if (k)	      ADD( 0,  0, -1, z);
+                if (k < nz-1) ADD( 0,  0, +1, z);
+                if (i < nx-1) ADD(+1,  0,  0, x);
+                if (j < ny-1) ADD( 0, +1,  0, y);
 #endif
 
-                    A.ia.push_back(A.ja.size());
-                }
+                A.ia.push_back(A.ja.size());
+            }
 
-        LOG_DEBUG(TIME_INFO("Constructing matrix"));
-        LEAVE_MESSAGE("Matrix constructed");
-    }
+
+    LOG_DEBUG(TIME_INFO("Constructing matrix"));
+    LEAVE_MESSAGE("Matrix constructed");
+}
 
 /* Construct nonsymmetric M-matrix with diagonal domination
  * Parameter tau's role may vary
