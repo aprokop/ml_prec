@@ -7,7 +7,7 @@
 
 DEFINE_LOGGER("BGSPrec");
 
-void BGSPrec::solve(Vector& f, Vector& x) const THROW {
+void BGSPrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     Vector f1(n1), f2(n2);

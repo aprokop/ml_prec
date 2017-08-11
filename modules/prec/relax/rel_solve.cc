@@ -5,12 +5,12 @@
 
 DEFINE_LOGGER("Prec");
 
-void RelPrec::solve(Vector& f, Vector& x) THROW {
+void RelPrec::solve(Vector& f, Vector& x){
     Vector _f(f);
     solve(_f, x, 0);
 }
 
-void RelPrec::solve(Vector& f, Vector& x, uint level) THROW {
+void RelPrec::solve(Vector& f, Vector& x, uint level){
     Level& li = levels[level];
     uint N = li.N;
     ASSERT(f.size() == N && x.size() == N, "Wrong dimension: N = " << N << ", f = " << f.size() << ", x = " << x.size());

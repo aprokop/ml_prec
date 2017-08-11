@@ -6,7 +6,7 @@
 
 DEFINE_LOGGER("GSPrec");
 
-void GSPrec::solve(Vector& f, Vector& x) const THROW {
+void GSPrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     const uvector<uint>&  ia = L.get_ia();

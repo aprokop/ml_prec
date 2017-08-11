@@ -82,11 +82,11 @@ private:
 
     void construct_level(uint level, const SkylineMatrix& A);
 
-    void solve(uint level, const Vector& f, Vector& x) const THROW;
+    void solve(uint level, const Vector& f, Vector& x) const;
 
     void solve_U(uint level, const Vector& w, Vector& x) const;
     void solve_L(uint level, const Vector& f, Vector& w) const;
-    void solve_diagonal(uint level, const Vector& f, Vector& x) const THROW;
+    void solve_diagonal(uint level, const Vector& f, Vector& x) const;
 
     void order_none    (const SkylineMatrix& A, const LinkTypeMultiSplit& ltype_, const uvector<double>& aux,
                         const uvector<int>& nlinks_in, const uvector<int>& nlinks_out,
@@ -105,7 +105,7 @@ public:
     MultiSplitPrec(const SkylineMatrix& A, const Config& cfg);
     ~MultiSplitPrec();
 
-    void solve(Vector& f, Vector& x) const THROW; // Wrapper for solve(level,f,x)
+    void solve(Vector& f, Vector& x) const; // Wrapper for solve(level,f,x)
     void graph_planes(const std::string& filename, uint level, char plane, const SPEMesh& mesh) const;
 
     friend std::ostream& operator<<(std::ostream& os, const MultiSplitPrec& p);

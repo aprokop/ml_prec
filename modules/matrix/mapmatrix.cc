@@ -15,7 +15,7 @@ MapMatrix::MapMatrix(const CSRMatrix& sm) {
 	    data[i][ja[j]] = a[j];
 }
 
-void multiply(const MapMatrix& A, const Vector& v, Vector& res) THROW {
+void multiply(const MapMatrix& A, const Vector& v, Vector& res){
     uint n = A.rows();
     ASSERT(res.size() == A.nrow, "Not enough space in res vector");
     if (res.size() == 0)

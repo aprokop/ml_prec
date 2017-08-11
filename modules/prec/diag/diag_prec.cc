@@ -4,7 +4,7 @@
 
 DEFINE_LOGGER("DiagPrec");
 
-void DiagPrec::solve(Vector& f, Vector& x) const THROW {
+void DiagPrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     for (uint i = 0; i < n; i++)

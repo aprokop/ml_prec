@@ -10,7 +10,7 @@ using namespace std;
 
 DEFINE_LOGGER("DMatrix");
 
-DMatrix::DMatrix(uint n_, Type type) THROW {
+DMatrix::DMatrix(uint n_, Type type){
     ASSERT(n_, "Can't create matrix 0x0");
     nrow = ncol = n_;
     data.resize(nrow*ncol);
@@ -28,7 +28,7 @@ DMatrix::DMatrix(uint n_, Type type) THROW {
     }
 }
 
-DMatrix::DMatrix(uint m_, uint n_, Type type) THROW {
+DMatrix::DMatrix(uint m_, uint n_, Type type){
     ASSERT(m_ && n_, "Can't create matrix " << m_ << "x" << n_);
     nrow = m_;
     ncol = n_;
@@ -56,7 +56,7 @@ DMatrix::DMatrix(const DMatrix& v) : Matrix() {
     factored = false;
 }
 
-DMatrix::DMatrix(const char* values) THROW {
+DMatrix::DMatrix(const char* values){
     ASSERT(values != NULL, "NULL string for constructor");
 
     std::istringstream buffer(values);
@@ -87,7 +87,7 @@ DMatrix::DMatrix(const char* values) THROW {
     factored = false;
 }
 
-DMatrix::DMatrix(const uvector<double>& v, uint ncol_) THROW {
+DMatrix::DMatrix(const uvector<double>& v, uint ncol_){
     ASSERT(ncol_, "Trying to create matrix with 0 columns");
     ASSERT(v.size() % ncol_ == 0, "Can not get integer number of rows: ncol = " << ncol_ << ", vector = " << v.size());
     ncol = ncol_;
@@ -110,13 +110,13 @@ DMatrix::DMatrix(const CSRMatrix& sm) {
     factored = false;
 }
 
-bool DMatrix::operator==(const DMatrix& m) const THROW {
+bool DMatrix::operator==(const DMatrix& m) const{
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Comparing matrices with different dimensions");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     return data == m.data;
 }
 
-bool DMatrix::operator!=(const DMatrix& m) const THROW {
+bool DMatrix::operator!=(const DMatrix& m) const{
     return !(*this == m);
 }
 
@@ -133,7 +133,7 @@ DMatrix DMatrix::operator-() const {
     return m;
 }
 
-DMatrix DMatrix::operator+(const DMatrix& m) const THROW {
+DMatrix DMatrix::operator+(const DMatrix& m) const{
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Different dimensions of adding matrices");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     DMatrix r(nrow, ncol);
@@ -143,7 +143,7 @@ DMatrix DMatrix::operator+(const DMatrix& m) const THROW {
     return r;
 }
 
-DMatrix DMatrix::operator-(const DMatrix& m) const THROW {
+DMatrix DMatrix::operator-(const DMatrix& m) const{
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Different dimensions of adding matrices");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     DMatrix r(nrow, ncol);
@@ -162,7 +162,7 @@ DMatrix DMatrix::operator*(double f) const {
     return r;
 }
 
-DMatrix DMatrix::operator/(double f) const THROW {
+DMatrix DMatrix::operator/(double f) const{
     ASSERT(f != 0, "Division by zero");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     DMatrix r(nrow, ncol);
@@ -172,7 +172,7 @@ DMatrix DMatrix::operator/(double f) const THROW {
     return r;
 }
 
-DMatrix DMatrix::operator*(const DMatrix& w) const THROW {
+DMatrix DMatrix::operator*(const DMatrix& w) const{
     ASSERT(ncol == w.nrow, "Not matched sizes: " << nrow << "x" << ncol << " and " << w.nrow << "x" << w.ncol);
     ASSERT(factored == false, "This operation is not available for factored matrices");
     uint m = nrow, n = w.ncol, l = ncol;
@@ -198,7 +198,7 @@ DMatrix DMatrix::operator*(const DMatrix& w) const THROW {
     // return *this;
 // }
 
-const DMatrix& DMatrix::operator+=(const DMatrix& m) THROW {
+const DMatrix& DMatrix::operator+=(const DMatrix& m){
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Trying to add matrix with different dimensions");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     for(uint i = 0; i < nrow*ncol; i++)
@@ -206,7 +206,7 @@ const DMatrix& DMatrix::operator+=(const DMatrix& m) THROW {
     return *this;
 }
 
-const DMatrix& DMatrix::operator-=(const DMatrix& m) THROW {
+const DMatrix& DMatrix::operator-=(const DMatrix& m){
     ASSERT(nrow == m.nrow && ncol == m.ncol, "Trying to subtract matrix with different dimensions");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     for(uint i = 0; i < nrow*ncol; i++)
@@ -225,7 +225,7 @@ DMatrix operator*(double f, const DMatrix& p) {
     return p*f;
 }
 
-const DMatrix& DMatrix::operator/=(double f) THROW {
+const DMatrix& DMatrix::operator/=(double f){
     ASSERT(is_not_equal(f,0), "Division by zero");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     for (uint i = 0; i < nrow*ncol; i++)
@@ -251,7 +251,7 @@ void DMatrix::get_submatrix(const uvector<uint>& r, const uvector<uint>& c, DMat
 }
 
 /* Horrowfull implementation. For n > 10 is not useful */
-DMatrix DMatrix::inv() const THROW {
+DMatrix DMatrix::inv() const{
     ASSERT(nrow == ncol, "Matrix is not square: " << nrow << " x " << ncol);
     uint n = nrow;
 
@@ -393,7 +393,7 @@ std::ostream& operator<<(std::ostream& os, const DMatrix& w) {
     return os;
 }
 
-Vector DMatrix::operator*(const Vector& v) const THROW {
+Vector DMatrix::operator*(const Vector& v) const{
     ASSERT(ncol == v.size(), "Number of columns in matrix doesn't match vector dimension");
     ASSERT(factored == false, "This operation is not available for factored matrices");
     Vector r(nrow);
@@ -426,7 +426,7 @@ bool DMatrix::is_symmetric() const {
     return true;
 }
 
-void multiply(const DMatrix& A, const Vector& v, Vector& res) THROW {
+void multiply(const DMatrix& A, const Vector& v, Vector& res){
     ASSERT(A.rows() == res.size(), "Different sizes: A is " << A.sizes() << ", res is " << res.size());
     if (res.size() == 0)
 	return;

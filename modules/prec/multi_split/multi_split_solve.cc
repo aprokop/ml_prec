@@ -9,7 +9,7 @@
 DEFINE_LOGGER("MultiSplitPrec");
 
 // Solve diagonal subsystem
-void MultiSplitPrec::solve_diagonal(uint level, const Vector& f, Vector& x) const THROW {
+void MultiSplitPrec::solve_diagonal(uint level, const Vector& f, Vector& x) const{
     const Level& li             = levels[level];
     const uvector<uint>& map	= li.map;
     const uvector<double>& dval = li.dval;
@@ -52,11 +52,11 @@ void MultiSplitPrec::solve_U(uint level, const Vector& w, Vector& x) const {
     }
 }
 
-void MultiSplitPrec::solve(Vector& f, Vector& x) const THROW {
+void MultiSplitPrec::solve(Vector& f, Vector& x) const{
     solve(0, f, x);
 }
 
-void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const THROW {
+void MultiSplitPrec::solve(uint level, const Vector& f, Vector& x) const{
     const Level& li = levels[level];
 
 #ifdef PRINT_NORMS

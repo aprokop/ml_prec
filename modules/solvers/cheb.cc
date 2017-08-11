@@ -7,7 +7,7 @@
 DEFINE_LOGGER("ChebSolver");
 
 void ChebSolver(const CSRMatrix& A, double lmin, double lmax, const Vector& b, const PrecBase& B, Vector& x,
-                double eps, NormType norm_type, bool silent) THROW {
+                double eps, NormType norm_type, bool silent){
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());

@@ -64,7 +64,7 @@ public:
     void construct_matrix(SkylineMatrix& A, double c) const;
     void construct_matrix_nonsym(SkylineMatrix& A, double c, double shift) const;
 
-    uint index(uint i, uint j, uint k) const THROW {
+    uint index(uint i, uint j, uint k) const{
         ASSERT(i < nx && j < ny && k < nz, "Wrong indices: (" << i << "," << j << "," << k << ")");
 
 #ifdef XYZ

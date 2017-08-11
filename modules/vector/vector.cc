@@ -15,7 +15,7 @@
 
 DEFINE_LOGGER("Vector");
 
-void dump(const std::string& filename, const Vector& v, DumpType type) THROW {
+void dump(const std::string& filename, const Vector& v, DumpType type){
     std::ofstream os;
     if (type != BINARY) os.open(filename.c_str());
     else		os.open(filename.c_str(), std::ofstream::binary);
@@ -49,7 +49,7 @@ void dump(const std::string& filename, const Vector& v, DumpType type) THROW {
     }
 }
 
-void load(Vector& v, const std::string& filename, DumpType type) THROW {
+void load(Vector& v, const std::string& filename, DumpType type){
     uint n;
     switch (type) {
 	case ASCII : {
@@ -75,7 +75,7 @@ void load(Vector& v, const std::string& filename, DumpType type) THROW {
     LOG_INFO("Loaded vector: size = " << n);
 }
 
-Vector vector_product(const Vector& v1, const Vector& v2) THROW {
+Vector vector_product(const Vector& v1, const Vector& v2){
     ASSERT_SIZE(v1.size(), 3);
     ASSERT_SIZE(v2.size(), 3);
 

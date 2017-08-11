@@ -36,7 +36,7 @@ private:
 public:
     BGSPrec(const SkylineMatrix& A, const Config& cfg);
 
-    void solve(Vector& f, Vector& x) const THROW;
+    void solve(Vector& f, Vector& x) const;
 };
 
 #endif // __GS_PREC_H__

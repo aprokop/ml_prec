@@ -11,7 +11,7 @@ private:
 public:
     GSPrec(const SkylineMatrix& A);
 
-    void solve(Vector& f, Vector& x) const THROW;
+    void solve(Vector& f, Vector& x) const;
 };
 
 #endif // __GS_PREC_H__

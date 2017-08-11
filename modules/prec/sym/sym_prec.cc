@@ -5,7 +5,7 @@
 
 DEFINE_LOGGER("SymPrec");
 
-void SymPrec::solve(Vector& f, Vector& x) const THROW {
+void SymPrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: "
            << "n = " << n << ", f = " << f.size() << ", x = " << x.size());
 

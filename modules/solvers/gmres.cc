@@ -11,7 +11,7 @@ void update_x(uint i, const PrecBase& B, const std::vector<Vector>& v, double** 
               Vector& x, Vector& tmp);
 
 void GMRESSolver    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
-                     double eps, NormType norm_type, bool silent) THROW {
+                     double eps, NormType norm_type, bool silent){
     double  gtime = pclock();
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());

@@ -13,7 +13,7 @@ class SymPrec: public PrecBase {
 private:
     uint		        n;
     SkylineMatrix	    Asym;
-    std::auto_ptr<Prec>	B;
+    std::shared_ptr<Prec>	B;
     double		        eps;
 
 public:
@@ -22,7 +22,7 @@ public:
     void set_eps(double eps_) {
         eps = eps_;
     }
-    void solve(Vector& f, Vector& x) const THROW;
+    void solve(Vector& f, Vector& x) const;
 };
 
 #endif // __SYM_H__

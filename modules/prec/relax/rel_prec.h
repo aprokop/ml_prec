@@ -33,12 +33,12 @@ private:
     std::vector<Level> levels;
 
     void    construct_level(uint i, const SkylineMatrix& A);
-    void    solve(Vector& f, Vector& x, uint level) THROW;
+    void    solve(Vector& f, Vector& x, uint level);
 
 public:
     RelPrec(const SkylineMatrix& A, uint _niter, double _gamma, const std::vector<double>& _sigmas, const MeshBase& _mesh);
 
-    void solve(Vector& f, Vector& x) THROW;
+    void solve(Vector& f, Vector& x);
     void graph_planes(const std::string& filename, uint level, char plane) const;
 
     friend std::ostream& operator<<(std::ostream& os, const RelPrec& p);

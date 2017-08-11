@@ -21,7 +21,6 @@ public:
     const char * what() const throw () { return msg.c_str(); }
 };
 
-#define THROW throw(Exception)
 #define THROW_EXCEPTION(what) \
 { \
     std::ostringstream os; \

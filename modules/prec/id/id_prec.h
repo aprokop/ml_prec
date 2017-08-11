@@ -12,7 +12,7 @@ public:
         n = A.size();
     }
 
-    void solve(Vector& f, Vector& x) const THROW {
+    void solve(Vector& f, Vector& x) const{
         ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
         x = f;
     }

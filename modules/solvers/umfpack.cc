@@ -15,7 +15,7 @@
 DEFINE_LOGGER("DirectSolver");
 
 void DirectSolver(const CSRMatrix& A, const Vector& b, Vector& x, void * &Symbolic, void * &Numeric,
-                  SolverStats& stats, bool silent) THROW {
+                  SolverStats& stats, bool silent){
     ASSERT_SIZE(b.size(), A.size());
     ASSERT_SIZE(x.size(), A.size());
 

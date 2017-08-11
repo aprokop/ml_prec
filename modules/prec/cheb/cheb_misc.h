@@ -23,7 +23,7 @@ private:
     mutable uint row;
 
     /* Checks indices i and j (with ASSERT) and returns index in a */
-    uint index(uint i, uint j) const THROW {
+    uint index(uint i, uint j) const{
         ASSERT(i != j, "i == j == " << i);
         ASSERT(i < n && j < n, "i = " << i << ", j = " << j << ", n == " << n);
 

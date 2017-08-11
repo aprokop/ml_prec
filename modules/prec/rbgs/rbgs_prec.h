@@ -23,7 +23,7 @@ private:
 
     uint lN;
 
-    static const double alpha = 0.1;
+    static constexpr double alpha = 0.1;
 
 #ifdef PREC_SUBST
     PrecBase *Bprec;
@@ -35,7 +35,7 @@ private:
 public:
     RBGSPrec(const SkylineMatrix& A, const Config& cfg);
 
-    void solve(Vector& f, Vector& x) const THROW;
+    void solve(Vector& f, Vector& x) const;
 };
 
 #endif // __RBGS_PREC_H__

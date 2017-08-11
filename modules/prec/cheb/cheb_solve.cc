@@ -6,11 +6,11 @@
 
 DEFINE_LOGGER("Prec");
 
-void Prec::solve(Vector& f, Vector& x) const THROW {
+void Prec::solve(Vector& f, Vector& x) const{
     solve(0, f, x);
 }
 
-void Prec::solve(uint level, const Vector& f, Vector& x) const THROW {
+void Prec::solve(uint level, const Vector& f, Vector& x) const{
     const Level& li = levels[level];
     const Level& ln = levels[level+1];
 

@@ -12,7 +12,7 @@ extern "C" {
                          int *nru, double *ecg1, double *ecg2, double *ewt2, int *nwt, int *ntr, int *ierr);
 }
 
-void AMGPrec::solve(Vector& f, Vector& x) const THROW {
+void AMGPrec::solve(Vector& f, Vector& x) const{
     ASSERT((int)f.size() == n && (int)x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     x.resize(ndu);

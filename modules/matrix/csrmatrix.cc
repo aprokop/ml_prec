@@ -94,11 +94,11 @@ uint CSRMatrix::index(uint i, uint j) const {
     return uint(-1);
 }
 
-bool CSRMatrix::exist(uint i, uint j) const THROW {
+bool CSRMatrix::exist(uint i, uint j) const{
     return index(i,j) != uint(-1);
 }
 
-double CSRMatrix::operator()(uint i, uint j) const THROW {
+double CSRMatrix::operator()(uint i, uint j) const{
     uint ind = index(i,j);
     if (ind != uint(-1))
 	return a[ind];
@@ -107,7 +107,7 @@ double CSRMatrix::operator()(uint i, uint j) const THROW {
     return 0;
 }
 
-double& CSRMatrix::operator()(uint i, uint j) THROW {
+double& CSRMatrix::operator()(uint i, uint j){
     uint ind = index(i,j);
     ASSERT(ind != uint(-1), "(" << i << "," << j << ") is not in stencil");
 
@@ -155,7 +155,7 @@ void transpose(const CSRMatrix& A, CSRMatrix& B) {
 	}
 }
 
-double CSRMatrix::row_sum(uint i) const THROW {
+double CSRMatrix::row_sum(uint i) const{
     ASSERT(nrow*ncol, "One of matrix dimensions is zero");
     return std::accumulate(&a[ia[i]], &a[ia[i+1]], 0.0);
 }
@@ -169,7 +169,7 @@ bool CSRMatrix::is_symmetric() const {
     return true;
 }
 
-void CSRMatrix::load(const std::string& filename, DumpType type) THROW {
+void CSRMatrix::load(const std::string& filename, DumpType type){
     uint nnz;
     if (type == BINARY) {
 	std::ifstream is(filename.c_str(), std::ifstream::binary);
@@ -257,7 +257,7 @@ std::ostream& operator<<(std::ostream& os, const CSRMatrix& sm) {
     return os;
 }
 
-void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW {
+void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type){
     ASSERT(A.rows() == res.size(), "Different sizes: A is " << A.sizes() << ", res is " << res.size());
     if (res.size() == 0)
 	return;
@@ -290,7 +290,7 @@ void multiply(const CSRMatrix& A, const Vector& v, Vector& res, char type) THROW
     }
 }
 
-void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) THROW {
+void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r){
     const uint n = A.size();
     ASSERT(b.size() == n && x.size() == n && r.size() == n, "Wrong sizes");
 
@@ -299,7 +299,7 @@ void residual(const CSRMatrix& A, const Vector& b, const Vector& x, Vector& r) T
 	r[i] = b[i] - r[i];
 }
 
-void dump(const std::string& filename, const CSRMatrix& A, DumpType type) THROW {
+void dump(const std::string& filename, const CSRMatrix& A, DumpType type){
     const uvector<uint> &ia = A.get_ia(), &ja = A.get_ja();
     const uvector<double>& a = A.get_a();
     uint m = A.rows(), n = A.cols(), nnz = ia.back();

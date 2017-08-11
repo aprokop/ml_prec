@@ -21,7 +21,7 @@ void   dscal(double alpha, double* x, uint n);
 double ddot(const double* x, const double* y, uint n);
 double dnrm2(const double* x, uint n);
 
-Vector vector_product(const Vector& v1, const Vector& v2) THROW;
+Vector vector_product(const Vector& v1, const Vector& v2);
 
 enum DumpType {
     ASCII,
@@ -31,7 +31,7 @@ enum DumpType {
 };
 
 std::ostream& operator<<(std::ostream& os, const Vector& v);
-void dump(const std::string& filename, const Vector& v, DumpType type) THROW;
-void load(Vector& v, const std::string& filename, DumpType type) THROW;
+void dump(const std::string& filename, const Vector& v, DumpType type);
+void load(Vector& v, const std::string& filename, DumpType type);
 
 #endif // #ifndef __VECTOR_H__

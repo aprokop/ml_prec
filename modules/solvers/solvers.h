@@ -29,17 +29,17 @@ struct SolverStats {
 std::ostream& operator<<(std::ostream& os, const SolverStats& stats);
 
 void PCGSolver	    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
-		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false) THROW;
+		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false);
 void ChebSolver	    (const CSRMatrix& A, double lmin, double lmax, const Vector& b, const PrecBase& B, Vector& x,
-		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false) THROW;
+		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false);
 void SimpleSolver   (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
-		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false) THROW;
+		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false);
 void GMRESSolver    (const CSRMatrix& A, const Vector& b, const PrecBase& B, Vector& x, SolverStats& stats,
-		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false) THROW;
+		     double eps = 1e-10, NormType norm_type = NORM_L2, bool silent = false);
 
 #ifdef HAVE_UMFPACK
 void DirectSolver   (const CSRMatrix& A, const Vector& b, Vector& x, void *&Symbolic, void *&Numeric,
-		     SolverStats& stats, bool silent = false) THROW;
+		     SolverStats& stats, bool silent = false);
 void DirectSolver_free(void * &Symbolic, void * &Numeric);
 #endif
 

@@ -8,7 +8,7 @@
 
 DEFINE_LOGGER("RBGSPrec");
 
-void RBGSPrec::solve(Vector& f, Vector& x) const THROW {
+void RBGSPrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     SolverStats stats;

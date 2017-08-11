@@ -49,7 +49,7 @@ private:
 public:
     AMGPrec(const SkylineMatrix& A);
 
-    void solve(Vector& f, Vector& x) const THROW;
+    void solve(Vector& f, Vector& x) const;
 };
 
 #endif // __AMG_PREC_H__

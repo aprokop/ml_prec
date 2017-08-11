@@ -27,7 +27,7 @@ uint SkylineMatrix::index(uint i, uint j) const {
     return uint(-1);
 }
 
-void SkylineMatrix::load(const std::string& filename, DumpType type, bool transform) THROW {
+void SkylineMatrix::load(const std::string& filename, DumpType type, bool transform){
     CSRMatrix::load(filename, type);
 
     if (transform) {
@@ -112,7 +112,7 @@ void SkylineMatrix::optimize_storage(char type) {
     }
 }
 
-void sym_multiply(const SkylineMatrix& A, const Vector& v, Vector& res) THROW {
+void sym_multiply(const SkylineMatrix& A, const Vector& v, Vector& res){
     ASSERT(A.rows() == res.size(), "Different sizes: A is " << A.sizes() << ", res is " << res.size());
     ASSERT(A.ncol == v.size(), "Multiplying sparse matrix and vector with different dimensions");
     ASSERT(res.size() == A.nrow, "Not enough space in res vector");
@@ -170,7 +170,7 @@ static void psort(const uint *a, uint n, std::vector<uint>& sorted) {
     }
 }
 
-void SkylineMatrix::permute(const std::vector<uint>& perm) THROW {
+void SkylineMatrix::permute(const std::vector<uint>& perm){
     uint n = size();
     ASSERT(perm.size() == n, "n = " << n << ", but perm.size() = " << perm.size());
 

@@ -15,7 +15,7 @@
 
 DEFINE_LOGGER("CompositePrec");
 
-void CompositePrec::solve(Vector& f, Vector& x) const THROW {
+void CompositePrec::solve(Vector& f, Vector& x) const{
     ASSERT(f.size() == n && x.size() == n, "Wrong dimension: n = " << n << ", f = " << f.size() << ", x = " << x.size());
 
     uvector<double> x1(x.size());

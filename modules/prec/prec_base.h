@@ -8,7 +8,7 @@
 class PrecBase {
 public:
     virtual ~PrecBase() {};
-    virtual void solve(Vector& f, Vector& x) const THROW = 0;
+    virtual void solve(Vector& f, Vector& x) const = 0;
 };
 
 #endif // __PREC_BASE_H__
