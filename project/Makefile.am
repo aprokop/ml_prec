@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir)
+AM_CPPFLAGS = -I $(top_srcdir) -I$(top_builddir)
 
 if HYPRE
     HYP=hypre
@@ -24,4 +24,4 @@ convert_LDADD = $(top_builddir)/modules/libmodules.a
 all: prereq ml_prec $(HYP)
 
 prereq:
-	$(MAKE) -C $(top_srcdir)/modules
+	$(MAKE) -C $(top_builddir)/modules
