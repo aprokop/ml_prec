@@ -1,8 +1,10 @@
 # Prelude
-AC_INIT([spe_parallel], [0.9.6], [andrey.prok@gmail.com])
+AC_INIT([ml_prec], [0.9.6], [andrey.prok@gmail.com])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+
+AM_PROG_AR([ar])
 
 AC_LANG([C++])
 
@@ -11,8 +13,6 @@ AC_PROG_CXX([g++])
 AC_PROG_F77
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
-# check for pkg-config itself so we don't try the m4 macro without pkg-config
-AC_CHECK_PROG(HAVE_PKG_CONFIG, pkg-config, yes)
 
 AC_F77_LIBRARY_LDFLAGS
 AC_F77_DUMMY_MAIN
@@ -60,13 +60,7 @@ AC_ARG_ENABLE(blas,
               enable_blas="yes")
 AC_MSG_RESULT($enable_blas)
 if test x$enable_blas = xyes; then
-    # # If pkg-config is installed, ignore --with-blas argument of configure
-    # if test x$HAVE_PKG_CONFIG = xyes &&
-        # PKG_CHECK_EXISTS([blas], AC_DEFINE([HAVE_BLAS], [1, [Define if you have a BLAS library.])); then
-        # PKG_CHECK_MODULES([BLAS], [blas])
-    # else
-        AX_BLAS
-    # fi
+    AX_BLAS
 fi
 LIBS="$BLAS_LIBS $LIBS $FLIBS"
 
